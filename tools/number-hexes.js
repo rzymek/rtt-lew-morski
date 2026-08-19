@@ -27,9 +27,9 @@ const yHalf   = yStep / 2;              // ~13.729
 
 function hexCoord(x, y) {
   const col = Math.round((x - X_A01) / xStep) + 1;
-  if (col < 1 || col > 42) return null;
+  if (col < 0 || col > 100) return null;
   const row = Math.round((Y_A01_B01 + (col - 1) * yHalf - y) / yStep) + 1;
-  if (row < 1 || row > 48) return null;
+  if (row < 0 || row > 100) return null;
   return `A${String(col).padStart(2, '0')}.B${String(row).padStart(2, '0')}`;
 }
 
