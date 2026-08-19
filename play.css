@@ -1,43 +1,7 @@
 #board {
 	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-
-	display: grid;
-	grid-template-columns: repeat(3, 120px);
-	grid-template-rows: repeat(3, 120px);
-	gap: 6px;
-	background: #222;
-	border: 6px solid #222;
-}
-
-.cell {
-	background: #555;
+	inset: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 64px;
-	font-weight: bold;
-	font-family: monospace;
-	user-select: none;
-	cursor: default;
-	transition: background 0.1s;
-}
-
-.cell.x-mark {
-	color: #e07070;
-}
-
-.cell.o-mark {
-	color: #70a0e0;
-}
-
-.cell.can-place {
-	cursor: pointer;
-	background: #666;
-}
-
-.cell.can-place:hover {
-	background: #888;
 }
