@@ -63,11 +63,7 @@ function on_update() {
 		clone.setAttribute('x', center.x - imgW / 2)
 		clone.setAttribute('y', center.y - imgH / 2)
 
-		// TODO: plane.direction has values 0..5,
-		// 0 is up (no franform)
-		// 3 is down (180)
-		// etc
-		// add rotation accordingly to `clone`
+		clone.setAttribute('transform', `rotate(${plane.direction * 60}, ${center.x}, ${center.y})`)
 
 		unitsLayer.appendChild(clone)
 	})
