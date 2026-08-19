@@ -12,22 +12,72 @@ const R_Bryt = 1
 
 /* --- HEX HELPERS --- */
 
+// Clockwise from North: N, NE, SE, S, SW, NW
+const DIR_OFFSETS = [
+	[0, +1], [+1, +1], [+1, 0],
+	[0, -1], [-1, -1], [-1, 0],
+]
+
 function parseHex(id) {
-	const m = id.match(/^A(\d+)\.B(\d+)$/)
-	return [parseInt(m[1]), parseInt(m[2])]
+	const m = id && id.match(/^A(\d+)\.B(\d+)$/)
+	return m ? [parseInt(m[1]), parseInt(m[2])] : [null, null]
 }
 
 function hexId(a, b) {
 	return `A${String(a).padStart(2,'0')}.B${String(b).padStart(2,'0')}`
 }
 
+function hexStep(id, dir) {
+	const [a, b] = parseHex(id)
+	if (a === null) return null
+	const [da, db] = DIR_OFFSETS[dir]
+	const na = a + da, nb = b + db
+	if (na < 0 || nb < 0) return null
+	return hexId(na, nb)
+}
+
+// Returns {hexId: finalDirection} for all valid destinations.
+// Prefers straight path over turning for tie-breaking on direction.
+function movesMapFor(plane) {
+	const maxMp = plane.plane.predkosc_max
+	const minMp = plane.plane.predkosc_min
+	const turnDist = plane.plane.zwrotnosc
+	const dir = plane.direction
+	const moves = {}
+
+	// Precompute straight path (index = steps taken from start)
+	const straight = [plane.at]
+	for (let s = 1; s <= maxMp; s++)
+		straight.push(hexStep(straight[s - 1], dir))
+
+	// No turn: final direction unchanged
+	for (let d = minMp; d <= maxMp; d++)
+		if (straight[d]) moves[straight[d]] = dir
+
+	// One turn of ±60° after at least turnDist straight steps,
+	// followed by at least 1 hex in the new direction
+	for (const dTurn of [-1, +1]) {
+		const newDir = ((dir + dTurn) + 6) % 6
+		for (let s = turnDist; s < maxMp; s++) {
+			if (!straight[s]) break
+			let pos = straight[s]
+			for (let r = 1; s + r <= maxMp; r++) {
+				pos = hexStep(pos, newDir)
+				if (!pos) break
+				if (s + r >= minMp && !(pos in moves))
+					moves[pos] = newDir
+			}
+		}
+	}
+
+	return moves
+}
+
 function possibleMovesFor(plane) {
-	const [a, b] = parseHex(plane.at)
-	return [
-		hexId(a, b-1), hexId(a, b+1),
-		hexId(a-1, b-1), hexId(a-1, b),
-		hexId(a+1, b), hexId(a+1, b+1),
-	]
+	const result = []
+	for (const h of Object.keys(movesMapFor(plane)))
+		set_add(result, h)
+	return result
 }
 
 /* --- SETUP --- */
@@ -73,8 +123,11 @@ function on_setup(scenario, options) {
 function on_view() {
 	V.board = G.board
 	V.active_side = G.active
-	if (G.selected_plane !== undefined)
-		V.selected_at = G.board.planes[G.active][G.selected_plane].at
+	if (G.selected_plane !== undefined) {
+		const plane = G.board.planes[G.active][G.selected_plane]
+		V.selected_at = plane.at
+		V.moves = movesMapFor(plane)
+	}
 }
 
 /* --- STATES --- */
@@ -110,8 +163,10 @@ P.move_planes = {
 	move_hex(target) {
 		if (G.selected_plane === undefined) return
 		const plane = G.board.planes[G.active][G.selected_plane]
-		if (!possibleMovesFor(plane.at).includes(target)) return
+		const moves = movesMapFor(plane)
+		if (!(target in moves)) return
 		plane.at = target
+		plane.direction = moves[target]
 		delete G.selected_plane
 	},
 }
