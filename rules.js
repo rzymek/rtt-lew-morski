@@ -110,6 +110,7 @@ function on_setup(scenario, options) {
 	G.targets = [
 		'A06.B19', 'A16.B24',
 	]
+	G.moved = []
 	G.active = R_Niem
 	call("move_planes")
 }
@@ -123,6 +124,10 @@ function on_setup(scenario, options) {
 function on_view() {
 	V.board = G.board
 	V.active_side = G.active
+	const moved = G.moved ?? []
+	V.unmoved = G.board.planes[G.active]
+		.map((_, idx) => idx)
+		.filter(idx => !set_has(moved, idx))
 	if (G.selected_plane !== undefined) {
 		const plane = G.board.planes[G.active][G.selected_plane]
 		V.selected_at = plane.at
@@ -148,7 +153,11 @@ P.move_planes = {
 			}
 			action("select_plane", G.selected_plane)
 		} else {
-			G.board.planes[G.active].forEach((_, idx) => action("select_plane", idx))
+			const moved = G.moved ?? []
+			G.board.planes[G.active].forEach((_, idx) => {
+				if (!set_has(moved, idx))
+					action("select_plane", idx)
+			})
 		}
 	},
 
@@ -168,6 +177,8 @@ P.move_planes = {
 		push_undo()
 		plane.at = target
 		plane.direction = moves[target]
+		if (!G.moved) G.moved = []
+		set_add(G.moved, G.selected_plane)
 		delete G.selected_plane
 	},
 }

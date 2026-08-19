@@ -64,8 +64,26 @@ function on_update() {
 		}
 	}
 
-	// Overlay circles: selected plane (yellow ring) + valid move targets (green fill)
+	// Overlay circles: unmoved planes (orange ring) + selected plane (yellow ring) + valid move targets (green fill)
 	hexOverlay.innerHTML = ""
+
+	if (view.unmoved) {
+		const activePlanes = view.board.planes[view.active_side] ?? []
+		for (const idx of view.unmoved) {
+			const plane = activePlanes[idx]
+			if (!plane || !document.getElementById(plane.at)) continue
+			const center = getHexCenterInSVGCoords(plane.at)
+			const c = document.createElementNS(svgNS, 'circle')
+			c.setAttribute('cx', center.x)
+			c.setAttribute('cy', center.y)
+			c.setAttribute('r', '14')
+			c.setAttribute('fill', 'rgba(255,140,0,0.25)')
+			c.setAttribute('stroke', 'orange')
+			c.setAttribute('stroke-width', '2')
+			c.style.pointerEvents = 'none'
+			hexOverlay.appendChild(c)
+		}
+	}
 
 	if (view.selected_at) {
 		const center = getHexCenterInSVGCoords(view.selected_at)
