@@ -51,7 +51,9 @@ function on_setup(scenario, options) {
 // Put everything the client needs to render the board here.
 // IMPORTANT: never mutate G here!
 function on_view() {
-	V.board = G.board
+	V.board = {
+		planes: G.board.planes[G.active]
+	}
 }
 
 /* --- STATES --- */
