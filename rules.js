@@ -4,7 +4,7 @@
 
 var G, L, R, V, P = {}
 
-const ROLES = ["Brytyjczycy", "Niemcy"]
+const ROLES = ["Niemcy", "Brytyjczycy"]
 const data = require("./data.js")
 const planes = data.planes
 const R_Niem = 0
