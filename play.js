@@ -49,6 +49,7 @@ function getHexCenterInSVGCoords(hexId) {
 	return groupMatrix.multiply(useMatrix).multiply(templateMatrix).transformPoint(TEMPLATE_CENTER)
 }
 
+// eslint-disable-next-line no-unused-vars
 function on_update() {
 	const svgNS = 'http://www.w3.org/2000/svg'
 
