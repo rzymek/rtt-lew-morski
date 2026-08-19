@@ -23,17 +23,17 @@ function on_setup(scenario, options) {
 			{
 				[R_Bryt]: [
 					{plane: planes.SpitL, at: 'A10.B08', direction: 0},
-					{plane: planes.Spit, at: 'A11.B08', direction: 0},
-					{plane: planes.Spit, at: 'A09.B08', direction: 0},
+					{plane: planes.Spit, at: 'A11.B08', direction: 1},
+					{plane: planes.Spit, at: 'A09.B08', direction: 2},
 				],
 				[R_Niem]: [
-					{plane: planes.ME110, at: 'A40.B35', direction: 0},
-					{plane: planes.ME110, at: 'A40.B36', direction: 0},
+					{plane: planes.ME110, at: 'A40.B35', direction: 4},
+					{plane: planes.ME110, at: 'A40.B36', direction: 4},
 
-					{plane: planes.HE111, at: 'A41.B35', direction: 0},
-					{plane: planes.HE111, at: 'A42.B35', direction: 0},
-					{plane: planes.HE111, at: 'A39.B35', direction: 0},
-					{plane: planes.HE111, at: 'A38.B35', direction: 0},
+					{plane: planes.HE111, at: 'A41.B35', direction: 4},
+					{plane: planes.HE111, at: 'A42.B35', direction: 4},
+					{plane: planes.HE111, at: 'A39.B35', direction: 4},
+					{plane: planes.HE111, at: 'A38.B35', direction: 4},
 				]
 			}
 	}
