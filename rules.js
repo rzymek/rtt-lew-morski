@@ -124,10 +124,12 @@ function on_setup(scenario, options) {
 function on_view() {
 	V.board = G.board
 	V.active_side = G.active
-	const moved = G.moved ?? []
-	V.unmoved = G.board.planes[G.active]
-		.map((_, idx) => idx)
-		.filter(idx => !set_has(moved, idx))
+	if (R === G.active) {
+		const moved = G.moved ?? []
+		V.unmoved = G.board.planes[G.active]
+			.map((_, idx) => idx)
+			.filter(idx => !set_has(moved, idx))
+	}
 	if (G.selected_plane !== undefined) {
 		const plane = G.board.planes[G.active][G.selected_plane]
 		V.selected_at = plane.at
