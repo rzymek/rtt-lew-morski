@@ -22,18 +22,18 @@ function on_setup(scenario, options) {
 		planes:
 			{
 				[R_Bryt]: [
-					{plane: planes.SpitL, at: 'A10.B08'},
-					{plane: planes.Spit, at: 'A11.B08'},
-					{plane: planes.Spit, at: 'A09.B08'},
+					{plane: planes.SpitL, at: 'A10.B08', direction: 0},
+					{plane: planes.Spit, at: 'A11.B08', direction: 0},
+					{plane: planes.Spit, at: 'A09.B08', direction: 0},
 				],
 				[R_Niem]: [
-					{plane: planes.ME110, at: 'A40.B35'},
-					{plane: planes.ME110, at: 'A40.B36'},
+					{plane: planes.ME110, at: 'A40.B35', direction: 0},
+					{plane: planes.ME110, at: 'A40.B36', direction: 0},
 
-					{plane: planes.HE111, at: 'A41.B35'},
-					{plane: planes.HE111, at: 'A42.B35'},
-					{plane: planes.HE111, at: 'A39.B35'},
-					{plane: planes.HE111, at: 'A38.B35'},
+					{plane: planes.HE111, at: 'A41.B35', direction: 0},
+					{plane: planes.HE111, at: 'A42.B35', direction: 0},
+					{plane: planes.HE111, at: 'A39.B35', direction: 0},
+					{plane: planes.HE111, at: 'A38.B35', direction: 0},
 				]
 			}
 	}
@@ -51,9 +51,7 @@ function on_setup(scenario, options) {
 // Put everything the client needs to render the board here.
 // IMPORTANT: never mutate G here!
 function on_view() {
-	V.board = {
-		planes: G.board.planes[G.active]
-	}
+	V.board = G.board
 }
 
 /* --- STATES --- */
