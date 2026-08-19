@@ -165,6 +165,7 @@ P.move_planes = {
 		const plane = G.board.planes[G.active][G.selected_plane]
 		const moves = movesMapFor(plane)
 		if (!(target in moves)) return
+		push_undo()
 		plane.at = target
 		plane.direction = moves[target]
 		delete G.selected_plane
