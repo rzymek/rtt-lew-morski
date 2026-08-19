@@ -1,22 +1,32 @@
 "use strict"
 const R_Niem = 0
 const R_Bryt = 1
-// on_init is called once when the client connects.
-// Use it to set up DOM event listeners and any one-time initialization.
-// Parameters: scenario (string), options (object), static_view (from on_static_view in rules)
+
+const TEMPLATE_CENTER = new DOMPoint(40.877, 42.909)
+const NS_XLINK = 'http://www.w3.org/1999/xlink'
+
 let planePlaceholder = null
+let hexOverlay = null
 
 function on_init(scenario, options, static_view) {
-	console.log({scenario, options, static_view})
 	planePlaceholder = document.getElementById("plane-placeholder")
 	planePlaceholder.remove()
 	toggle_zoom()
-}
 
-// Centroid of the template hex path vertices in its local coordinate system.
-// Computed from: d="m48.82 56.811-16.011-0.07172-7.9435-13.902 8.0678-13.83 16.011 0.07172 7.9435 13.902z"
-const TEMPLATE_CENTER = new DOMPoint(40.877, 42.909)
-const NS_XLINK = 'http://www.w3.org/1999/xlink'
+	// Click on a hex → send move_hex if it's a valid target
+	document.querySelectorAll('#hexes use').forEach(el => {
+		el.addEventListener('click', () => {
+			if (view.actions?.move_hex?.includes(el.id))
+				send_action("move_hex", el.id)
+		})
+	})
+
+	// SVG overlay layer for hex highlights, inserted just before the units layer
+	const svg = document.querySelector('#mapwrap svg')
+	hexOverlay = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+	hexOverlay.id = 'hex-overlay'
+	svg.insertBefore(hexOverlay, document.getElementById('units'))
+}
 
 function parseSVGTransform(str) {
 	const m = str && str.match(/matrix\((.*?)\)/)
@@ -39,32 +49,84 @@ function getHexCenterInSVGCoords(hexId) {
 	return groupMatrix.multiply(useMatrix).multiply(templateMatrix).transformPoint(TEMPLATE_CENTER)
 }
 
-// on_update is called every time the view changes (after each action, on connect, etc.)
-// The global `view` holds the latest view object from rules.js on_view().
-// The global `player` holds the current role name ("X", "O", or "Observer").
 function on_update() {
-	console.log({view, player, planePlaceholder})
-	const unitsLayer = document.getElementById("units")
+	const svgNS = 'http://www.w3.org/2000/svg'
 
+	// Update cursor class on hex elements
+	document.querySelectorAll('#hexes use.action').forEach(el => el.classList.remove('action'))
+	if (view.actions?.move_hex) {
+		for (const id of view.actions.move_hex) {
+			const el = document.getElementById(id)
+			if (el) el.classList.add('action')
+		}
+	}
+
+	// Overlay circles: selected plane (yellow ring) + valid move targets (green fill)
+	hexOverlay.innerHTML = ""
+
+	if (view.selected_at) {
+		const center = getHexCenterInSVGCoords(view.selected_at)
+		const c = document.createElementNS(svgNS, 'circle')
+		c.setAttribute('cx', center.x)
+		c.setAttribute('cy', center.y)
+		c.setAttribute('r', '12')
+		c.setAttribute('fill', 'none')
+		c.setAttribute('stroke', 'yellow')
+		c.setAttribute('stroke-width', '2')
+		c.style.pointerEvents = 'none'
+		hexOverlay.appendChild(c)
+	}
+
+	if (view.actions?.move_hex) {
+		for (const id of view.actions.move_hex) {
+			if (!document.getElementById(id)) continue
+			const center = getHexCenterInSVGCoords(id)
+			const c = document.createElementNS(svgNS, 'circle')
+			c.setAttribute('cx', center.x)
+			c.setAttribute('cy', center.y)
+			c.setAttribute('r', '11')
+			c.setAttribute('fill', 'rgba(0,200,0,0.35)')
+			c.setAttribute('stroke', '#00cc00')
+			c.setAttribute('stroke-width', '1.5')
+			c.style.pointerEvents = 'none'
+			hexOverlay.appendChild(c)
+		}
+	}
+
+	// Draw planes
+	const unitsLayer = document.getElementById("units")
 	unitsLayer.innerHTML = ""
-	// while (unitsLayer.firstChild) unitsLayer.removeChild(unitsLayer.firstChild)
 
 	const imgW = parseFloat(planePlaceholder.getAttribute('width'))
 	const imgH = parseFloat(planePlaceholder.getAttribute('height'))
 
-	Object.values(view.board.planes).flat().forEach(plane => {
-		const center = getHexCenterInSVGCoords(plane.at)
-		const imgSrc = `./${plane.plane.img}.jpg`
+	Object.entries(view.board.planes).forEach(([roleStr, planes]) => {
+		const roleIdx = parseInt(roleStr)
+		const isActiveSide = roleIdx === view.active_side
 
-		const clone = planePlaceholder.cloneNode(false)
-		clone.removeAttribute('id')
-		clone.setAttributeNS(NS_XLINK, 'xlink:href', imgSrc)
-		clone.setAttribute('href', imgSrc)
-		clone.setAttribute('x', center.x - imgW / 2)
-		clone.setAttribute('y', center.y - imgH / 2)
+		planes.forEach((plane, idx) => {
+			if (!document.getElementById(plane.at)) return
 
-		clone.setAttribute('transform', `rotate(${plane.direction * 60}, ${center.x}, ${center.y})`)
+			const center = getHexCenterInSVGCoords(plane.at)
+			const imgSrc = `./${plane.plane.img}.jpg`
 
-		unitsLayer.appendChild(clone)
+			const clone = planePlaceholder.cloneNode(false)
+			clone.removeAttribute('id')
+			clone.setAttributeNS(NS_XLINK, 'xlink:href', imgSrc)
+			clone.setAttribute('href', imgSrc)
+			clone.setAttribute('x', center.x - imgW / 2)
+			clone.setAttribute('y', center.y - imgH / 2)
+			clone.setAttribute('transform', `rotate(${plane.direction * 60}, ${center.x}, ${center.y})`)
+
+			if (isActiveSide && view.actions?.select_plane?.includes(idx)) {
+				clone.style.cursor = 'pointer'
+				clone.addEventListener('click', e => {
+					e.stopPropagation()
+					send_action("select_plane", idx)
+				})
+			}
+
+			unitsLayer.appendChild(clone)
+		})
 	})
 }

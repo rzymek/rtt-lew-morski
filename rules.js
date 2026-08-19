@@ -10,6 +10,26 @@ const planes = data.planes
 const R_Niem = 0
 const R_Bryt = 1
 
+/* --- HEX HELPERS --- */
+
+function parseHex(id) {
+	const m = id.match(/^A(\d+)\.B(\d+)$/)
+	return [parseInt(m[1]), parseInt(m[2])]
+}
+
+function hexId(a, b) {
+	return `A${String(a).padStart(2,'0')}.B${String(b).padStart(2,'0')}`
+}
+
+function possibleMovesFor(plane) {
+	const [a, b] = parseHex(plane.at)
+	return [
+		hexId(a, b-1), hexId(a, b+1),
+		hexId(a-1, b-1), hexId(a-1, b),
+		hexId(a+1, b), hexId(a+1, b+1),
+	]
+}
+
 /* --- SETUP --- */
 
 
@@ -52,6 +72,9 @@ function on_setup(scenario, options) {
 // IMPORTANT: never mutate G here!
 function on_view() {
 	V.board = G.board
+	V.active_side = G.active
+	if (G.selected_plane !== undefined)
+		V.selected_at = G.board.planes[G.active][G.selected_plane].at
 }
 
 /* --- STATES --- */
@@ -61,19 +84,35 @@ function on_view() {
 // when the active player clicks a cell.
 
 P.move_planes = {
-	// Shown to the waiting (inactive) player
 	inactive: "faza ruchu samolotów",
 
-	// Called for the active player: set the prompt text and list valid actions.
-	// action("place", i) means "place at cell i" is a legal move.
 	prompt() {
 		prompt("faza ruchu samolotów")
-		G.board.planes[G.active].forEach((_, planeIdx) =>
-			action("select_plane", planeIdx)
-		)
+		if (G.selected_plane !== undefined) {
+			const plane = G.board.planes[G.active][G.selected_plane]
+			for (const hex of possibleMovesFor(plane)) {
+				action("move_hex", hex)
+			}
+			action("select_plane", G.selected_plane)
+		} else {
+			G.board.planes[G.active].forEach((_, idx) => action("select_plane", idx))
+		}
 	},
+
 	select_plane(planeIdx) {
-		G.selected_plane = planeIdx
+		if (G.selected_plane === planeIdx) {
+			delete G.selected_plane
+		} else {
+			G.selected_plane = planeIdx
+		}
+	},
+
+	move_hex(target) {
+		if (G.selected_plane === undefined) return
+		const plane = G.board.planes[G.active][G.selected_plane]
+		if (!possibleMovesFor(plane.at).includes(target)) return
+		plane.at = target
+		delete G.selected_plane
 	},
 }
 
