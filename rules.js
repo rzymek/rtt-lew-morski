@@ -4,22 +4,42 @@
 
 var G, L, R, V, P = {}
 
-const ROLES = [ "Brytyjczycy", "Niemcy" ]
-
+const ROLES = ["Brytyjczycy", "Niemcy"]
+const data = require("./data.js")
+const planes = data.planes
 const R_Niem = 0
 const R_Bryt = 1
 
 /* --- SETUP --- */
-const brit_planes =[
-	{name: 'Spitfire', max: 6, min: 2, agility: 2, firepower: 5}
-]
 
-// Called by the framework when creating a new game.
-// G.seed, G.log, G.undo are already initialized.
-// You must set G.active to the starting player, then call the first state.
+
+/** Called by the framework when creating a new game.
+ * G.seed, G.log, G.undo are already initialized.
+ * You must set G.active to the starting player, then call the first state.
+ */
 function on_setup(scenario, options) {
-	G.board = [  ]
-	G.planes[R_Bryt] =
+	G.board = {
+		planes:
+			{
+				[R_Bryt]: [
+					{plane: planes.SpitL, at: 'A10.B08'},
+					{plane: planes.Spit, at: 'A11.B08'},
+					{plane: planes.Spit, at: 'A09.B08'},
+				],
+				[R_Niem]: [
+					{plane: planes.ME110, at: 'A40.B35'},
+					{plane: planes.ME110, at: 'A40.B36'},
+
+					{plane: planes.HE111, at: 'A41.B35'},
+					{plane: planes.HE111, at: 'A42.B35'},
+					{plane: planes.HE111, at: 'A39.B35'},
+					{plane: planes.HE111, at: 'A38.B35'},
+				]
+			}
+	}
+	G.targets = [
+		'A06.B19', 'A16.B24',
+	]
 	G.active = R_Niem
 	call("move_planes")
 }
@@ -48,35 +68,28 @@ P.move_planes = {
 	// action("place", i) means "place at cell i" is a legal move.
 	prompt() {
 		prompt("faza ruchu samolotów")
-		for (let i = 0; i < 9; i++)
-			if (G.board[i] === 0)
-				action("move", i)
+		G.board.planes[G.active].forEach((_, planeIdx) =>
+			action("select_plane", planeIdx)
+		)
 	},
-
-	// Called when the active player clicks an empty cell.
-	// argument `i` is the cell index (0–8).
-	place(i) {
-		G.board[i] = R + 1 // 1 = X, 2 = O
-
-		log(ROLES[R] + " played at " + i)
-
-		let winner = check_winner()
-		if (winner) {
-			finish(winner - 1, ROLES[winner - 1] + " wins!")
-			return
-		}
-		if (is_board_full()) {
-			finish("Draw", "It's a draw!")
-			return
-		}
-
-		// Hand control to the other player and loop back to this state.
-		G.active = G.active === R_X ? R_O : R_X
-		goto("take_turn")
+	select_plane(planeIdx) {
+		G.selected_plane = planeIdx
 	},
 }
 
 /* FRAMEWORK */
+
+/*
+"use strict"
+const ROLES = []
+const SCENARIOS = []
+var G, L, R, V, P = {}
+function on_setup(scenario, options) {}
+function on_static_view() {}
+function on_view() {}
+function on_query(q) {}
+function on_assert() {}
+*/
 
 function log(s) {
 	if (s === undefined) {
@@ -104,7 +117,7 @@ function action(action, argument) {
 function finish(result, message) {
 	G.active = -1
 	G.result = ROLES[result] ?? result
-	G.L = L = { message }
+	G.L = L = {message}
 	log()
 	log(message)
 }
@@ -117,13 +130,13 @@ function call_or_goto(pred, name, env) {
 }
 
 function call(name, env) {
-	G.L = L = { ...env, P: name, I: 0, L: L }
+	G.L = L = {...env, P: name, I: 0, L: L}
 	P[name]?._begin?.()
 }
 
 function goto(name, env) {
 	P[L.P]?._end?.()
-	G.L = L = { ...env, P: name, I: 0, L: L.L }
+	G.L = L = {...env, P: name, I: 0, L: L.L}
 	P[name]?._begin?.()
 }
 
@@ -141,7 +154,7 @@ function resume() {
 
 exports.roles ??= ROLES
 
-exports.scenarios ??= (typeof SCENARIOS !== "undefined") ? SCENARIOS : [ "Standard" ]
+exports.scenarios ??= (typeof SCENARIOS !== "undefined") ? SCENARIOS : ["Standard"]
 
 exports.setup = function (seed, scenario, options) {
 	G = {
@@ -411,8 +424,8 @@ function _parse(text) {
 			else if (s[p] === "\n") lex_newline()
 			else if (s[p] === ";") lex_semi()
 			else if (s[p] === "#") lex_comment()
-			else if (s[p] === "/" && s[p+1] === "/") lex_comment()
-			else if (s[p] === "-" && s[p+1] === "-") lex_comment()
+			else if (s[p] === "/" && s[p + 1] === "/") lex_comment()
+			else if (s[p] === "-" && s[p + 1] === "-") lex_comment()
 			else lex_word()
 		}
 
@@ -479,6 +492,7 @@ function _parse(text) {
 			break
 
 		case "while":
+			// while (exp) { block }
 			if (line.length !== 3)
 				throw new Error("invalid while - " + line.join(" "))
 			ix_loop = emit_jz(line[1])
@@ -488,6 +502,7 @@ function _parse(text) {
 			break
 
 		case "for":
+			// for i in (start) to (end) { block }
 			if (line.length === 7 && line[2] === "in" && line[4] === "to") {
 				i = line[1]
 				start = line[3]
@@ -499,6 +514,8 @@ function _parse(text) {
 				emit(`if ((${i}) < ${end}) { ++(${i}); L.I = ${ix_loop} }`)
 				return
 			}
+				// for i in (array) { block }
+			// NOTE: array is evaluated repeatedly so should be a constant!
 			else if (line.length === 5 && line[2] === "in") {
 				k = line[1]
 				i = k.replace(/^G\./, "L.G_") + "_"
@@ -515,8 +532,10 @@ function _parse(text) {
 			break
 
 		case "if":
-			ix1 = undefined
-			ix2 = undefined
+			// if (exp) { block}
+			// if (exp) { block } else { block }
+			// TODO: if (exp) { block } elseif (exp) { block } else { block }
+			ix1, ix2
 			if (line.length === 3) {
 				ix1 = emit_jz(line[1])
 				block(line[2])
@@ -576,7 +595,7 @@ function script(text) {
 	return text
 }
 
-;(function _compile() {
+(function _compile() {
 	var cache = {}
 	for (var name in P) {
 		if (typeof P[name] === "string") {
@@ -637,10 +656,22 @@ function pop_undo() {
 }
 
 function random(range) {
+	// An MLCG using integer arithmetic with doubles.
+	// https://www.ams.org/journals/mcom/1999-68-225/S0025-5718-99-00996-5/S0025-5718-99-00996-5.pdf
+	// m = 2**35 − 31
 	return (G.seed = G.seed * 200105 % 34359738337) % range
 }
 
+function random_bigint(range) {
+	// Largest MLCG that will fit its state in a double.
+	// Uses BigInt for arithmetic, so is an order of magnitude slower.
+	// https://www.ams.org/journals/mcom/1999-68-225/S0025-5718-99-00996-5/S0025-5718-99-00996-5.pdf
+	// m = 2**53 - 111
+	return (G.seed = Number(BigInt(G.seed) * 5667072534355537n % 9007199254740881n)) % range
+}
+
 function shuffle(list) {
+	// Fisher-Yates shuffle
 	var i, j, tmp
 	for (i = list.length - 1; i > 0; --i) {
 		j = random(i + 1)
@@ -650,6 +681,18 @@ function shuffle(list) {
 	}
 }
 
+function shuffle_bigint(list) {
+	// Fisher-Yates shuffle
+	var i, j, tmp
+	for (i = list.length - 1; i > 0; --i) {
+		j = random_bigint(i + 1)
+		tmp = list[j]
+		list[j] = list[i]
+		list[i] = tmp
+	}
+}
+
+// Fast deep copy for objects without cycles
 function object_copy(original) {
 	var copy, i, n, v
 	if (Array.isArray(original)) {
@@ -676,6 +719,75 @@ function object_copy(original) {
 	}
 }
 
+// Fast deep object comparison for objects without cycles
+function object_diff(a, b) {
+	var i, key
+	var a_length
+	if (a === b)
+		return false
+	if (a !== null && b !== null && typeof a === "object" && typeof b === "object") {
+		if (Array.isArray(a)) {
+			if (!Array.isArray(b))
+				return true
+			a_length = a.length
+			if (b.length !== a_length)
+				return true
+			for (i = 0; i < a_length; ++i)
+				if (object_diff(a[i], b[i]))
+					return true
+			return false
+		}
+		for (key in a)
+			if (object_diff(a[key], b[key]))
+				return true
+		for (key in b)
+			if (!(key in a))
+				return true
+		return false
+	}
+	return true
+}
+
+// Array remove and insert (faster than splice)
+
+function array_delete(array, index) {
+	var i, n = array.length
+	for (i = index + 1; i < n; ++i)
+		array[i - 1] = array[i]
+	array.length = n - 1
+}
+
+function array_delete_item(array, item) {
+	var i, n = array.length
+	for (i = 0; i < n; ++i)
+		if (array[i] === item)
+			return array_delete(array, i)
+}
+
+function array_insert(array, index, item) {
+	for (var i = array.length; i > index; --i)
+		array[i] = array[i - 1]
+	array[index] = item
+}
+
+function array_delete_pair(array, index) {
+	var i, n = array.length
+	for (i = index + 2; i < n; ++i)
+		array[i - 2] = array[i]
+	array.length = n - 2
+}
+
+function array_insert_pair(array, index, key, value) {
+	for (var i = array.length; i > index; i -= 2) {
+		array[i] = array[i - 2]
+		array[i + 1] = array[i - 1]
+	}
+	array[index] = key
+	array[index + 1] = value
+}
+
+// Set as plain sorted array
+
 function set_clear(set) {
 	set.length = 0
 }
@@ -699,8 +811,9 @@ function set_has(set, item) {
 function set_add(set, item) {
 	var a = 0
 	var b = set.length - 1
+	// optimize fast case of appending items in order
 	if (item > set[b]) {
-		set[b+1] = item
+		set[b + 1] = item
 		return
 	}
 	while (a <= b) {
@@ -733,17 +846,44 @@ function set_delete(set, item) {
 	}
 }
 
-function array_delete(array, index) {
-	var i, n = array.length
-	for (i = index + 1; i < n; ++i)
-		array[i - 1] = array[i]
-	array.length = n - 1
+function set_toggle(set, item) {
+	var a = 0
+	var b = set.length - 1
+	while (a <= b) {
+		var m = (a + b) >> 1
+		var x = set[m]
+		if (item < x)
+			b = m - 1
+		else if (item > x)
+			a = m + 1
+		else {
+			array_delete(set, m)
+			return
+		}
+	}
+	array_insert(set, a, item)
 }
 
-function array_insert(array, index, item) {
-	for (var i = array.length; i > index; --i)
-		array[i] = array[i - 1]
-	array[index] = item
+// Map as plain sorted array of key/value pairs
+
+function map_clear(map) {
+	map.length = 0
+}
+
+function map_has(map, key) {
+	var a = 0
+	var b = (map.length >> 1) - 1
+	while (a <= b) {
+		var m = (a + b) >> 1
+		var x = map[m << 1]
+		if (key < x)
+			b = m - 1
+		else if (key > x)
+			a = m + 1
+		else
+			return true
+	}
+	return false
 }
 
 function map_get(map, key, missing) {
@@ -751,13 +891,13 @@ function map_get(map, key, missing) {
 	var b = (map.length >> 1) - 1
 	while (a <= b) {
 		var m = (a + b) >> 1
-		var x = map[m<<1]
+		var x = map[m << 1]
 		if (key < x)
 			b = m - 1
 		else if (key > x)
 			a = m + 1
 		else
-			return map[(m<<1)+1]
+			return map[(m << 1) + 1]
 	}
 	return missing
 }
@@ -767,24 +907,94 @@ function map_set(map, key, value) {
 	var b = (map.length >> 1) - 1
 	while (a <= b) {
 		var m = (a + b) >> 1
-		var x = map[m<<1]
+		var x = map[m << 1]
 		if (key < x)
 			b = m - 1
 		else if (key > x)
 			a = m + 1
 		else {
-			map[(m<<1)+1] = value
+			map[(m << 1) + 1] = value
 			return
 		}
 	}
-	array_insert_pair(map, a<<1, key, value)
+	array_insert_pair(map, a << 1, key, value)
 }
 
-function array_insert_pair(array, index, key, value) {
-	for (var i = array.length; i > index; i -= 2) {
-		array[i] = array[i-2]
-		array[i+1] = array[i-1]
+function map_delete(map, key) {
+	var a = 0
+	var b = (map.length >> 1) - 1
+	while (a <= b) {
+		var m = (a + b) >> 1
+		var x = map[m << 1]
+		if (key < x)
+			b = m - 1
+		else if (key > x)
+			a = m + 1
+		else {
+			array_delete_pair(map, m << 1)
+			return
+		}
 	}
-	array[index] = key
-	array[index+1] = value
+}
+
+function map_get_set(map, key) {
+	var set = map_get(map, key, null)
+	if (set === null)
+		map_set(map, key, (set = []))
+	return set
+}
+
+function map_for_each(map, f) {
+	for (var i = 0; i < map.length; i += 2)
+		f(map[i], map[i + 1])
+}
+
+// same as Object.groupBy
+function object_group_by(items, callback) {
+	var item, key
+	var groups = {}
+	if (typeof callback === "function") {
+		for (item of items) {
+			key = callback(item)
+			if (key in groups)
+				groups[key].push(item)
+			else
+				groups[key] = [item]
+		}
+	} else {
+		for (item of items) {
+			key = item[callback]
+			if (key in groups)
+				groups[key].push(item)
+			else
+				groups[key] = [item]
+		}
+	}
+	return groups
+}
+
+// like Object.groupBy but for plain array maps
+function map_group_by(items, callback) {
+	var item, key, arr
+	var groups = []
+	if (typeof callback === "function") {
+		for (item of items) {
+			key = callback(item)
+			arr = map_get(groups, key)
+			if (arr)
+				arr.push(item)
+			else
+				map_set(groups, key, [item])
+		}
+	} else {
+		for (item of items) {
+			key = item[callback]
+			arr = map_get(groups, key)
+			if (arr)
+				arr.push(item)
+			else
+				map_set(groups, key, [item])
+		}
+	}
+	return groups
 }

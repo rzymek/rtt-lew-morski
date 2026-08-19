@@ -22,9 +22,12 @@
     "sila_ataku": 5,
     "zwrotnosc": 0,
     "udzwig_bomb": null,
-    "obrazki": {
-      "awers": "planes/u_HurL.jpg",
-      "rewers": "planes/u_HurL_.jpg"
+    "img": "planes/u_HurL",
+    "reduced": {
+      "predkosc_max": 4,
+      "predkosc_min": 2,
+      "sila_ataku": 4,
+      "zwrotnosc": 1
     }
   },
   {
@@ -34,9 +37,12 @@
     "sila_ataku": 4,
     "zwrotnosc": 0,
     "udzwig_bomb": null,
-    "obrazki": {
-      "awers": "planes/u_Spit.jpg",
-      "rewers": "planes/u_Spit_.jpg"
+    "img": "planes/u_Spit",
+    "reduced": {
+      "predkosc_max": 5,
+      "predkosc_min": 2,
+      "sila_ataku": 3,
+      "zwrotnosc": 1
     }
   },
   {
@@ -47,9 +53,12 @@
     "sila_ataku": 5,
     "zwrotnosc": 0,
     "udzwig_bomb": null,
-    "obrazki": {
-      "awers": "planes/u_SpitL.jpg",
-      "rewers": "planes/u_SpitL_.jpg"
+    "img": "planes/u_SpitL",
+    "reduced": {
+      "predkosc_max": 5,
+      "predkosc_min": 2,
+      "sila_ataku": 4,
+      "zwrotnosc": 1
     }
   },
   {
@@ -59,9 +68,12 @@
     "sila_ataku": 4,
     "zwrotnosc": 0,
     "udzwig_bomb": null,
-    "obrazki": {
-      "awers": "planes/u_ME109.jpg",
-      "rewers": "planes/u_ME109_.jpg"
+    "img": "planes/u_ME109",
+    "reduced": {
+      "predkosc_max": 5,
+      "predkosc_min": 2,
+      "sila_ataku": 2,
+      "zwrotnosc": 1
     }
   },
   {
@@ -72,9 +84,12 @@
     "sila_ataku": 4,
     "zwrotnosc": 0,
     "udzwig_bomb": null,
-    "obrazki": {
-      "awers": "planes/u_ME109L.jpg",
-      "rewers": "planes/u_ME109L_.jpg"
+    "img": "planes/u_ME109L",
+    "reduced": {
+      "predkosc_max": 5,
+      "predkosc_min": 2,
+      "sila_ataku": 3,
+      "zwrotnosc": 1
     }
   },
   {
@@ -84,9 +99,12 @@
     "sila_ataku": 4,
     "zwrotnosc": 1,
     "udzwig_bomb": 1,
-    "obrazki": {
-      "awers": "planes/u_ME110.jpg",
-      "rewers": "planes/u_ME110_.jpg"
+    "img": "planes/u_ME110",
+    "reduced": {
+      "predkosc_max": 4,
+      "predkosc_min": 3,
+      "sila_ataku": 3,
+      "zwrotnosc": 1
     }
   },
   {
@@ -97,9 +115,12 @@
     "sila_ataku": 5,
     "zwrotnosc": 1,
     "udzwig_bomb": 1,
-    "obrazki": {
-      "awers": "planes/u_ME110L.jpg",
-      "rewers": "planes/u_ME110L_.jpg"
+    "img": "planes/u_ME110L",
+    "reduced": {
+      "predkosc_max": 4,
+      "predkosc_min": 3,
+      "sila_ataku": 4,
+      "zwrotnosc": 1
     }
   },
   {
@@ -109,9 +130,12 @@
     "sila_ataku": 2,
     "zwrotnosc": 2,
     "udzwig_bomb": 2,
-    "obrazki": {
-      "awers": "planes/u_HE111.jpg",
-      "rewers": "planes/u_HE111_.jpg"
+    "img": "planes/u_HE111",
+    "reduced": {
+      "predkosc_max": 3,
+      "predkosc_min": 3,
+      "sila_ataku": 1,
+      "zwrotnosc": 2
     }
   },
   {
@@ -122,9 +146,13 @@
     "sila_ataku": 1,
     "zwrotnosc": 2,
     "udzwig_bomb": 3,
-    "obrazki": {
-      "awers": "planes/u_JU88.jpg",
-      "rewers": "planes/u_JU88_.jpg"
+    "img": "planes/u_JU88",
+    "reduced": {
+      "predkosc_max": 3,
+      "predkosc_max_bez_bomb": 4,
+      "predkosc_min": 3,
+      "sila_ataku": 1,
+      "zwrotnosc": 2
     }
   }
 ]
