@@ -52,6 +52,7 @@ function getHexCenterInSVGCoords(hexId) {
 // eslint-disable-next-line no-unused-vars
 function on_update() {
 	action_button("undo", "Undo")
+	action_button("done", "Done")
 
 	const svgNS = 'http://www.w3.org/2000/svg'
 

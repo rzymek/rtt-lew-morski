@@ -146,6 +146,7 @@ P.move_planes = {
 
 	prompt() {
 		prompt("faza ruchu samolotów")
+		button("done", V.unmoved.length === 0)
 		if (G.selected_plane !== undefined) {
 			const plane = G.board.planes[G.active][G.selected_plane]
 			for (const hex of possibleMovesFor(plane)) {
@@ -159,6 +160,12 @@ P.move_planes = {
 					action("select_plane", idx)
 			})
 		}
+	},
+
+	done() {
+		G.moved = []
+		delete G.selected_plane
+		G.active = G.active === R_Niem ? R_Bryt : R_Niem
 	},
 
 	select_plane(planeIdx) {
