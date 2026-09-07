@@ -1,14 +1,51 @@
+declare global {
+	interface Window {
+		on_init: (scenario: string, options: unknown, static_view: unknown) => void
+		on_update: () => void
+	}
+}
+
+interface ViewPlaneInstance {
+	plane: { img: string }
+	at: string
+	direction: number
+	damaged?: boolean
+	destroyed?: boolean
+	jammed?: boolean
+}
+
+interface View {
+	board: { planes: Record<number, (ViewPlaneInstance | null)[]> }
+	active_side: number
+	actions?: {
+		move_hex?: string[]
+		select_plane?: number[]
+		attack?: number
+		unjam?: number
+		undo?: number
+		done?: number
+	}
+	unmoved?: number[]
+	selected_at?: string
+	fire_line?: string[]
+	shot?: number[]
+}
+
+declare const view: View
+declare function send_action(action: string, argument?: unknown): void
+declare function action_button(action: string, label: string): void
+
 const R_Niem = 0
 const R_Bryt = 1
 
 const TEMPLATE_CENTER = new DOMPoint(40.877, 42.909)
 const NS_XLINK = 'http://www.w3.org/1999/xlink'
 
-let planePlaceholder = null
-let hexOverlay = null
+let planePlaceholder: SVGImageElement | null = null
+let hexOverlay: SVGGElement | null = null
 
-window.on_init = (scenario, options, static_view) => {
-	planePlaceholder = document.getElementById("plane-placeholder")
+window.on_init = (_scenario, _options, _static_view) => {
+	planePlaceholder = document.getElementById("plane-placeholder") as SVGImageElement
 	planePlaceholder.remove()
 	toggle_zoom()
 
@@ -21,13 +58,13 @@ window.on_init = (scenario, options, static_view) => {
 	})
 
 	// SVG overlay layer for hex highlights, inserted just before the units layer
-	const svg = document.querySelector('#mapwrap svg')
+	const svg = document.querySelector('#mapwrap svg')!
 	hexOverlay = document.createElementNS('http://www.w3.org/2000/svg', 'g')
 	hexOverlay.id = 'hex-overlay'
 	svg.insertBefore(hexOverlay, document.getElementById('units'))
 }
 
-function parseSVGTransform(str) {
+function parseSVGTransform(str: string | null): DOMMatrix {
 	const m = str && str.match(/matrix\((.*?)\)/)
 	if (m) return new DOMMatrix(m[1].trim().split(/[\s,]+/).map(Number))
 	const t = str && str.match(/translate\((.*?)\)/)
@@ -38,17 +75,19 @@ function parseSVGTransform(str) {
 	return new DOMMatrix()
 }
 
-function getHexCenterInSVGCoords(hexId) {
-	const templateEl = document.getElementById('use26613')
-	const useEl = document.getElementById(hexId)
-	const hexesGroup = document.getElementById('hexes')
+function getHexCenterInSVGCoords(hexId: string): DOMPoint {
+	const templateEl = document.getElementById('use26613')!
+	const useEl = document.getElementById(hexId)!
+	const hexesGroup = document.getElementById('hexes')!
 	const templateMatrix = parseSVGTransform(templateEl.getAttribute('transform'))
 	const useMatrix = parseSVGTransform(useEl.getAttribute('transform'))
 	const groupMatrix = parseSVGTransform(hexesGroup.getAttribute('transform'))
 	return groupMatrix.multiply(useMatrix).multiply(templateMatrix).transformPoint(TEMPLATE_CENTER)
 }
 
-window.on_update = ()=> {
+declare function toggle_zoom(): void
+
+window.on_update = () => {
 	action_button("undo", "Undo")
 	action_button("done", "Done")
 	if (view.actions?.attack !== undefined)
@@ -66,7 +105,7 @@ window.on_update = ()=> {
 		}
 	}
 
-	hexOverlay.innerHTML = ""
+	hexOverlay!.innerHTML = ""
 
 	// Orange rings: unmoved planes
 	if (view.unmoved) {
@@ -76,14 +115,14 @@ window.on_update = ()=> {
 			if (!plane || !document.getElementById(plane.at)) continue
 			const center = getHexCenterInSVGCoords(plane.at)
 			const c = document.createElementNS(svgNS, 'circle')
-			c.setAttribute('cx', center.x)
-			c.setAttribute('cy', center.y)
+			c.setAttribute('cx', String(center.x))
+			c.setAttribute('cy', String(center.y))
 			c.setAttribute('r', '14')
 			c.setAttribute('fill', 'rgba(255,140,0,0.25)')
 			c.setAttribute('stroke', 'orange')
 			c.setAttribute('stroke-width', '2')
 			c.style.pointerEvents = 'none'
-			hexOverlay.appendChild(c)
+			hexOverlay!.appendChild(c)
 		}
 	}
 
@@ -91,14 +130,14 @@ window.on_update = ()=> {
 	if (view.selected_at) {
 		const center = getHexCenterInSVGCoords(view.selected_at)
 		const c = document.createElementNS(svgNS, 'circle')
-		c.setAttribute('cx', center.x)
-		c.setAttribute('cy', center.y)
+		c.setAttribute('cx', String(center.x))
+		c.setAttribute('cy', String(center.y))
 		c.setAttribute('r', '12')
 		c.setAttribute('fill', 'none')
 		c.setAttribute('stroke', 'yellow')
 		c.setAttribute('stroke-width', '2')
 		c.style.pointerEvents = 'none'
-		hexOverlay.appendChild(c)
+		hexOverlay!.appendChild(c)
 	}
 
 	// Green fill: valid move targets
@@ -107,14 +146,14 @@ window.on_update = ()=> {
 			if (!document.getElementById(id)) continue
 			const center = getHexCenterInSVGCoords(id)
 			const c = document.createElementNS(svgNS, 'circle')
-			c.setAttribute('cx', center.x)
-			c.setAttribute('cy', center.y)
+			c.setAttribute('cx', String(center.x))
+			c.setAttribute('cy', String(center.y))
 			c.setAttribute('r', '11')
 			c.setAttribute('fill', 'rgba(0,200,0,0.35)')
 			c.setAttribute('stroke', '#00cc00')
 			c.setAttribute('stroke-width', '1.5')
 			c.style.pointerEvents = 'none'
-			hexOverlay.appendChild(c)
+			hexOverlay!.appendChild(c)
 		}
 	}
 
@@ -124,23 +163,23 @@ window.on_update = ()=> {
 			if (!document.getElementById(id)) continue
 			const center = getHexCenterInSVGCoords(id)
 			const c = document.createElementNS(svgNS, 'circle')
-			c.setAttribute('cx', center.x)
-			c.setAttribute('cy', center.y)
+			c.setAttribute('cx', String(center.x))
+			c.setAttribute('cy', String(center.y))
 			c.setAttribute('r', '11')
 			c.setAttribute('fill', 'rgba(255,50,50,0.22)')
 			c.setAttribute('stroke', '#ff4444')
 			c.setAttribute('stroke-width', '1.5')
 			c.style.pointerEvents = 'none'
-			hexOverlay.appendChild(c)
+			hexOverlay!.appendChild(c)
 		}
 	}
 
 	// Draw planes
-	const unitsLayer = document.getElementById("units")
+	const unitsLayer = document.getElementById("units")!
 	unitsLayer.innerHTML = ""
 
-	const imgW = parseFloat(planePlaceholder.getAttribute('width'))
-	const imgH = parseFloat(planePlaceholder.getAttribute('height'))
+	const imgW = parseFloat(planePlaceholder!.getAttribute('width')!)
+	const imgH = parseFloat(planePlaceholder!.getAttribute('height')!)
 
 	Object.entries(view.board.planes).forEach(([roleStr, planes]) => {
 		const roleIdx = parseInt(roleStr)
@@ -153,12 +192,12 @@ window.on_update = ()=> {
 			const center = getHexCenterInSVGCoords(plane.at)
 			const imgSrc = `./${plane.plane.img}.jpg`
 
-			const clone = planePlaceholder.cloneNode(false)
+			const clone = planePlaceholder!.cloneNode(false) as SVGImageElement
 			clone.removeAttribute('id')
 			clone.setAttributeNS(NS_XLINK, 'xlink:href', imgSrc)
 			clone.setAttribute('href', imgSrc)
-			clone.setAttribute('x', center.x - imgW / 2)
-			clone.setAttribute('y', center.y - imgH / 2)
+			clone.setAttribute('x', String(center.x - imgW / 2))
+			clone.setAttribute('y', String(center.y - imgH / 2))
 			clone.setAttribute('transform', `rotate(${plane.direction * 60}, ${center.x}, ${center.y})`)
 
 			// Dim planes that have already shot this phase
@@ -183,8 +222,8 @@ window.on_update = ()=> {
 				const x2 = center.x + sz / 2, y2 = center.y + sz / 2
 				for (const [ax, ay, bx, by] of [[x1,y1,x2,y2],[x2,y1,x1,y2]]) {
 					const line = document.createElementNS(svgNS, 'line')
-					line.setAttribute('x1', ax); line.setAttribute('y1', ay)
-					line.setAttribute('x2', bx); line.setAttribute('y2', by)
+					line.setAttribute('x1', String(ax)); line.setAttribute('y1', String(ay))
+					line.setAttribute('x2', String(bx)); line.setAttribute('y2', String(by))
 					line.setAttribute('stroke', '#cc0000')
 					line.setAttribute('stroke-width', '2.5')
 					line.setAttribute('stroke-linecap', 'round')
@@ -196,17 +235,17 @@ window.on_update = ()=> {
 			// Gun-jam badge
 			if (plane.jammed) {
 				const badge = document.createElementNS(svgNS, 'rect')
-				badge.setAttribute('x', center.x - 9)
-				badge.setAttribute('y', center.y - imgH / 2 - 1)
-				badge.setAttribute('width', 18)
-				badge.setAttribute('height', 9)
-				badge.setAttribute('rx', 2)
+				badge.setAttribute('x', String(center.x - 9))
+				badge.setAttribute('y', String(center.y - imgH / 2 - 1))
+				badge.setAttribute('width', '18')
+				badge.setAttribute('height', '9')
+				badge.setAttribute('rx', '2')
 				badge.setAttribute('fill', '#cc6600')
 				badge.style.pointerEvents = 'none'
 				unitsLayer.appendChild(badge)
 				const label = document.createElementNS(svgNS, 'text')
-				label.setAttribute('x', center.x)
-				label.setAttribute('y', center.y - imgH / 2 + 7)
+				label.setAttribute('x', String(center.x))
+				label.setAttribute('y', String(center.y - imgH / 2 + 7))
 				label.setAttribute('text-anchor', 'middle')
 				label.setAttribute('font-size', '6')
 				label.setAttribute('font-family', 'sans-serif')
@@ -218,3 +257,5 @@ window.on_update = ()=> {
 		})
 	})
 }
+
+export {}

@@ -1,8 +1,73 @@
 import data from "./data.js"
+import type { PlaneData } from "./data.js"
+
+/* --- TYPES --- */
+
+export interface PlaneInstance {
+	plane: PlaneData
+	at: string
+	direction: number
+	damaged?: boolean
+	destroyed?: boolean
+	jammed?: boolean
+}
+
+interface Board {
+	planes: Record<number, (PlaneInstance | null)[]>
+}
+
+interface FrameState {
+	P: string
+	I: number
+	L: FrameState | null
+	$?: unknown
+	message?: string
+	[key: string]: unknown
+}
+
+interface GameState {
+	active: number | string | string[] | null
+	seed: number
+	log: string[]
+	undo: any[]
+	L: FrameState | null
+	board: Board
+	targets?: string[]
+	moved?: number[]
+	selected_plane?: number
+	shot?: number[]
+	result?: string
+}
+
+interface ViewState {
+	log: string[]
+	prompt: string | null
+	actions: Record<string, number | (string | number)[]>
+	board?: Board
+	active_side?: number
+	unmoved?: number[]
+	moves?: Record<string, number>
+	selected_at?: string
+	fire_line?: string[]
+	shot?: number[]
+}
+
+interface StateDefinition {
+	inactive?: string
+	_begin?: () => void
+	_end?: () => void
+	_resume?: () => void
+	prompt?: () => void
+	[action: string]: unknown
+}
 
 /* --- GAME DATA --- */
 
-var G, L, R, V, P = {}
+let G!: GameState
+let L!: FrameState | null
+let R!: number
+let V!: ViewState | null
+const P: Record<string, StateDefinition | string | Array<() => void>> = {}
 
 const ROLES = ["Niemcy", "Brytyjczycy"]
 const planes = data.planes
@@ -12,21 +77,21 @@ const R_Bryt = 1
 /* --- HEX HELPERS --- */
 
 // Clockwise from North: N, NE, SE, S, SW, NW
-const DIR_OFFSETS = [
+const DIR_OFFSETS: [number, number][] = [
 	[0, +1], [+1, +1], [+1, 0],
 	[0, -1], [-1, -1], [-1, 0],
 ]
 
-function parseHex(id) {
+function parseHex(id: string): [number, number] | [null, null] {
 	const m = id && id.match(/^A(\d+)\.B(\d+)$/)
 	return m ? [parseInt(m[1]), parseInt(m[2])] : [null, null]
 }
 
-function hexId(a, b) {
+function hexId(a: number, b: number): string {
 	return `A${String(a).padStart(2,'0')}.B${String(b).padStart(2,'0')}`
 }
 
-function hexStep(id, dir) {
+function hexStep(id: string, dir: number): string | null {
 	const [a, b] = parseHex(id)
 	if (a === null) return null
 	const [da, db] = DIR_OFFSETS[dir]
@@ -37,21 +102,21 @@ function hexStep(id, dir) {
 
 // Returns {hexId: finalDirection} for all valid destinations.
 // Prefers straight path over turning for tie-breaking on direction.
-function movesMapFor(plane) {
+function movesMapFor(plane: PlaneInstance): Record<string, number> {
 	const maxMp = plane.plane.predkosc_max
 	const minMp = plane.plane.predkosc_min
 	const turnDist = plane.plane.zwrotnosc
 	const dir = plane.direction
-	const moves = {}
+	const moves: Record<string, number> = {}
 
 	// Precompute straight path (index = steps taken from start)
-	const straight = [plane.at]
+	const straight: (string | null)[] = [plane.at]
 	for (let s = 1; s <= maxMp; s++)
-		straight.push(hexStep(straight[s - 1], dir))
+		straight.push(hexStep(straight[s - 1]!, dir))
 
 	// No turn: final direction unchanged
 	for (let d = minMp; d <= maxMp; d++)
-		if (straight[d]) moves[straight[d]] = dir
+		if (straight[d]) moves[straight[d]!] = dir
 
 	// One turn of ±60° after at least turnDist straight steps,
 	// followed by at least 1 hex in the new direction
@@ -59,9 +124,9 @@ function movesMapFor(plane) {
 		const newDir = ((dir + dTurn) + 6) % 6
 		for (let s = turnDist; s < maxMp; s++) {
 			if (!straight[s]) break
-			let pos = straight[s]
+			let pos: string | null = straight[s]
 			for (let r = 1; s + r <= maxMp; r++) {
-				pos = hexStep(pos, newDir)
+				pos = hexStep(pos!, newDir)
 				if (!pos) break
 				if (s + r >= minMp && !(pos in moves))
 					moves[pos] = newDir
@@ -72,8 +137,8 @@ function movesMapFor(plane) {
 	return moves
 }
 
-function possibleMovesFor(plane) {
-	const result = []
+function possibleMovesFor(plane: PlaneInstance): string[] {
+	const result: string[] = []
 	for (const h of Object.keys(movesMapFor(plane)))
 		set_add(result, h)
 	return result
@@ -83,7 +148,7 @@ function possibleMovesFor(plane) {
 
 // [atk][dist-1] = [min, max] roll to hit (2d6); null = no hit possible
 // Roll 2 or 12 always causes gun jam regardless of this table.
-const COMBAT_TABLE = [
+const COMBAT_TABLE: ([number, number] | null)[][] = [
 	[null,       null,       null,       null,       null],       // atk 0
 	[[10, 11],   [11, 11],   null,       null,       null],       // atk 1
 	[[9,  11],   [10, 11],   [11, 11],   null,       null],       // atk 2
@@ -92,9 +157,9 @@ const COMBAT_TABLE = [
 	[[6,  11],   [7,  11],   [8,  11],   [9,  11],   [10, 11]],   // atk 5
 ]
 
-function fireLineHexes(plane) {
-	const hexes = []
-	let pos = plane.at
+function fireLineHexes(plane: PlaneInstance): string[] {
+	const hexes: string[] = []
+	let pos: string | null = plane.at
 	for (let i = 0; i < 5; i++) {
 		pos = hexStep(pos, plane.direction)
 		if (!pos) break
@@ -103,10 +168,17 @@ function fireLineHexes(plane) {
 	return hexes
 }
 
+interface FireTarget {
+	side: number
+	idx: number
+	plane: PlaneInstance
+	distance: number
+}
+
 // Returns {side, idx, plane, distance} of first (closest) plane on fire line, or null.
 // Any plane (friendly or enemy) blocks further fire.
-function firstOnFireLine(attackerPlane, allPlanes) {
-	const byHex = {}
+function firstOnFireLine(attackerPlane: PlaneInstance, allPlanes: Board['planes']): FireTarget | null {
+	const byHex: Record<string, { side: number, idx: number, plane: PlaneInstance }> = {}
 	for (const [sideStr, sidePlanes] of Object.entries(allPlanes)) {
 		const side = parseInt(sideStr)
 		sidePlanes.forEach((p, idx) => {
@@ -121,7 +193,13 @@ function firstOnFireLine(attackerPlane, allPlanes) {
 	return null
 }
 
-function resolveShot(attackerPlane, targetPlane, distance) {
+interface ShotResult {
+	roll: number
+	atk: number
+	result: string
+}
+
+function resolveShot(attackerPlane: PlaneInstance, targetPlane: PlaneInstance, distance: number): ShotResult {
 	const atk = Math.max(0, attackerPlane.plane.sila_ataku)
 	const roll = (random(6) + 1) + (random(6) + 1)
 
@@ -151,7 +229,7 @@ function resolveShot(attackerPlane, targetPlane, distance) {
  * G.seed, G.log, G.undo are already initialized.
  * You must set G.active to the starting player, then call the first state.
  */
-function on_setup(scenario, options) {
+function on_setup(_scenario: string, _options: unknown) {
 	G.board = {
 		planes:
 			{
@@ -186,26 +264,26 @@ function on_setup(scenario, options) {
 // Put everything the client needs to render the board here.
 // IMPORTANT: never mutate G here!
 function on_view() {
-	V.board = G.board
-	V.active_side = G.active
+	V!.board = G.board
+	V!.active_side = G.active as number
 	if (R === G.active) {
-		if (L.P === 'move_planes') {
+		if (L!.P === 'move_planes') {
 			const moved = G.moved ?? []
-			V.unmoved = G.board.planes[G.active]
+			V!.unmoved = G.board.planes[G.active as number]
 				.map((_, idx) => idx)
 				.filter(idx => !set_has(moved, idx))
 		}
-		if (L.P === 'combat_initiative' || L.P === 'combat_reaction') {
-			V.shot = G.shot ?? []
+		if (L!.P === 'combat_initiative' || L!.P === 'combat_reaction') {
+			V!.shot = G.shot ?? []
 		}
 		if (G.selected_plane !== undefined) {
-			const plane = G.board.planes[G.active][G.selected_plane]
+			const plane = G.board.planes[G.active as number][G.selected_plane]
 			if (plane) {
-				V.selected_at = plane.at
-				if (L.P === 'move_planes') {
-					V.moves = movesMapFor(plane)
+				V!.selected_at = plane.at
+				if (L!.P === 'move_planes') {
+					V!.moves = movesMapFor(plane)
 				} else {
-					V.fire_line = fireLineHexes(plane)
+					V!.fire_line = fireLineHexes(plane)
 				}
 			}
 		}
@@ -223,16 +301,16 @@ P.move_planes = {
 
 	prompt() {
 		prompt("faza ruchu samolotów")
-		button("done", V.unmoved.length === 0)
+		button("done", (V!.unmoved as number[]).length === 0)
 		if (G.selected_plane !== undefined) {
-			const plane = G.board.planes[G.active][G.selected_plane]
-			for (const hex of possibleMovesFor(plane)) {
+			const plane = G.board.planes[G.active as number][G.selected_plane]
+			for (const hex of possibleMovesFor(plane!)) {
 				action("move_hex", hex)
 			}
 			action("select_plane", G.selected_plane)
 		} else {
 			const moved = G.moved ?? []
-			G.board.planes[G.active].forEach((_, idx) => {
+			G.board.planes[G.active as number].forEach((_, idx) => {
 				if (!set_has(moved, idx))
 					action("select_plane", idx)
 			})
@@ -245,7 +323,7 @@ P.move_planes = {
 		goto("combat_initiative")
 	},
 
-	select_plane(planeIdx) {
+	select_plane(planeIdx: number) {
 		if (G.selected_plane === planeIdx) {
 			delete G.selected_plane
 		} else {
@@ -253,14 +331,14 @@ P.move_planes = {
 		}
 	},
 
-	move_hex(target) {
+	move_hex(target: string) {
 		if (G.selected_plane === undefined) return
-		const plane = G.board.planes[G.active][G.selected_plane]
-		const moves = movesMapFor(plane)
+		const plane = G.board.planes[G.active as number][G.selected_plane]
+		const moves = movesMapFor(plane!)
 		if (!(target in moves)) return
 		push_undo()
-		plane.at = target
-		plane.direction = moves[target]
+		plane!.at = target
+		plane!.direction = moves[target]
 		if (!G.moved) G.moved = []
 		set_add(G.moved, G.selected_plane)
 		delete G.selected_plane
@@ -282,10 +360,10 @@ P.combat_initiative = {
 
 	prompt() {
 		const enemySide = G.active === R_Niem ? R_Bryt : R_Niem
-		const myPlanes = G.board.planes[G.active] ?? []
+		const myPlanes = G.board.planes[G.active as number] ?? []
 		const shot = G.shot ?? []
 
-		prompt("Faza walki – inicjatywa: " + ROLES[G.active])
+		prompt("Faza walki – inicjatywa: " + ROLES[G.active as number])
 		button("done", true)
 
 		myPlanes.forEach((plane, idx) => {
@@ -308,7 +386,7 @@ P.combat_initiative = {
 		}
 	},
 
-	select_plane(idx) {
+	select_plane(idx: number) {
 		if (G.selected_plane === idx) delete G.selected_plane
 		else G.selected_plane = idx
 	},
@@ -316,7 +394,7 @@ P.combat_initiative = {
 	attack() {
 		const idx = G.selected_plane
 		if (idx === undefined) return
-		const myPlanes = G.board.planes[G.active] ?? []
+		const myPlanes = G.board.planes[G.active as number] ?? []
 		const plane = myPlanes[idx]
 		if (!plane || plane.jammed || plane.destroyed) return
 		const enemySide = G.active === R_Niem ? R_Bryt : R_Niem
@@ -324,26 +402,26 @@ P.combat_initiative = {
 		if (!hit || hit.side !== enemySide) return
 
 		push_undo()
-		set_add(G.shot, idx)
+		set_add(G.shot!, idx)
 		const targetPlane = G.board.planes[hit.side][hit.idx]
-		const {roll, atk, result} = resolveShot(plane, targetPlane, hit.distance)
-		log(`${ROLES[G.active]} atakuje [SA:${atk} odl:${hit.distance} rzut:${roll}] → ${result}`)
+		const {roll, atk, result} = resolveShot(plane, targetPlane!, hit.distance)
+		log(`${ROLES[G.active as number]} atakuje [SA:${atk} odl:${hit.distance} rzut:${roll}] → ${result}`)
 		delete G.selected_plane
 	},
 
 	unjam() {
 		const idx = G.selected_plane
 		if (idx === undefined) return
-		const plane = G.board.planes[G.active][idx]
+		const plane = G.board.planes[G.active as number][idx]
 		if (!plane || !plane.jammed) return
 		push_undo()
-		set_add(G.shot, idx)
+		set_add(G.shot!, idx)
 		const roll = random(6) + 1
 		if (roll === 6) {
 			delete plane.jammed
-			log(`${ROLES[G.active]} odblokował karabiny (rzut:${roll}) – sukces`)
+			log(`${ROLES[G.active as number]} odblokował karabiny (rzut:${roll}) – sukces`)
 		} else {
-			log(`${ROLES[G.active]} nie odblokował karabinów (rzut:${roll})`)
+			log(`${ROLES[G.active as number]} nie odblokował karabinów (rzut:${roll})`)
 		}
 		delete G.selected_plane
 	},
@@ -364,10 +442,10 @@ P.combat_reaction = {
 
 	prompt() {
 		const initiativeSide = G.active === R_Niem ? R_Bryt : R_Niem
-		const myPlanes = G.board.planes[G.active] ?? []
+		const myPlanes = G.board.planes[G.active as number] ?? []
 		const shot = G.shot ?? []
 
-		prompt("Faza walki – reakcja: " + ROLES[G.active])
+		prompt("Faza walki – reakcja: " + ROLES[G.active as number])
 		button("done", true)
 
 		// Only planes that have an initiative-side target on their fire line may react
@@ -393,7 +471,7 @@ P.combat_reaction = {
 		}
 	},
 
-	select_plane(idx) {
+	select_plane(idx: number) {
 		if (G.selected_plane === idx) delete G.selected_plane
 		else G.selected_plane = idx
 	},
@@ -401,7 +479,7 @@ P.combat_reaction = {
 	attack() {
 		const idx = G.selected_plane
 		if (idx === undefined) return
-		const myPlanes = G.board.planes[G.active] ?? []
+		const myPlanes = G.board.planes[G.active as number] ?? []
 		const plane = myPlanes[idx]
 		if (!plane || plane.jammed || plane.destroyed) return
 		const initiativeSide = G.active === R_Niem ? R_Bryt : R_Niem
@@ -409,10 +487,10 @@ P.combat_reaction = {
 		if (!hit || hit.side !== initiativeSide) return
 
 		push_undo()
-		set_add(G.shot, idx)
+		set_add(G.shot!, idx)
 		const targetPlane = G.board.planes[hit.side][hit.idx]
-		const {roll, atk, result} = resolveShot(plane, targetPlane, hit.distance)
-		log(`${ROLES[G.active]} reaguje [SA:${atk} odl:${hit.distance} rzut:${roll}] → ${result}`)
+		const {roll, atk, result} = resolveShot(plane, targetPlane!, hit.distance)
+		log(`${ROLES[G.active as number]} reaguje [SA:${atk} odl:${hit.distance} rzut:${roll}] → ${result}`)
 		delete G.selected_plane
 	},
 
@@ -436,7 +514,7 @@ function on_query(q) {}
 function on_assert() {}
 */
 
-function log(s) {
+function log(s?: string) {
 	if (s === undefined) {
 		if (G.log.length > 0 && G.log[G.log.length - 1] !== "")
 			G.log.push("")
@@ -445,71 +523,76 @@ function log(s) {
 	}
 }
 
-function prompt(s) {
-	V.prompt = s
+function prompt(s: string) {
+	V!.prompt = s
 }
 
-function button(action, enabled = true) {
-	V.actions[action] = !!enabled | 0
+function button(act: string, enabled: boolean | number = true) {
+	V!.actions[act] = !!enabled ? 1 : 0
 }
 
-function action(action, argument) {
-	if (!(action in V.actions))
-		V.actions[action] = []
-	set_add(V.actions[action], argument)
+function action(act: string, argument: string | number) {
+	if (!(act in V!.actions))
+		V!.actions[act] = []
+	set_add(V!.actions[act] as (string | number)[], argument)
 }
 
-function finish(result, message) {
+function finish(result: number | string, message: string) {
 	G.active = -1
-	G.result = ROLES[result] ?? result
-	G.L = L = {message}
+	G.result = ROLES[result as number] ?? result as string
+	G.L = L = {P: '', I: 0, L: null, message} as FrameState
 	log()
 	log(message)
 }
 
-function call_or_goto(pred, name, env) {
+function call_or_goto(pred: boolean, name: string, env?: object) {
 	if (pred)
 		call(name, env)
 	else
 		goto(name, env)
 }
 
-function call(name, env) {
-	G.L = L = {...env, P: name, I: 0, L: L}
-	P[name]?._begin?.()
+function call(name: string, env?: object) {
+	G.L = L = {...env, P: name, I: 0, L: L} as FrameState
+	;(P[name] as StateDefinition)?._begin?.()
 }
 
-function goto(name, env) {
-	P[L.P]?._end?.()
-	G.L = L = {...env, P: name, I: 0, L: L.L}
-	P[name]?._begin?.()
+function goto(name: string, env?: object) {
+	;(P[L!.P] as StateDefinition)?._end?.()
+	G.L = L = {...env, P: name, I: 0, L: L!.L} as FrameState
+	;(P[name] as StateDefinition)?._begin?.()
 }
 
-function end(result) {
-	P[L.P]?._end?.()
-	G.L = L = L.L
+function end(result?: unknown) {
+	;(P[L!.P] as StateDefinition)?._end?.()
+	G.L = L = L!.L
 	if (result !== undefined)
-		L.$ = result
-	P[L.P]?._resume?.()
+		L!.$ = result
+	;(P[L!.P] as StateDefinition)?._resume?.()
 }
 
 function resume() {
-	P[L.P]?._resume?.()
+	;(P[L!.P] as StateDefinition)?._resume?.()
 }
 
-const roles = ROLES
+declare var exports: { roles?: string[], scenarios?: string[] }
+declare const SCENARIOS: string[] | undefined
 
-const scenarios = (typeof SCENARIOS !== "undefined") ? SCENARIOS : ["Standard"]
+exports.roles ??= ROLES
 
-function setup(seed, scenario, options) {
+exports.scenarios ??= (typeof SCENARIOS !== "undefined") ? SCENARIOS : ["Standard"]
+
+function setup(seed: number, scenario: string, options: unknown): GameState {
 	G = {
 		active: null,
 		seed,
 		log: [],
 		undo: [],
+		L: null,
+		board: { planes: {} },
 	}
 	L = null
-	R = null
+	R = -1
 	V = null
 
 	on_setup(scenario, options)
@@ -519,47 +602,52 @@ function setup(seed, scenario, options) {
 	return G
 }
 
-function static_view(game) {
-	var SV = null
+function static_view(_game: GameState) {
+	let SV = null
+	// @ts-ignore - on_static_view is an optional game hook
 	if (typeof on_static_view === "function") {
+		// @ts-ignore
 		G = state
 		L = null
+		// @ts-ignore
 		R = role
 		V = null
 		_load()
+		// @ts-ignore
 		SV = on_static_view()
 		_save()
 	}
 	return SV
 }
 
-function view(state, role) {
+function view(state: GameState, role: string): ViewState {
 	G = state
 	L = G.L
-	R = role
+	R = role as any
 	V = {
 		log: G.log,
 		prompt: null,
+		actions: {},
 	}
 
-	if ((Array.isArray(G.active) && G.active.includes(R)) || G.active === R) {
+	if ((Array.isArray(G.active) && G.active.includes(R as any)) || G.active === (R as any)) {
 		_load()
 		on_view()
 
 		V.actions = {}
 
 		try {
-			if (P[L.P])
-				P[L.P].prompt()
+			if (P[L!.P])
+				(P[L!.P] as StateDefinition).prompt!()
 			else
-				V.prompt = "TODO: " + L.P
+				V.prompt = "TODO: " + L!.P
 		} catch (x) {
 			console.error(x)
-			V.prompt = x.toString()
+			V.prompt = String(x)
 		}
 
 		if (V.actions.undo === undefined)
-			button("undo", G.undo?.length > 0)
+			button("undo", (G.undo?.length ?? 0) > 0)
 
 		_save()
 	} else {
@@ -568,17 +656,17 @@ function view(state, role) {
 		_save()
 
 		if (G.active === "None") {
-			V.prompt = L.message
+			V.prompt = L!.message ?? null
 		} else {
-			var inactive = P[L.P]?.inactive
+			const inactive = (P[L!.P] as StateDefinition)?.inactive
 			if (inactive) {
 				if (Array.isArray(G.active))
-					V.prompt = `Waiting for ${G.active.join(" and ")} to ${inactive}.`
+					V.prompt = `Waiting for ${(G.active as string[]).join(" and ")} to ${inactive}.`
 				else
 					V.prompt = `Waiting for ${G.active} to ${inactive}.`
 			} else {
 				if (Array.isArray(G.active))
-					V.prompt = `Waiting for ${G.active.join(" and ")}.`
+					V.prompt = `Waiting for ${(G.active as string[]).join(" and ")}.`
 				else
 					V.prompt = `Waiting for ${G.active}.`
 			}
@@ -588,24 +676,24 @@ function view(state, role) {
 	return V
 }
 
-function _action(state, role, action, argument) {
+function _action(state: GameState, role: string, act: string, argument: unknown): GameState {
 	G = state
 	L = G.L
-	R = role
+	R = role as any
 	V = null
 
-	var old_active = G.active
+	const old_active = G.active
 
 	_load()
 
-	var this_state = P[L.P]
-	if (this_state && typeof this_state[action] === "function") {
-		this_state[action](argument)
+	const this_state = P[L!.P] as StateDefinition
+	if (this_state && typeof this_state[act] === "function") {
+		(this_state[act] as (arg: unknown) => void)(argument)
 		_run()
-	} else if (action === "undo" && G.undo.length > 0) {
+	} else if (act === "undo" && G.undo.length > 0) {
 		pop_undo()
 	} else {
-		throw new Error("Invalid action: " + action)
+		throw new Error("Invalid action: " + act)
 	}
 
 	_save()
@@ -616,10 +704,10 @@ function _action(state, role, action, argument) {
 	return G
 }
 
-function _finish(state, result, message) {
+function _finish(state: GameState, result: number | string, message: string): GameState {
 	G = state
 	L = G.L
-	R = null
+	R = -1
 	V = null
 
 	_load()
@@ -629,58 +717,60 @@ function _finish(state, result, message) {
 	return G
 }
 
-function query(state, role, q) {
+function query(state: GameState, role: string, q: unknown): unknown {
 	G = state
 	L = G.L
-	R = role
+	R = role as any
 	V = null
 
 	_load()
-	var result = on_query(q)
+	// @ts-ignore - on_query is an optional game hook
+	const result = typeof on_query === "function" ? on_query(q) : undefined
 	_save()
 
 	return result
 }
 
-function assert(state) {
+function assert(state: GameState): void {
+	// @ts-ignore - on_assert is an optional game hook
 	if (typeof on_assert === "function") {
 		G = state
 		L = G.L
-		R = null
+		R = -1
 		V = null
 		_load()
+		// @ts-ignore
 		on_assert()
 		_save()
 	}
 }
 
 
-
 function _load() {
-	R = ROLES.indexOf(R)
+	R = ROLES.indexOf(R as any)
 	if (Array.isArray(G.active))
-		G.active = G.active.map(r => ROLES.indexOf(r))
+		G.active = (G.active as string[]).map(r => ROLES.indexOf(r)) as any
 	else
-		G.active = ROLES.indexOf(G.active)
+		G.active = ROLES.indexOf(G.active as string)
 }
 
 function _save() {
 	if (Array.isArray(G.active))
-		G.active = G.active.map(r => ROLES[r])
+		G.active = (G.active as number[]).map(r => ROLES[r]) as any
 	else
-		G.active = ROLES[G.active] ?? "None"
+		G.active = ROLES[G.active as number] ?? "None"
 }
 
 function _run() {
-	for (var i = 0; i < 1000 && L; ++i) {
-		var prog = P[L.P]
+	for (let i = 0; i < 1000 && L; ++i) {
+		const prog = P[L.P]
 		if (typeof prog === "function") {
-			prog()
+			(prog as unknown as () => void)()
 		} else if (Array.isArray(prog)) {
 			if (L.I < prog.length) {
 				try {
 					prog[L.I++]()
-				} catch (err) {
+				} catch (err: any) {
 					err.message += "\n\tat P." + L.P + ":" + L.I
 					throw err
 				}
@@ -695,12 +785,14 @@ function _run() {
 		throw new Error("runaway script")
 }
 
-function _parse(text) {
-	var prog = []
+function _parse(text: string): string[] {
+	const prog: string[] = []
 
-	function lex(s) {
-		var words = []
-		var p = 0, n = s.length, m
+	function lex(s: string) {
+		let words: string[] = []
+		let p = 0
+		const n = s.length
+		let m: number
 
 		function lex_flush() {
 			if (words.length > 0) {
@@ -731,8 +823,8 @@ function _parse(text) {
 			words.push(s.substring(m, p))
 		}
 
-		function lex_qstring(q) {
-			var x = 1
+		function lex_qstring(q: string) {
+			let x = 1
 			++p
 			while (p < n && x > 0) {
 				if (s[p] === q)
@@ -744,8 +836,8 @@ function _parse(text) {
 			words.push(s.substring(m, p))
 		}
 
-		function lex_bstring(a, b) {
-			var x = 1
+		function lex_bstring(a: string, b: string) {
+			let x = 1
 			++p
 			while (p < n && x > 0) {
 				if (s[p] === a)
@@ -780,9 +872,9 @@ function _parse(text) {
 			command(words)
 	}
 
-	function command(line) {
-		var ix_loop, ix1, ix2
-		var i, k, start, end, array, body
+	function command(line: string[]) {
+		let ix_loop: number, ix1: number, ix2: number
+		let i: string, k: string, start: string, end_: string, array: string, body: string
 
 		switch (line[0]) {
 		case "set":
@@ -853,12 +945,12 @@ function _parse(text) {
 			if (line.length === 7 && line[2] === "in" && line[4] === "to") {
 				i = line[1]
 				start = line[3]
-				end = line[5]
+				end_ = line[5]
 				body = line[6]
 				emit(`${i} = ${start}`)
 				ix_loop = prog.length
 				block(body)
-				emit(`if ((${i}) < ${end}) { ++(${i}); L.I = ${ix_loop} }`)
+				emit(`if ((${i}) < ${end_}) { ++(${i}); L.I = ${ix_loop} }`)
 				return
 			}
 				// for i in (array) { block }
@@ -882,7 +974,6 @@ function _parse(text) {
 			// if (exp) { block}
 			// if (exp) { block } else { block }
 			// TODO: if (exp) { block } elseif (exp) { block } else { block }
-			ix1, ix2
 			if (line.length === 3) {
 				ix1 = emit_jz(line[1])
 				block(line[2])
@@ -904,30 +995,30 @@ function _parse(text) {
 		}
 	}
 
-	function quote(s) {
+	function quote(s: string): string {
 		if ("{[(`'\"".includes(s[0]))
 			return s
 		return '"' + s + '"'
 	}
 
-	function emit_jz(exp, to = "@") {
+	function emit_jz(exp: string, to = "@"): number {
 		return emit("if (!(" + exp + ")) L.I = " + to)
 	}
 
-	function emit_jump(to = "@") {
+	function emit_jump(to = "@"): number {
 		return emit("L.I = " + to)
 	}
 
-	function emit(s) {
+	function emit(s: string): number {
 		prog.push(s)
 		return prog.length - 1
 	}
 
-	function label(ix) {
-		prog[ix] = prog[ix].replace("@", prog.length)
+	function label(ix: number) {
+		prog[ix] = prog[ix].replace("@", String(prog.length))
 	}
 
-	function block(body) {
+	function block(body: string) {
 		if (body[0] !== "{")
 			throw new Error("expected block")
 		lex(body.slice(1, -1))
@@ -938,25 +1029,25 @@ function _parse(text) {
 	return prog
 }
 
-function script(text) {
+function script(text: string): string {
 	return text
 }
 
-(function _compile() {
-	var cache = {}
-	for (var name in P) {
+;(function _compile() {
+	const cache: Record<string, () => void> = {}
+	for (const name in P) {
 		if (typeof P[name] === "string") {
-			var prog = []
+			const prog: Array<() => void> = []
 			try {
-				for (var inst of _parse(P[name])) {
+				for (const inst of _parse(P[name] as string)) {
 					try {
 						prog.push(cache[inst] ??= eval("(function(){" + inst + "})"))
-					} catch (err) {
+					} catch (err: any) {
 						err.message += "\n\tat (" + inst + ")"
 						throw err
 					}
 				}
-			} catch (err) {
+			} catch (err: any) {
 				err.message += "\n\tat P." + name
 				throw err
 			}
@@ -974,11 +1065,10 @@ function clear_undo() {
 }
 
 function push_undo() {
-	var copy, k, v
 	if (G.undo) {
-		copy = {}
-		for (k in G) {
-			v = G[k]
+		const copy: any = {}
+		for (const k in G) {
+			let v: any = (G as any)[k]
 			if (k === "undo")
 				continue
 			else if (k === "log")
@@ -993,23 +1083,23 @@ function push_undo() {
 
 function pop_undo() {
 	if (G.undo) {
-		var save_log = G.log
-		var save_undo = G.undo
+		const save_log = G.log
+		const save_undo = G.undo
 		G = save_undo.pop()
-		save_log.length = G.log
+		save_log.length = G.log as unknown as number
 		G.log = save_log
 		G.undo = save_undo
 	}
 }
 
-function random(range) {
+function random(range: number): number {
 	// An MLCG using integer arithmetic with doubles.
 	// https://www.ams.org/journals/mcom/1999-68-225/S0025-5718-99-00996-5/S0025-5718-99-00996-5.pdf
 	// m = 2**35 − 31
 	return (G.seed = G.seed * 200105 % 34359738337) % range
 }
 
-function random_bigint(range) {
+function random_bigint(range: number): number {
 	// Largest MLCG that will fit its state in a double.
 	// Uses BigInt for arithmetic, so is an order of magnitude slower.
 	// https://www.ams.org/journals/mcom/1999-68-225/S0025-5718-99-00996-5/S0025-5718-99-00996-5.pdf
@@ -1017,9 +1107,9 @@ function random_bigint(range) {
 	return (G.seed = Number(BigInt(G.seed) * 5667072534355537n % 9007199254740881n)) % range
 }
 
-function shuffle(list) {
+function shuffle(list: unknown[]) {
 	// Fisher-Yates shuffle
-	var i, j, tmp
+	let i, j, tmp
 	for (i = list.length - 1; i > 0; --i) {
 		j = random(i + 1)
 		tmp = list[j]
@@ -1028,9 +1118,9 @@ function shuffle(list) {
 	}
 }
 
-function shuffle_bigint(list) {
+function shuffle_bigint(list: unknown[]) {
 	// Fisher-Yates shuffle
-	var i, j, tmp
+	let i, j, tmp
 	for (i = list.length - 1; i > 0; --i) {
 		j = random_bigint(i + 1)
 		tmp = list[j]
@@ -1040,8 +1130,8 @@ function shuffle_bigint(list) {
 }
 
 // Fast deep copy for objects without cycles
-function object_copy(original) {
-	var copy, i, n, v
+function object_copy<T>(original: T): T {
+	let copy: any, i, n: number, v: any
 	if (Array.isArray(original)) {
 		n = original.length
 		copy = new Array(n)
@@ -1056,7 +1146,7 @@ function object_copy(original) {
 	} else {
 		copy = {}
 		for (i in original) {
-			v = original[i]
+			v = (original as any)[i]
 			if (typeof v === "object" && v !== null)
 				copy[i] = object_copy(v)
 			else
@@ -1067,9 +1157,9 @@ function object_copy(original) {
 }
 
 // Fast deep object comparison for objects without cycles
-function object_diff(a, b) {
-	var i, key
-	var a_length
+function object_diff(a: unknown, b: unknown): boolean {
+	let i: string | number
+	let a_length: number
 	if (a === b)
 		return false
 	if (a !== null && b !== null && typeof a === "object" && typeof b === "object") {
@@ -1077,18 +1167,18 @@ function object_diff(a, b) {
 			if (!Array.isArray(b))
 				return true
 			a_length = a.length
-			if (b.length !== a_length)
+			if ((b as unknown[]).length !== a_length)
 				return true
 			for (i = 0; i < a_length; ++i)
-				if (object_diff(a[i], b[i]))
+				if (object_diff(a[i], (b as unknown[])[i]))
 					return true
 			return false
 		}
-		for (key in a)
-			if (object_diff(a[key], b[key]))
+		for (i in a as object)
+			if (object_diff((a as any)[i], (b as any)[i]))
 				return true
-		for (key in b)
-			if (!(key in a))
+		for (i in b as object)
+			if (!(i in (a as object)))
 				return true
 		return false
 	}
@@ -1097,35 +1187,38 @@ function object_diff(a, b) {
 
 // Array remove and insert (faster than splice)
 
-function array_delete(array, index) {
-	var i, n = array.length
+function array_delete(array: unknown[], index: number) {
+	let i
+	const n = array.length
 	for (i = index + 1; i < n; ++i)
 		array[i - 1] = array[i]
 	array.length = n - 1
 }
 
-function array_delete_item(array, item) {
-	var i, n = array.length
+function array_delete_item(array: unknown[], item: unknown) {
+	let i
+	const n = array.length
 	for (i = 0; i < n; ++i)
 		if (array[i] === item)
 			return array_delete(array, i)
 }
 
-function array_insert(array, index, item) {
-	for (var i = array.length; i > index; --i)
+function array_insert(array: unknown[], index: number, item: unknown) {
+	for (let i = array.length; i > index; --i)
 		array[i] = array[i - 1]
 	array[index] = item
 }
 
-function array_delete_pair(array, index) {
-	var i, n = array.length
+function array_delete_pair(array: unknown[], index: number) {
+	let i
+	const n = array.length
 	for (i = index + 2; i < n; ++i)
 		array[i - 2] = array[i]
 	array.length = n - 2
 }
 
-function array_insert_pair(array, index, key, value) {
-	for (var i = array.length; i > index; i -= 2) {
+function array_insert_pair(array: unknown[], index: number, key: unknown, value: unknown) {
+	for (let i = array.length; i > index; i -= 2) {
 		array[i] = array[i - 2]
 		array[i + 1] = array[i - 1]
 	}
@@ -1135,16 +1228,16 @@ function array_insert_pair(array, index, key, value) {
 
 // Set as plain sorted array
 
-function set_clear(set) {
+function set_clear(set: unknown[]) {
 	set.length = 0
 }
 
-function set_has(set, item) {
-	var a = 0
-	var b = set.length - 1
+function set_has(set: (string | number)[], item: string | number): boolean {
+	let a = 0
+	let b = set.length - 1
 	while (a <= b) {
-		var m = (a + b) >> 1
-		var x = set[m]
+		const m = (a + b) >> 1
+		const x = set[m]
 		if (item < x)
 			b = m - 1
 		else if (item > x)
@@ -1155,17 +1248,17 @@ function set_has(set, item) {
 	return false
 }
 
-function set_add(set, item) {
-	var a = 0
-	var b = set.length - 1
+function set_add(set: (string | number)[], item: string | number) {
+	let a = 0
+	let b = set.length - 1
 	// optimize fast case of appending items in order
 	if (item > set[b]) {
 		set[b + 1] = item
 		return
 	}
 	while (a <= b) {
-		var m = (a + b) >> 1
-		var x = set[m]
+		const m = (a + b) >> 1
+		const x = set[m]
 		if (item < x)
 			b = m - 1
 		else if (item > x)
@@ -1176,12 +1269,12 @@ function set_add(set, item) {
 	array_insert(set, a, item)
 }
 
-function set_delete(set, item) {
-	var a = 0
-	var b = set.length - 1
+function set_delete(set: (string | number)[], item: string | number) {
+	let a = 0
+	let b = set.length - 1
 	while (a <= b) {
-		var m = (a + b) >> 1
-		var x = set[m]
+		const m = (a + b) >> 1
+		const x = set[m]
 		if (item < x)
 			b = m - 1
 		else if (item > x)
@@ -1193,12 +1286,12 @@ function set_delete(set, item) {
 	}
 }
 
-function set_toggle(set, item) {
-	var a = 0
-	var b = set.length - 1
+function set_toggle(set: (string | number)[], item: string | number) {
+	let a = 0
+	let b = set.length - 1
 	while (a <= b) {
-		var m = (a + b) >> 1
-		var x = set[m]
+		const m = (a + b) >> 1
+		const x = set[m]
 		if (item < x)
 			b = m - 1
 		else if (item > x)
@@ -1213,16 +1306,16 @@ function set_toggle(set, item) {
 
 // Map as plain sorted array of key/value pairs
 
-function map_clear(map) {
+function map_clear(map: unknown[]) {
 	map.length = 0
 }
 
-function map_has(map, key) {
-	var a = 0
-	var b = (map.length >> 1) - 1
+function map_has(map: unknown[], key: unknown): boolean {
+	let a = 0
+	let b = (map.length >> 1) - 1
 	while (a <= b) {
-		var m = (a + b) >> 1
-		var x = map[m << 1]
+		const m = (a + b) >> 1
+		const x = map[m << 1]
 		if (key < x)
 			b = m - 1
 		else if (key > x)
@@ -1233,12 +1326,12 @@ function map_has(map, key) {
 	return false
 }
 
-function map_get(map, key, missing) {
-	var a = 0
-	var b = (map.length >> 1) - 1
+function map_get(map: unknown[], key: unknown, missing?: unknown): unknown {
+	let a = 0
+	let b = (map.length >> 1) - 1
 	while (a <= b) {
-		var m = (a + b) >> 1
-		var x = map[m << 1]
+		const m = (a + b) >> 1
+		const x = map[m << 1]
 		if (key < x)
 			b = m - 1
 		else if (key > x)
@@ -1249,12 +1342,12 @@ function map_get(map, key, missing) {
 	return missing
 }
 
-function map_set(map, key, value) {
-	var a = 0
-	var b = (map.length >> 1) - 1
+function map_set(map: unknown[], key: unknown, value: unknown) {
+	let a = 0
+	let b = (map.length >> 1) - 1
 	while (a <= b) {
-		var m = (a + b) >> 1
-		var x = map[m << 1]
+		const m = (a + b) >> 1
+		const x = map[m << 1]
 		if (key < x)
 			b = m - 1
 		else if (key > x)
@@ -1267,12 +1360,12 @@ function map_set(map, key, value) {
 	array_insert_pair(map, a << 1, key, value)
 }
 
-function map_delete(map, key) {
-	var a = 0
-	var b = (map.length >> 1) - 1
+function map_delete(map: unknown[], key: unknown) {
+	let a = 0
+	let b = (map.length >> 1) - 1
 	while (a <= b) {
-		var m = (a + b) >> 1
-		var x = map[m << 1]
+		const m = (a + b) >> 1
+		const x = map[m << 1]
 		if (key < x)
 			b = m - 1
 		else if (key > x)
@@ -1284,22 +1377,22 @@ function map_delete(map, key) {
 	}
 }
 
-function map_get_set(map, key) {
-	var set = map_get(map, key, null)
+function map_get_set(map: unknown[], key: unknown): unknown[] {
+	let set = map_get(map, key, null) as unknown[] | null
 	if (set === null)
 		map_set(map, key, (set = []))
 	return set
 }
 
-function map_for_each(map, f) {
-	for (var i = 0; i < map.length; i += 2)
+function map_for_each(map: unknown[], f: (key: unknown, value: unknown) => void) {
+	for (let i = 0; i < map.length; i += 2)
 		f(map[i], map[i + 1])
 }
 
 // same as Object.groupBy
-function object_group_by(items, callback) {
-	var item, key
-	var groups = {}
+function object_group_by<T>(items: Iterable<T>, callback: ((item: T) => string) | string): Record<string, T[]> {
+	let item: T, key: string
+	const groups: Record<string, T[]> = {}
 	if (typeof callback === "function") {
 		for (item of items) {
 			key = callback(item)
@@ -1310,7 +1403,7 @@ function object_group_by(items, callback) {
 		}
 	} else {
 		for (item of items) {
-			key = item[callback]
+			key = (item as any)[callback]
 			if (key in groups)
 				groups[key].push(item)
 			else
@@ -1321,13 +1414,13 @@ function object_group_by(items, callback) {
 }
 
 // like Object.groupBy but for plain array maps
-function map_group_by(items, callback) {
-	var item, key, arr
-	var groups = []
+function map_group_by<T>(items: Iterable<T>, callback: ((item: T) => unknown) | string): unknown[] {
+	let item: T, key: unknown, arr: T[] | undefined
+	const groups: unknown[] = []
 	if (typeof callback === "function") {
 		for (item of items) {
 			key = callback(item)
-			arr = map_get(groups, key)
+			arr = map_get(groups, key) as T[] | undefined
 			if (arr)
 				arr.push(item)
 			else
@@ -1335,8 +1428,8 @@ function map_group_by(items, callback) {
 		}
 	} else {
 		for (item of items) {
-			key = item[callback]
-			arr = map_get(groups, key)
+			key = (item as any)[callback]
+			arr = map_get(groups, key) as T[] | undefined
 			if (arr)
 				arr.push(item)
 			else
@@ -1345,5 +1438,3 @@ function map_group_by(items, callback) {
 	}
 	return groups
 }
-
-module.exports = { roles, scenarios, setup, static_view, view, query, assert, action: _action, finish: _finish }

@@ -1,4 +1,25 @@
-const data = {
+export interface PlaneReducedStats {
+	predkosc_max: number
+	predkosc_min: number
+	sila_ataku: number
+	zwrotnosc: number
+	predkosc_max_bez_bomb?: number
+}
+
+export interface PlaneData {
+	nazwa: string
+	lider?: boolean
+	predkosc_max: number
+	predkosc_min: number
+	sila_ataku: number
+	zwrotnosc: number
+	udzwig_bomb: number | null
+	img: string
+	predkosc_max_bez_bomb?: number
+	reduced: PlaneReducedStats
+}
+
+const data: { planes: Record<string, PlaneData> } = {
 	planes: {
 		Hur: {
 			"nazwa": "Hawker Hurricane MK I",

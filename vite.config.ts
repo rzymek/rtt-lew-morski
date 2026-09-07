@@ -35,7 +35,7 @@ export default defineConfig({
         play: 'src/play/play.html',
         about: 'src/about.html',
         create: 'src/create.html',
-        rules: 'src/rules/rules.js',
+        rules: 'src/rules/rules.ts',
       },
       output: {
         cleanDir: true,
