@@ -497,11 +497,11 @@ function resume() {
 	P[L.P]?._resume?.()
 }
 
-export const roles = ROLES
+const roles = ROLES
 
-export const scenarios = (typeof SCENARIOS !== "undefined") ? SCENARIOS : ["Standard"]
+const scenarios = (typeof SCENARIOS !== "undefined") ? SCENARIOS : ["Standard"]
 
-export function setup(seed, scenario, options) {
+function setup(seed, scenario, options) {
 	G = {
 		active: null,
 		seed,
@@ -519,7 +519,7 @@ export function setup(seed, scenario, options) {
 	return G
 }
 
-export function static_view(game) {
+function static_view(game) {
 	var SV = null
 	if (typeof on_static_view === "function") {
 		G = state
@@ -533,7 +533,7 @@ export function static_view(game) {
 	return SV
 }
 
-export function view(state, role) {
+function view(state, role) {
 	G = state
 	L = G.L
 	R = role
@@ -629,7 +629,7 @@ function _finish(state, result, message) {
 	return G
 }
 
-export function query(state, role, q) {
+function query(state, role, q) {
 	G = state
 	L = G.L
 	R = role
@@ -642,7 +642,7 @@ export function query(state, role, q) {
 	return result
 }
 
-export function assert(state) {
+function assert(state) {
 	if (typeof on_assert === "function") {
 		G = state
 		L = G.L
@@ -654,7 +654,7 @@ export function assert(state) {
 	}
 }
 
-export { _action as action, _finish as finish }
+
 
 function _load() {
 	R = ROLES.indexOf(R)
@@ -1345,3 +1345,5 @@ function map_group_by(items, callback) {
 	}
 	return groups
 }
+
+module.exports = { roles, scenarios, setup, static_view, view, query, assert, action: _action, finish: _finish }

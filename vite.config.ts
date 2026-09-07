@@ -1,7 +1,8 @@
 import {defineConfig, createLogger} from 'vite'
 import injectHTML from 'vite-plugin-html-inject';
-import {readdirSync, renameSync, rmSync} from 'fs';
-import {join, basename} from 'path';
+import {covers} from './tools/covers-plugin';
+import {flattenHtmlOutputs} from './tools/flatten-html-outputs';
+import {cleanupSvg} from './tools/cleanup-svg';
 
 const SUPPRESSED = [
   "can't be bundled without type=\"module\"",
@@ -20,7 +21,7 @@ logger.warnOnce = (msg, options) => {
 
 export default defineConfig({
   customLogger: logger,
-  plugins: [injectHTML(), cleanupSvg(), flattenHtmlOutputs()],
+  plugins: [covers(), injectHTML(), cleanupSvg(), flattenHtmlOutputs()],
   build: {
     outDir: 'out',
     minify: false,
@@ -45,28 +46,3 @@ export default defineConfig({
     },
   },
 })
-
-function flattenHtmlOutputs() {
-  return {
-    name: 'flattenHtmlOutputs',
-    apply: 'build' as const,
-    closeBundle() {
-      for (const file of readdirSync('out/src', {recursive: true}) as string[]) {
-        if (file.endsWith('.html'))
-          renameSync(join('out/src', file), join('out', basename(file)));
-      }
-      rmSync('out/src', {recursive: true, force: true});
-    },
-  };
-}
-
-function cleanupSvg() {
-  const baseUrl = new URL('.', import.meta.url).href;
-  const escaped = baseUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return {
-    name: 'cleanupSvg',
-    transformIndexHtml(html: string) {
-      return html.replace(new RegExp(escaped, 'gui'), './')
-    },
-  };
-}
