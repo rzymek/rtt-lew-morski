@@ -63,13 +63,13 @@ interface StateDefinition {
 
 /* --- GAME DATA --- */
 
-let G!: GameState
-let L!: FrameState | null
-let R!: number
-let V!: ViewState | null
-const P: Record<string, StateDefinition | string | Array<() => void>> = {}
+export let G!: GameState
+export let L!: FrameState | null
+export let R!: number
+export let V!: ViewState | null
+export const P: Record<string, StateDefinition | string | Array<() => void>> = {}
 
-const ROLES = ["Niemcy", "Brytyjczycy"]
+export const ROLES = ["Niemcy", "Brytyjczycy"]
 const planes = data.planes
 const R_Niem = 0
 const R_Bryt = 1
@@ -531,13 +531,13 @@ function button(act: string, enabled: boolean | number = true) {
 	V!.actions[act] = !!enabled ? 1 : 0
 }
 
-function action(act: string, argument: string | number) {
+export function action(act: string, argument: string | number) {
 	if (!(act in V!.actions))
 		V!.actions[act] = []
 	set_add(V!.actions[act] as (string | number)[], argument)
 }
 
-function finish(result: number | string, message: string) {
+export function finish(result: number | string, message: string) {
 	G.active = -1
 	G.result = ROLES[result as number] ?? result as string
 	G.L = L = {P: '', I: 0, L: null, message} as FrameState
@@ -575,14 +575,12 @@ function resume() {
 	;(P[L!.P] as StateDefinition)?._resume?.()
 }
 
-declare var exports: { roles?: string[], scenarios?: string[] }
-declare const SCENARIOS: string[] | undefined
 
-exports.roles ??= ROLES
+export const roles = ROLES;
 
-exports.scenarios ??= (typeof SCENARIOS !== "undefined") ? SCENARIOS : ["Standard"]
+export const scenarios = ["Standard"];
 
-function setup(seed: number, scenario: string, options: unknown): GameState {
+export function setup(seed: number, scenario: string, options: unknown): GameState {
 	G = {
 		active: null,
 		seed,
@@ -602,7 +600,7 @@ function setup(seed: number, scenario: string, options: unknown): GameState {
 	return G
 }
 
-function static_view(_game: GameState) {
+export function static_view(_game: GameState) {
 	let SV = null
 	// @ts-ignore - on_static_view is an optional game hook
 	if (typeof on_static_view === "function") {
@@ -620,7 +618,7 @@ function static_view(_game: GameState) {
 	return SV
 }
 
-function view(state: GameState, role: string): ViewState {
+export function view(state: GameState, role: string): ViewState {
 	G = state
 	L = G.L
 	R = role as any
@@ -717,7 +715,7 @@ function _finish(state: GameState, result: number | string, message: string): Ga
 	return G
 }
 
-function query(state: GameState, role: string, q: unknown): unknown {
+export function query(state: GameState, role: string, q: unknown): unknown {
 	G = state
 	L = G.L
 	R = role as any
@@ -731,7 +729,7 @@ function query(state: GameState, role: string, q: unknown): unknown {
 	return result
 }
 
-function assert(state: GameState): void {
+export function assert(state: GameState): void {
 	// @ts-ignore - on_assert is an optional game hook
 	if (typeof on_assert === "function") {
 		G = state

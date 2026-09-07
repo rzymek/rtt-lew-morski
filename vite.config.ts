@@ -3,6 +3,7 @@ import injectHTML from 'vite-plugin-html-inject';
 import {covers} from './tools/covers-plugin';
 import {flattenHtmlOutputs} from './tools/flatten-html-outputs';
 import {cleanupSvg} from './tools/cleanup-svg';
+import {cjsRules} from './tools/cjs-rules';
 
 const SUPPRESSED = [
   "can't be bundled without type=\"module\"",
@@ -21,12 +22,13 @@ logger.warnOnce = (msg, options) => {
 
 export default defineConfig({
   customLogger: logger,
-  plugins: [covers(), injectHTML(), cleanupSvg(), flattenHtmlOutputs()],
+  plugins: [covers(), injectHTML(), cleanupSvg(), flattenHtmlOutputs(), cjsRules()],
   build: {
-    outDir: 'out',
+    outDir: '../../server/public/lew-morski/',
     minify: false,
     modulePreload: false,
     rollupOptions: {
+      preserveEntrySignatures: 'exports-only',
       onwarn(warning, warn) {
         if (warning.code === 'EVAL') return;
         warn(warning);
