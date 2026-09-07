@@ -1,7 +1,16 @@
-import {defineConfig} from 'vite'
+import {defineConfig, createLogger} from 'vite'
 import injectHTML from 'vite-plugin-html-inject';
 
+const logger = createLogger()
+const warn = logger.warn.bind(logger)
+logger.warn = (msg, options) => {
+  if (msg.includes("can't be bundled without type=\"module\"")) return
+  if (msg.includes("doesn't exist at build time")) return
+  warn(msg, options)
+}
+
 export default defineConfig({
+  customLogger: logger,
   root: 'src',
   plugins: [injectHTML(),cleanupSvg()],
   build: {
@@ -9,6 +18,10 @@ export default defineConfig({
     minify: false,
     modulePreload: false,
     rollupOptions: {
+      onwarn(warning, warn) {
+        if (warning.code === 'EVAL') return;
+        warn(warning);
+      },
       input: {
         play: 'play/play.html',
         rules: 'rules/rules.js',
