@@ -1,6 +1,7 @@
 {
   "name": "lew-morski",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "vite build",
     "dev": "npm run build -- --watch"
@@ -9,6 +10,7 @@
     "vite": "^8.2.2"
   },
   "dependencies": {
+    "@types/node": "^26.4.1",
     "vite-plugin-html-inject": "^1.1.2"
   }
 }

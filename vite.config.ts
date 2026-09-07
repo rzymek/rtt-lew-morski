@@ -1,20 +1,28 @@
 import {defineConfig, createLogger} from 'vite'
 import injectHTML from 'vite-plugin-html-inject';
+import {readdirSync, renameSync, rmSync} from 'fs';
+import {join, basename} from 'path';
 
+const SUPPRESSED = [
+  "can't be bundled without type=\"module\"",
+  "doesn't exist at build time",
+]
 const logger = createLogger()
 const warn = logger.warn.bind(logger)
+const warnOnce = logger.warnOnce.bind(logger)
+const suppress = (msg: string) => SUPPRESSED.some(s => msg.includes(s))
 logger.warn = (msg, options) => {
-  if (msg.includes("can't be bundled without type=\"module\"")) return
-  if (msg.includes("doesn't exist at build time")) return
-  warn(msg, options)
+  if (!suppress(msg)) warn(msg, options)
+}
+logger.warnOnce = (msg, options) => {
+  if (!suppress(msg)) warnOnce(msg, options)
 }
 
 export default defineConfig({
   customLogger: logger,
-  root: 'src',
-  plugins: [injectHTML(),cleanupSvg()],
+  plugins: [injectHTML(), cleanupSvg(), flattenHtmlOutputs()],
   build: {
-    outDir: '../../../server/public/lew-morski',
+    outDir: 'out',
     minify: false,
     modulePreload: false,
     rollupOptions: {
@@ -23,8 +31,10 @@ export default defineConfig({
         warn(warning);
       },
       input: {
-        play: 'play/play.html',
-        rules: 'rules/rules.js',
+        play: 'src/play/play.html',
+        about: 'src/about.html',
+        create: 'src/create.html',
+        rules: 'src/rules/rules.js',
       },
       output: {
         cleanDir: true,
@@ -35,6 +45,20 @@ export default defineConfig({
     },
   },
 })
+
+function flattenHtmlOutputs() {
+  return {
+    name: 'flattenHtmlOutputs',
+    apply: 'build' as const,
+    closeBundle() {
+      for (const file of readdirSync('out/src', {recursive: true}) as string[]) {
+        if (file.endsWith('.html'))
+          renameSync(join('out/src', file), join('out', basename(file)));
+      }
+      rmSync('out/src', {recursive: true, force: true});
+    },
+  };
+}
 
 function cleanupSvg() {
   const baseUrl = new URL('.', import.meta.url).href;
