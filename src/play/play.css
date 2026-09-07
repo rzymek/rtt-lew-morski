@@ -1,0 +1,8 @@
+#mapwrap {
+	width: 1118px;
+	height: 798px;
+}
+
+#hexes use.action {
+	cursor: pointer;
+}

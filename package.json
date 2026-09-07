@@ -1,0 +1,14 @@
+{
+  "name": "lew-morski",
+  "private": true,
+  "scripts": {
+    "build": "vite build",
+    "dev": "npm run build -- --watch"
+  },
+  "devDependencies": {
+    "vite": "^8.2.2"
+  },
+  "dependencies": {
+    "vite-plugin-html-inject": "^1.1.2"
+  }
+}
