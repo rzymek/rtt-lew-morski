@@ -1,17 +1,22 @@
-import type { Plugin } from 'vite';
+import type { Plugin, ResolvedConfig } from 'vite';
 import { readdirSync, renameSync, rmSync } from 'fs';
 import { join, basename } from 'path';
 
 export function flattenHtmlOutputs(): Plugin {
+  let outDir: string;
   return {
     name: 'flattenHtmlOutputs',
     apply: 'build',
+    configResolved(config: ResolvedConfig) {
+      outDir = config.build.outDir;
+    },
     closeBundle() {
-      for (const file of readdirSync('out/src', { recursive: true }) as string[]) {
+      const srcDir = join(outDir, 'src');
+      for (const file of readdirSync(srcDir, { recursive: true }) as string[]) {
         if (file.endsWith('.html'))
-          renameSync(join('out/src', file), join('out', basename(file)));
+          renameSync(join(srcDir, file), join(outDir, basename(file)));
       }
-      rmSync('out/src', { recursive: true, force: true });
+      rmSync(srcDir, { recursive: true, force: true });
     },
   };
 }
