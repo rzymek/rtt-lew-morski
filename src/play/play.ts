@@ -43,9 +43,10 @@ const NS_XLINK = 'http://www.w3.org/1999/xlink'
 
 let planePlaceholder: SVGImageElement | null = null
 let hexOverlay: SVGGElement | null = null
-
-window.on_init = (_scenario, _options, _static_view) => {
-	planePlaceholder = document.getElementById("plane-placeholder") as SVGImageElement
+declare var on_init : (scenario: string, options: unknown, static_view: unknown) => void
+console.log('1',on_init)
+on_init = (_scenario, _options, _static_view) => {
+	planePlaceholder = document.getElementById("plane-placeholder") as unknown as SVGImageElement
 	planePlaceholder.remove()
 	toggle_zoom()
 
@@ -87,7 +88,8 @@ function getHexCenterInSVGCoords(hexId: string): DOMPoint {
 
 declare function toggle_zoom(): void
 
-window.on_update = () => {
+declare var on_update : () => void;
+on_update = () => {
 	action_button("undo", "Undo")
 	action_button("done", "Done")
 	if (view.actions?.attack !== undefined)

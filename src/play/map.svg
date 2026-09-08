@@ -1,6 +1,6 @@
 <svg id="svg5" width="1118.3mm" height="797.53mm" version="1.1" viewBox="0 0 1118.3 797.53" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
  <g id="map" transform="matrix(.82868 0 0 .82868 297.16 -143.42)">
-  <image id="image38530" x="-358.6" y="173.07" width="1349.5" height="962.41" preserveAspectRatio="none" xlink:href="file:///home/rzymek/devel/rtt/server/public/lew-morski/images/mapa.jpg"/>
+  <image id="image38530" x="-358.6" y="173.07" width="1349.5" height="962.41" preserveAspectRatio="none" xlink:href="file:///home/rzymek/devel/rtt/modules/lew-morski-src/public/images/mapa.jpg"/>
  </g>
  <g id="hexes" transform="translate(445.9 -126.45)">
   <path id="use26613" transform="matrix(-.8637 -.50034 .49866 -.86661 -460.05 187.18)" d="m48.82 56.811 8.0678-13.83-7.9433-13.902-16.011-0.071311-8.0678 13.83 7.9438 13.902 16.011 0.07157z" fill-opacity="0" stroke="#000" stroke-width=".2629"/>
@@ -1286,10 +1286,10 @@
   </g>
  </g>
  <g id="markers">
-  <image id="image62657" x="152.89" y="322.32" width="28.222" height="34.572" preserveAspectRatio="none" xlink:href="file:///home/rzymek/devel/rtt/server/public/lew-morski/images/m_target.png"/>
-  <image id="image62657-3" x="393.19" y="322.6" width="28.222" height="34.572" preserveAspectRatio="none" xlink:href="file:///home/rzymek/devel/rtt/server/public/lew-morski/images/m_target.png"/>
+  <image id="image62657" x="152.89" y="322.32" width="28.222" height="34.572" preserveAspectRatio="none" xlink:href="file:///home/rzymek/devel/rtt/modules/lew-morski-src/public/images/m_target.png"/>
+  <image id="image62657-3" x="393.19" y="322.6" width="28.222" height="34.572" preserveAspectRatio="none" xlink:href="file:///home/rzymek/devel/rtt/modules/lew-morski-src/public/images/m_target.png"/>
  </g>
  <g id="units">
-  <image id="plane-placeholder" x="-37.737" y="34.959" width="20.204" height="20.204" preserveAspectRatio="none" xlink:href="file:///home/rzymek/devel/rtt/server/public/lew-morski/planes/u_Spit.jpg"/>
+  <image id="plane-placeholder" x="-37.737" y="34.959" width="20.204" height="20.204" preserveAspectRatio="none" xlink:href="file:///home/rzymek/devel/rtt/modules/lew-morski-src/public/planes/u_Spit.jpg"/>
  </g>
 </svg>

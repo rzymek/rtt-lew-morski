@@ -23,8 +23,10 @@ logger.warnOnce = (msg, options) => {
 export default defineConfig({
   customLogger: logger,
   plugins: [covers(), injectHTML(), cleanupSvg(), flattenHtmlOutputs(), cjsRules()],
+  base:'./',
   build: {
     outDir: '../../server/public/lew-morski/',
+    // outDir: 'out',
     minify: false,
     modulePreload: false,
     rollupOptions: {
@@ -40,6 +42,7 @@ export default defineConfig({
         rules: 'src/rules/rules.ts',
       },
       output: {
+        format:'commonjs',
         cleanDir: true,
         chunkFileNames: '[name][extname]',
         entryFileNames: '[name].js',

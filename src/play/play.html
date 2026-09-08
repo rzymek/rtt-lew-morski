@@ -9,8 +9,12 @@
     <link rel="stylesheet" href="/fonts/fonts.css">
     <link rel="stylesheet" href="/common/client.css">
     <script defer src="/common/client.js"></script>
+    <script>
+        var on_update;
+        var on_init;
+    </script>
+    <script defer type="module" src="./play.ts"></script>
     <link rel="stylesheet" href="./play.css">
-    <script type="module" src="./play.ts"></script>
 </head>
 <body>
 
@@ -32,7 +36,8 @@
 
 <main data-map-width="1118" data-map-height="798" data-min-zoom="1" data-max-zoom="4">
     <div id="mapwrap">
-        <load src="./map.svg"></load>
+        <!--suppress CheckEmptyScriptTag -->
+        <load src="./map.svg"/>
     </div>
 </main>
 
