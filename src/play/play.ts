@@ -1,10 +1,3 @@
-declare global {
-	interface Window {
-		on_init: (scenario: string, options: unknown, static_view: unknown) => void
-		on_update: () => void
-	}
-}
-
 interface ViewPlaneInstance {
 	plane: { img: string }
 	at: string
@@ -31,9 +24,13 @@ interface View {
 	shot?: number[]
 }
 
+declare var on_init : (scenario: string, options: unknown, static_view: unknown) => void
+declare var on_update : () => void;
+
 declare const view: View
 declare function send_action(action: string, argument?: unknown): void
 declare function action_button(action: string, label: string): void
+
 
 const R_Niem = 0
 const R_Bryt = 1
@@ -43,8 +40,7 @@ const NS_XLINK = 'http://www.w3.org/1999/xlink'
 
 let planePlaceholder: SVGImageElement | null = null
 let hexOverlay: SVGGElement | null = null
-declare var on_init : (scenario: string, options: unknown, static_view: unknown) => void
-console.log('1',on_init)
+
 on_init = (_scenario, _options, _static_view) => {
 	planePlaceholder = document.getElementById("plane-placeholder") as unknown as SVGImageElement
 	planePlaceholder.remove()
@@ -88,7 +84,6 @@ function getHexCenterInSVGCoords(hexId: string): DOMPoint {
 
 declare function toggle_zoom(): void
 
-declare var on_update : () => void;
 on_update = () => {
 	action_button("undo", "Undo")
 	action_button("done", "Done")

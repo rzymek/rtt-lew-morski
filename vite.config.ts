@@ -4,6 +4,7 @@ import {covers} from './tools/covers-plugin';
 import {flattenHtmlOutputs} from './tools/flatten-html-outputs';
 import {cleanupSvg} from './tools/cleanup-svg';
 import {cjsRules} from './tools/cjs-rules';
+import {appendRttFramework} from './tools/append-rtt-framework'
 
 const SUPPRESSED = [
   "can't be bundled without type=\"module\"",
@@ -22,8 +23,10 @@ logger.warnOnce = (msg, options) => {
 
 export default defineConfig({
   customLogger: logger,
-  plugins: [covers(), injectHTML(), cleanupSvg(), flattenHtmlOutputs(), cjsRules()],
-  base:'./',
+  plugins: [covers(), injectHTML(), cleanupSvg(), flattenHtmlOutputs(),
+    // cjsRules(),
+    appendRttFramework()],
+  base: './',
   build: {
     outDir: '../../server/public/lew-morski/',
     // outDir: 'out',
@@ -42,7 +45,7 @@ export default defineConfig({
         rules: 'src/rules/rules.ts',
       },
       output: {
-        format:'commonjs',
+        format: 'commonjs',
         cleanDir: true,
         chunkFileNames: '[name][extname]',
         entryFileNames: '[name].js',

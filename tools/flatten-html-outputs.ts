@@ -1,5 +1,5 @@
 import type { Plugin, ResolvedConfig } from 'vite';
-import { readdirSync, readFileSync, writeFileSync, rmSync } from 'fs';
+import { readdirSync, readFileSync, writeFileSync, rmSync, existsSync } from 'fs';
 import { join, basename } from 'path';
 
 export function flattenHtmlOutputs(): Plugin {
@@ -12,6 +12,9 @@ export function flattenHtmlOutputs(): Plugin {
     },
     closeBundle() {
       const srcDir = join(outDir, 'src');
+      if(!existsSync(srcDir)){
+        return;
+      }
       for (const file of readdirSync(srcDir, { recursive: true }) as string[]) {
         if (file.endsWith('.html')) {
           const src = join(srcDir, file);
