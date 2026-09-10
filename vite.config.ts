@@ -28,8 +28,8 @@ export default defineConfig({
     appendRttFramework()],
   base: './',
   build: {
-    outDir: '../../server/public/lew-morski/',
-    // outDir: 'out',
+    // outDir: '../../server/public/lew-morski/',
+    outDir: 'out',
     minify: false,
     modulePreload: false,
     rollupOptions: {
@@ -42,7 +42,7 @@ export default defineConfig({
         play: 'src/play/play.html',
         about: 'src/about.html',
         create: 'src/create.html',
-        rules: 'src/rules/rules.ts',
+        rules: 'src/rules/index.ts',
       },
       output: {
         format: 'commonjs',

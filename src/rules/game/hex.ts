@@ -1,4 +1,5 @@
-import type {PlaneInstance} from "./types.js"
+import "../rtt/framework.d.ts";
+import {PlaneInstance} from "../types";
 
 // Clockwise from North: N, NE, SE, S, SW, NW
 export const DIR_OFFSETS: [number, number][] = [

@@ -1,5 +1,5 @@
-import "./rtt/framework.d.ts"
-import type {PlaneInstance, Board} from "./types.js"
+import "../rtt/framework.d.ts";
+import type {PlaneInstance, Board} from "../types.js"
 import {hexStep} from "./hex.js"
 
 // [atk][dist-1] = [min, max] roll to hit (2d6); null = no hit possible

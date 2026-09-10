@@ -1,4 +1,4 @@
-import type {PlaneData} from "./data.js"
+import type {PlaneData} from "./game/data.js"
 
 export interface PlaneInstance {
   plane: PlaneData
