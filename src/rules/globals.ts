@@ -1,4 +1,4 @@
-import data from "./game/data.js"
+import {data} from "./game/data.js"
 import type {GameState, FrameState, ViewState, StateDefinition} from "./types.js"
 
 /** G - the (global) game state

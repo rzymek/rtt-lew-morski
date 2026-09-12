@@ -19,7 +19,7 @@ export interface PlaneData {
 	reduced: PlaneReducedStats
 }
 
-const data: { planes: Record<string, PlaneData> } = {
+export const data: { planes: Record<string, PlaneData> } = {
 	planes: {
 		Hur: {
 			"nazwa": "Hawker Hurricane MK I",
@@ -179,5 +179,3 @@ const data: { planes: Record<string, PlaneData> } = {
 		}
 	}
 }
-
-export default data

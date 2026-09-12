@@ -28,8 +28,8 @@ export default defineConfig({
     appendRttFramework()],
   base: './',
   build: {
-    // outDir: '../../server/public/lew-morski/',
-    outDir: 'out',
+    outDir: '../../server/public/lew-morski/',
+    // outDir: 'out',
     minify: false,
     modulePreload: false,
     rollupOptions: {
