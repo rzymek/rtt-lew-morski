@@ -13,6 +13,15 @@
         var on_update;
         var on_init;
     </script>
+    <!--suppress CssUnresolvedCustomProperty -->
+    <style lang="css">
+        .hex {
+            fill: #8080ff;
+            fill-opacity: var(--hex-fill-opacity, 0);
+        }
+    </style>
+    <style lang="css" id="cssOverrides">
+    </style>
     <script defer type="module" src="./play.ts"></script>
     <link rel="stylesheet" href="./play.css">
 </head>

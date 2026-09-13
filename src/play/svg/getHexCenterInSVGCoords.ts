@@ -3,7 +3,7 @@ import {parseSVGTransform} from "./parseSVGTransform";
 const TEMPLATE_CENTER = new DOMPoint(40.877, 42.909)
 
 export function getHexCenterInSVGCoords(hexId: string): DOMPoint {
-  const templateEl = document.getElementById('use26613')!
+  const templateEl = document.getElementById('hexTemplate')!
   const useEl = document.getElementById(hexId)!
   const hexesGroup = document.getElementById('hexes')!
   const templateMatrix = parseSVGTransform(templateEl.getAttribute('transform'))

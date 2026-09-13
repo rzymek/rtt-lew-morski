@@ -34,11 +34,11 @@ const R_Bryt = 1
 
 const NS_XLINK = 'http://www.w3.org/1999/xlink'
 
-let planePlaceholder: SVGImageElement | null = null
-let hexOverlay: SVGGElement | null = null
+const planePlaceholder: SVGImageElement  = document.getElementById("plane-placeholder") as unknown as SVGImageElement;
+const hexOverlay: SVGGElement = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+const cssOverrides = document.getElementById('cssOverrides')!;
 
 on_init = (_scenario, _options, _static_view) => {
-  planePlaceholder = document.getElementById("plane-placeholder") as unknown as SVGImageElement
   planePlaceholder.remove()
   toggle_zoom()
 
@@ -50,11 +50,14 @@ on_init = (_scenario, _options, _static_view) => {
     })
   })
 
-  // SVG overlay layer for hex highlights, inserted just before the units layer
   const svg = document.querySelector('#mapwrap svg')!
-  hexOverlay = document.createElementNS('http://www.w3.org/2000/svg', 'g')
   hexOverlay.id = 'hex-overlay'
   svg.insertBefore(hexOverlay, document.getElementById('units'))
+
+  const hexTemplate = document.getElementById('hexTemplate')!;
+  hexTemplate.classList.add('hex');
+  hexTemplate.removeAttribute('fill-opacity');
+  console.log(hexTemplate)
 }
 
 declare function toggle_zoom(): void
@@ -77,7 +80,6 @@ on_update = () => {
 
   hexOverlay!.innerHTML = ""
 
-  // Orange rings: unmoved planes
   if (view.unmoved) {
     const activePlanes = view.board.planes[view.active_side] ?? []
     for (const idx of view.unmoved) {
@@ -88,7 +90,6 @@ on_update = () => {
     }
   }
 
-  // Selection marker: rect 3px larger than the counter on each side, rotated to match
   if (view.selected_at) {
     const selectedPlane = Object.values(view.board.planes).flat().find(p => p?.at === view.selected_at)
     if (selectedPlane) {
@@ -97,22 +98,12 @@ on_update = () => {
     }
   }
 
-  // Green fill: valid move targets
-  if (view.actions?.move_hex) {
-    for (const id of view.actions.move_hex) {
-      if (!document.getElementById(id)) continue
-      const center = getHexCenterInSVGCoords(id)
-      const c = document.createElementNS(svgNS, 'circle')
-      c.setAttribute('cx', String(center.x))
-      c.setAttribute('cy', String(center.y))
-      c.setAttribute('r', '11')
-      c.setAttribute('fill', 'rgba(0,200,0,0.35)')
-      c.setAttribute('stroke', '#00cc00')
-      c.setAttribute('stroke-width', '1.5')
-      c.style.pointerEvents = 'none'
-      hexOverlay!.appendChild(c)
-    }
-  }
+  const moveToHexes = view.actions?.move_hex ?? [];
+  cssOverrides.innerText = `
+      ${moveToHexes?.map(id => `#${CSS.escape(id)}`).join(',')} { 
+        --hex-fill-opacity: 0.5;
+      }
+    `
 
   // Red fill: fire line of selected plane
   if (view.fire_line) {
