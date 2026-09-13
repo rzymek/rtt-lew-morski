@@ -1,23 +1,29 @@
-import {G, V, P} from "../globals.js"
+import {G, ROLES, V} from "../globals.js"
 import {movesMapFor, possibleMovesFor} from "../game/hex.js"
+import {planesInFirelane} from "./planesInFirelane";
+import {changeSide, otherSide} from "../lifecycle/changeSide";
+import {select_plane} from "./select_plane.js";
+import {isEmpty} from "../generic/isEmpty";
+import {selectedPlaneOfTheActiveSide} from "./selectedPlaneOfTheActiveSide";
 
 export const movePlanes = {
   inactive: "faza ruchu samolotów",
 
   prompt() {
-    prompt("faza ruchu samolotów")
-    button("done", (V!.unmoved as number[]).length === 0)
-    if (G.selected_plane !== undefined) {
-      const plane = G.board.planes[G.active as number][G.selected_plane]
-      for (const hex of possibleMovesFor(plane!)) {
+    prompt(`faza ruchu samolotów ${ROLES[G.active]}`)
+    button("done", (V!.unmoved ?? []).length === 0)
+    const selected = selectedPlaneOfTheActiveSide();
+    if (selected !== undefined) {
+      for (const hex of possibleMovesFor(selected)) {
         action("move_hex", hex)
       }
       action("select_plane", G.selected_plane)
     } else {
       const moved = G.moved ?? []
-      G.board.planes[G.active as number].forEach((_, idx) => {
-        if (!set_has(moved, idx))
-          action("select_plane", idx)
+      G.board.planes[G.active].forEach((plane) => {
+        if (!set_has(moved, plane.id)) {
+          action("select_plane", plane.id)
+        }
       })
     }
   },
@@ -25,20 +31,24 @@ export const movePlanes = {
   done() {
     G.moved = []
     delete G.selected_plane
-    goto("combat_initiative")
+    const friendlyPlanesInFirelanes = planesInFirelane(G.active);
+    if (!isEmpty(friendlyPlanesInFirelanes)) {
+      changeSide();
+      return goto("moved_into_firelane");
+    }
+    const enemyTargets = planesInFirelane(otherSide(G.active))
+    if (!isEmpty(enemyTargets)) {
+      return goto("combat")
+    }
+    changeSide()
+    goto("move_planes")
   },
 
-  select_plane(planeIdx: number) {
-    if (G.selected_plane === planeIdx) {
-      delete G.selected_plane
-    } else {
-      G.selected_plane = planeIdx
-    }
-  },
+  select_plane,
 
   move_hex(target: string) {
     if (G.selected_plane === undefined) return
-    const plane = G.board.planes[G.active as number][G.selected_plane]
+    const plane = selectedPlaneOfTheActiveSide();
     const moves = movesMapFor(plane!)
     if (!(target in moves)) return
     push_undo()

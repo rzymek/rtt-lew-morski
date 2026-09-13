@@ -7,25 +7,19 @@ import "./rtt.d.ts";
 export function onUpdate() {
   action_button("undo", "Undo")
   action_button("done", "Done")
-  if (view.actions?.attack !== undefined)
-    action_button("attack", "Atakuj!")
-  if (view.actions?.unjam !== undefined)
-    action_button("unjam", "Odblokuj karabiny")
 
-  document.querySelectorAll('#hexes use.action').forEach(el => el.classList.remove('action'))
-  if (view.actions?.move_hex) {
-    for (const id of view.actions.move_hex) {
-      const el = document.getElementById(id)
-      if (el) el.classList.add('action')
-    }
-  }
+  document.querySelectorAll('#hexes .action').forEach(el => el.classList.remove('action'))
+
+  view.actions?.move_hex
+    ?.map(id => document.getElementById(id))
+    ?.forEach(el => el?.classList.remove('action'))
 
   hexOverlay!.innerHTML = ""
 
   if (view.unmoved) {
     const activePlanes = view.board.planes[view.active_side] ?? []
-    for (const idx of view.unmoved) {
-      const plane = activePlanes[idx]
+    for (const id of view.unmoved) {
+      const plane = activePlanes.find(it => it.id === id)
       if (!plane || !document.getElementById(plane.at)) continue
       const rect = planeBorder(plane, 'yellow');
       hexOverlay!.appendChild(rect)
@@ -62,11 +56,11 @@ export function onUpdate() {
       if (isActiveSide && hasShot && !plane.damaged)
         counter.setAttribute('opacity', '0.55')
 
-      if (isActiveSide && view.actions?.select_plane?.includes(idx)) {
+      if (isActiveSide && view.actions?.select_plane?.includes(plane.id)) {
         counter.style.cursor = 'pointer'
         counter.addEventListener('click', e => {
           e.stopPropagation()
-          send_action("select_plane", idx)
+          send_action("select_plane", plane.id)
         })
       }
 

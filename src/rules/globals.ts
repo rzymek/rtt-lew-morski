@@ -25,14 +25,14 @@ import type {GameState, FrameState, ViewState, StateDefinition} from "./types.js
  ```
  */
 
-export let G!: GameState
+export let G: GameState
 /** L - the (local) game state
 
  There is a local scope for storing data that is only used by a particular state.
  This local scope has reserved properties ("P", "I", and "L") that you must not touch!
  These properties are used to track the execution of scripts and where to go next.
  */
-export let L!: FrameState | null
+export let L: FrameState
 /** R - who are you?
 
  Whenever the system executes code to handle user actions or populate the user view object,
@@ -45,7 +45,7 @@ export let R!: number
 
  The view object that is being generated for the client is held in V during the execution of the on_view hook and the state prompt functions (see below).
  */
-export let V!: ViewState | null
+export let V: ViewState
 
 /** States and procedures */
 export const P: Record<string, StateDefinition | string | Array<() => void>> = {}
@@ -53,4 +53,5 @@ export const P: Record<string, StateDefinition | string | Array<() => void>> = {
 export const ROLES = ["Niemcy", "Brytyjczycy"]
 export const R_Niem = 0
 export const R_Bryt = 1
+export const sides = [R_Niem, R_Bryt];
 export const planes = data.planes

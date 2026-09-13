@@ -1,11 +1,7 @@
 import {G, R_Bryt, R_Niem, ROLES} from "../globals.js"
 import {firstOnFireLine, resolveShot} from "../game/combat.js"
 
-// Turn order:
-//   move_planes(Niem) → combat_initiative(Niem) → combat_reaction(Bryt)
-//   → move_planes(Bryt) → combat_initiative(Bryt) → combat_reaction(Niem) → ...
-
-export const combatInitiative = {
+export const combat = {
   inactive: "faza walki",
 
   _begin() {

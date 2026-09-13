@@ -1,6 +1,6 @@
 import type {PlaneData} from "./game/data.js"
 
-export interface PlaneInstance {
+export interface PlaneInstanceDef {
   plane: PlaneData
   at: string
   direction: number
@@ -9,8 +9,12 @@ export interface PlaneInstance {
   jammed?: boolean
 }
 
+export interface PlaneInstance extends PlaneInstanceDef {
+  id: string;
+}
+
 export interface Board {
-  planes: Record<number, (PlaneInstance | null)[]>
+  planes: Record<number, PlaneInstance[]>
 }
 
 export interface FrameState {
@@ -23,7 +27,7 @@ export interface FrameState {
 }
 
 export interface GameState {
-  active: number | string | string[] | null
+  active: number;
   seed: number
   log: string[]
   undo: any[]
@@ -31,7 +35,7 @@ export interface GameState {
   board: Board
   targets?: string[]
   moved?: number[]
-  selected_plane?: number
+  selected_plane?: string
   shot?: number[]
   result?: string
 }
@@ -42,7 +46,7 @@ export interface ViewState {
   actions: Record<string, number | (string | number)[]>
   board?: Board
   active_side?: number
-  unmoved?: number[]
+  unmoved?: string[],
   moves?: Record<string, number>
   selected_at?: string
   fire_line?: string[]

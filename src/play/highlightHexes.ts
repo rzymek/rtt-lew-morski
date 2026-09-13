@@ -1,4 +1,4 @@
-import {isEmpty} from "./utils/isEmpty";
+import {isEmpty} from "./generic/isEmpty";
 
 export function highlightHexes(hexes: string[] | undefined, color: string) {
   const cssOverrides = document.getElementById('cssOverrides')!;
@@ -6,7 +6,7 @@ export function highlightHexes(hexes: string[] | undefined, color: string) {
     return;
   }
   cssOverrides.textContent += `
-    ${(hexes).map(id => `#${CSS.escape(id)}`).join(',')} {
+    ${hexes.map(id => `#${CSS.escape(id)}`).join(',')} {
         --hex-fill: ${color};
   }`
 }

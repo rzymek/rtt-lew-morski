@@ -1,9 +1,22 @@
 import {G, R_Niem, R_Bryt, planes} from "../globals.js"
 import "../rtt/framework.d.ts";
+import {PlaneInstance, PlaneInstanceDef} from "../types";
+
+function withIds(def: Record<number, PlaneInstanceDef[]>): Record<number, PlaneInstance[]> {
+  return Object
+    .entries(def)
+    .map(([side, planes]) => ({
+      [side]: planes.map((plane, idx) => ({...plane, id: `${side}.${idx}`}))
+    }))
+    .reduce((acc, it) => ({
+      ...acc,
+      ...it
+    }), {})
+}
 
 export function on_setup(_scenario: string, _options: unknown) {
   G.board = {
-    planes: {
+    planes: withIds({
       [R_Bryt]: [
         {plane: planes.SpitL, at: 'A10.B08', direction: 0},
         {plane: planes.Spit, at: 'A11.B08', direction: 1},
@@ -18,7 +31,7 @@ export function on_setup(_scenario: string, _options: unknown) {
         {plane: planes.HE111, at: 'A39.B35', direction: 4},
         {plane: planes.HE111, at: 'A38.B35', direction: 4},
       ]
-    }
+    })
   }
   G.targets = ['A06.B19', 'A16.B24']
   G.moved = []
