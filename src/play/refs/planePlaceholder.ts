@@ -1,0 +1,1 @@
+export const planePlaceholder: SVGImageElement = document.getElementById("plane-placeholder") as unknown as SVGImageElement;

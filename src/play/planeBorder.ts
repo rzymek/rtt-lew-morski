@@ -1,8 +1,9 @@
 import {ViewPlaneInstance} from "./viewPlaneInstance";
 import {getHexCenterInSVGCoords} from "./svg/getHexCenterInSVGCoords";
 import {svgNS} from "./svg/svgNS";
+import {planePlaceholder} from "./refs/planePlaceholder";
 
-export function planeBorder(selectedPlane: ViewPlaneInstance, color: string, planePlaceholder: SVGImageElement) {
+export function planeBorder(selectedPlane: ViewPlaneInstance, color: string) {
   const center = getHexCenterInSVGCoords(selectedPlane.at)
   const w = parseFloat(planePlaceholder.getAttribute('width')!) + 2
   const h = parseFloat(planePlaceholder.getAttribute('height')!) + 2
