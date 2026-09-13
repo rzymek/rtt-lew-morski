@@ -2,6 +2,7 @@ import {svgNS} from "./svg/svgNS";
 import {ViewPlaneInstance} from "./viewPlaneInstance";
 import {getHexCenterInSVGCoords} from "./svg/getHexCenterInSVGCoords";
 import {planeBorder} from "./planeBorder";
+import {highlightHexes} from "./highlightHexes";
 
 interface View {
   board: { planes: Record<number, (ViewPlaneInstance | null)[]> }
@@ -34,9 +35,8 @@ const R_Bryt = 1
 
 const NS_XLINK = 'http://www.w3.org/1999/xlink'
 
-const planePlaceholder: SVGImageElement  = document.getElementById("plane-placeholder") as unknown as SVGImageElement;
+const planePlaceholder: SVGImageElement = document.getElementById("plane-placeholder") as unknown as SVGImageElement;
 const hexOverlay: SVGGElement = document.createElementNS('http://www.w3.org/2000/svg', 'g')
-const cssOverrides = document.getElementById('cssOverrides')!;
 
 on_init = (_scenario, _options, _static_view) => {
   planePlaceholder.remove()
@@ -98,29 +98,8 @@ on_update = () => {
     }
   }
 
-  const moveToHexes = view.actions?.move_hex ?? [];
-  cssOverrides.innerText = `
-      ${moveToHexes?.map(id => `#${CSS.escape(id)}`).join(',')} { 
-        --hex-fill-opacity: 0.5;
-      }
-    `
-
-  // Red fill: fire line of selected plane
-  if (view.fire_line) {
-    for (const id of view.fire_line) {
-      if (!document.getElementById(id)) continue
-      const center = getHexCenterInSVGCoords(id)
-      const c = document.createElementNS(svgNS, 'circle')
-      c.setAttribute('cx', String(center.x))
-      c.setAttribute('cy', String(center.y))
-      c.setAttribute('r', '11')
-      c.setAttribute('fill', 'rgba(255,50,50,0.22)')
-      c.setAttribute('stroke', '#ff4444')
-      c.setAttribute('stroke-width', '1.5')
-      c.style.pointerEvents = 'none'
-      hexOverlay!.appendChild(c)
-    }
-  }
+  highlightHexes(view.actions?.move_hex, '#8080ff');
+  highlightHexes(view.fire_line, '#ff4444');
 
   // Draw planes
   const unitsLayer = document.getElementById("units")!
@@ -207,5 +186,3 @@ on_update = () => {
     })
   })
 }
-
-export {}
