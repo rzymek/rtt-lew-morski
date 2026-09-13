@@ -1,10 +1,11 @@
 import {ViewPlaneInstance} from "./viewPlaneInstance";
 import {getHexCenterInSVGCoords} from "./svg/getHexCenterInSVGCoords";
 import {planePlaceholder} from "./refs/planePlaceholder";
-import {NS_XLINK} from "./svg/svgNS";
+import {NS_XLINK, svgNS} from "./svg/svgNS";
 import jammedSvg from "./markers/jammed.svg?raw";
+import {createSvgMarkerAt} from "./svg/createSvgMarkerAt";
 
-export function createPlaneCounter(plane: ViewPlaneInstance) {
+export function createPlaneCounter(plane: ViewPlaneInstance): SVGElement {
   const center = getHexCenterInSVGCoords(plane.at)
   const imgSrc = `./${plane.plane.img}${plane.damaged ? '_' : ''}.jpg`
   const imgW = parseFloat(planePlaceholder!.getAttribute('width')!)
@@ -18,8 +19,12 @@ export function createPlaneCounter(plane: ViewPlaneInstance) {
   counter.setAttribute('y', String(center.y - imgH / 2))
   counter.setAttribute('transform', `rotate(${plane.direction * 60}, ${center.x}, ${center.y})`)
 
-  if(plane.jammed) {
-    // TODO: mark with jammedSvg
+  const group = document.createElementNS(svgNS, 'g')
+  group.appendChild(counter)
+
+  if (plane.jammed) {
+    group.appendChild(createSvgMarkerAt(center, jammedSvg))
   }
-  return counter;
+
+  return group;
 }

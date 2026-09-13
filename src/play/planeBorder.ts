@@ -5,8 +5,8 @@ import {planePlaceholder} from "./refs/planePlaceholder";
 
 export function planeBorder(selectedPlane: ViewPlaneInstance, color: string) {
   const center = getHexCenterInSVGCoords(selectedPlane.at)
-  const w = parseFloat(planePlaceholder.getAttribute('width')!) + 2
-  const h = parseFloat(planePlaceholder.getAttribute('height')!) + 2
+  const w = parseFloat(planePlaceholder.getAttribute('width')!)
+  const h = parseFloat(planePlaceholder.getAttribute('height')!)
   const r = document.createElementNS(svgNS, 'rect')
   r.setAttribute('x', String(center.x - w / 2))
   r.setAttribute('y', String(center.y - h / 2))
@@ -15,8 +15,9 @@ export function planeBorder(selectedPlane: ViewPlaneInstance, color: string) {
   r.setAttribute('fill', 'none')
   r.setAttribute('stroke', color)
   r.setAttribute('stroke-width', '2')
-  if (selectedPlane)
+  if (selectedPlane) {
     r.setAttribute('transform', `rotate(${selectedPlane.direction * 60}, ${center.x}, ${center.y})`)
+  }
   r.style.pointerEvents = 'none'
   return r
 }

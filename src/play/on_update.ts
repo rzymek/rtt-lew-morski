@@ -1,10 +1,8 @@
 import {planeBorder} from "./planeBorder";
-import {highlightHexes} from "./highlightHexes";
-import {svgNS} from "./svg/svgNS";
+import {clearHexHighlights, highlightHexes} from "./highlightHexes";
 import {hexOverlay} from "./refs/hexOverlay";
-import {planePlaceholder} from "./refs/planePlaceholder";
+import {createPlaneCounter} from "./createPlaneCounter";
 import "./rtt.d.ts";
-import {createPlaneCounter} from "./create_plane_counter";
 
 export function onUpdate() {
   action_button("undo", "Undo")
@@ -42,6 +40,7 @@ export function onUpdate() {
     }
   }
 
+  clearHexHighlights();
   highlightHexes(view.actions?.move_hex, '#8080ff');
   highlightHexes(view.fire_line, '#ff4444');
 
