@@ -1,6 +1,6 @@
-import {send_action, toggle_zoom, view} from "./rtt";
 import {hexOverlay} from "./refs/hexOverlay";
 import {planePlaceholder} from "./refs/planePlaceholder";
+import "./rtt.d.ts"
 
 export function onInit(scenario: string, options: unknown, static_view: unknown) {
   planePlaceholder.remove()
