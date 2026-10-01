@@ -37,6 +37,7 @@ export const movePlanes = {
       return goto("moved_into_firelane");
     }
     const enemyTargets = planesInFirelane(otherSide(G.active))
+    console.log({enemyTargets: enemyTargets.map(it=>it)})
     if (!isEmpty(enemyTargets)) {
       return goto("combat")
     }

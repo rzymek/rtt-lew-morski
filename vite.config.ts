@@ -24,7 +24,6 @@ logger.warnOnce = (msg, options) => {
 export default defineConfig({
   customLogger: logger,
   plugins: [covers(), injectHTML(), cleanupSvg(), flattenHtmlOutputs(),
-    // cjsRules(),
     appendRttFramework()],
   base: './',
   build: {

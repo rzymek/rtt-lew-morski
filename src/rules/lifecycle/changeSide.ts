@@ -5,5 +5,5 @@ export function changeSide() {
 }
 
 export function otherSide(active: number) {
-  return (G.active + 1) % ROLES.length
+  return (active + 1) % ROLES.length
 }
