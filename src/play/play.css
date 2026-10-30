@@ -6,3 +6,7 @@
 #hexes use.action {
 	cursor: pointer;
 }
+
+#markers {
+	pointer-events: none;
+}
