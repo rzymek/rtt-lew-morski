@@ -20,7 +20,8 @@ export function createPlaneCounter(plane: ViewPlaneInstance, center = getHexCent
   counter.setAttribute('href', imgSrc)
   counter.setAttribute('x', String(center.x - imgW / 2))
   counter.setAttribute('y', String(center.y - imgH / 2))
-  counter.setAttribute('transform', `rotate(${plane.direction * 60}, ${center.x}, ${center.y})`)
+  const rotation = `rotate(${plane.direction * 60}, ${center.x}, ${center.y})`
+  counter.setAttribute('transform', rotation)
 
   const group = document.createElementNS(svgNS, 'g')
   group.appendChild(counter)
@@ -34,6 +35,7 @@ export function createPlaneCounter(plane: ViewPlaneInstance, center = getHexCent
     marker.setAttribute('y', String(center.y + imgH / 2 - markerH))
     marker.setAttribute('width', String(imgW))
     marker.setAttribute('height', String(markerH))
+    marker.setAttribute('transform', rotation)
     marker.style.pointerEvents = 'none'
     group.appendChild(marker)
   }
