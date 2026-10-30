@@ -46,8 +46,7 @@ export const combat = {
 
     push_undo()
     dropBomb(plane, hex)
-    const onTarget = G.targets?.includes(hex) ? " – cel strategiczny" : ""
-    log(`${ROLES[G.active as number]} zrzuca bomby na ${hex}${onTarget} (pozostało serii: ${bombsLeft(plane)})`)
+    log(`${ROLES[G.active as number]} zrzuca bomby na ${hex} (pozostało serii: ${bombsLeft(plane)})`)
     if (!canBomb(plane)) delete G.selected_plane
   },
 

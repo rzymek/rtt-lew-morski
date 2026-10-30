@@ -29,7 +29,7 @@ function setup(niem: PlaneInstance[], flownOver: Record<string, string[]> = {}) 
     active: R_Niem,
     shot: [],
     moved: [],
-    targets: ["A20.B21"],
+    targets: ["A20.B21", "A20.B22", "A20.B23", "A30.B30"],
     bombed: [],
     flown_over: flownOver,
     board: {planes: {[R_Niem]: niem, [R_Bryt]: [spit()]}},
@@ -84,6 +84,12 @@ describe('entering the attack phase', () => {
     setup([he111()], {"0.0": ["A20.B21"]});
     movePlanes.done();
     expect(goto).toHaveBeenCalledWith("combat");
+  });
+
+  it('skips it for a plane that flew over no strategic object', () => {
+    setup([he111()], {"0.0": ["A25.B25"]});
+    movePlanes.done();
+    expect(goto).toHaveBeenCalledWith("move_planes");
   });
 
   it('skips it for a plane that has no bombs left', () => {
@@ -143,12 +149,16 @@ describe('bombing', () => {
     expect(G.shot).toEqual([]);
   });
 
-  it('marks only strategic objects (7.0.1, 7.0.7)', () => {
-    setup([he111()], {"0.0": ["A20.B21", "A20.B22"]});
+  it('is allowed only on strategic objects, which get marked (7.0.7)', () => {
+    const plane = he111();
+    setup([plane], {"0.0": ["A20.B21", "A25.B25"]});
     G.selected_plane = "0.0";
-    combat.bomb("A20.B22");
+    expect(actionsOf(combat.prompt).filter(it => it[0] === "bomb")).toEqual([["bomb", "A20.B21"]]);
+    combat.bomb("A25.B25");
+    expect(plane.bombs_dropped).toBeUndefined();
     expect(G.bombed).toEqual([]);
     combat.bomb("A20.B21");
+    expect(plane.bombs_dropped).toBe(1);
     expect(G.bombed).toEqual(["A20.B21"]);
   });
 
