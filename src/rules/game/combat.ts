@@ -1,6 +1,7 @@
 import "../rtt/framework.d.ts";
 import type {PlaneInstance, Board} from "../types.js"
 import {hexStep} from "./hex.js"
+import {altitudeOf} from "./altitude.js"
 
 // [atk][dist-1] = [min, max] roll to hit (2d6); null = no hit possible
 // Roll 2 or 12 always causes gun jam regardless of this table.
@@ -32,13 +33,13 @@ export interface FireTarget {
 }
 
 // Returns {side, idx, plane, distance} of first (closest) plane on fire line, or null.
-// Any plane (friendly or enemy) blocks further fire.
+// Any plane (friendly or enemy) at the attacker's altitude blocks further fire; other altitudes are out of reach (5.2).
 export function firstOnFireLine(attackerPlane: PlaneInstance, allPlanes: Board['planes']): FireTarget | null {
   const byHex: Record<string, { side: number, idx: number, plane: PlaneInstance }> = {}
   for (const [sideStr, sidePlanes] of Object.entries(allPlanes)) {
     const side = parseInt(sideStr)
     sidePlanes.forEach((p, idx) => {
-      if (p && !p.destroyed) byHex[p.at] = {side, idx, plane: p}
+      if (p && !p.destroyed && altitudeOf(p) === altitudeOf(attackerPlane)) byHex[p.at] = {side, idx, plane: p}
     })
   }
   const line = fireLineHexes(attackerPlane)

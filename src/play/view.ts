@@ -6,6 +6,9 @@ export interface View {
   actions?: {
     move_hex?: string[]
     select_plane?: string[]
+    wysoko?: number
+    nisko?: number
+    bardzo_nisko?: number
     attack?: number
     unjam?: number
     undo?: number

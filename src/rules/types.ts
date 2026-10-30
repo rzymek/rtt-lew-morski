@@ -4,6 +4,7 @@ export interface PlaneInstanceDef {
   plane: PlaneData
   at: string
   direction: number
+  altitude?: number
   damaged?: boolean
   destroyed?: boolean
   jammed?: boolean
@@ -36,6 +37,7 @@ export interface GameState {
   targets?: string[]
   moved?: number[]
   selected_plane?: string
+  selected_altitude?: number
   shot?: string[]
   result?: string
 }

@@ -1,5 +1,6 @@
 import "../rtt/framework.d.ts";
 import {PlaneInstance} from "../types";
+import {altitudeOf, maxSpeedAt, planeStats} from "./altitude";
 
 // Clockwise from North: N, NE, SE, S, SW, NW
 export const DIR_OFFSETS: [number, number][] = [
@@ -27,10 +28,11 @@ export function hexStep(id: string, dir: number): string | null {
 
 // Returns {hexId: finalDirection} for all valid destinations.
 // Prefers straight path over turning for tie-breaking on direction.
-export function movesMapFor(plane: PlaneInstance): Record<string, number> {
-  const maxMp = plane.plane.predkosc_max
-  const minMp = plane.plane.predkosc_min
-  const turnDist = plane.plane.zwrotnosc
+// The range depends on the altitude the plane will end its move at.
+export function movesMapFor(plane: PlaneInstance, altitude = altitudeOf(plane)): Record<string, number> {
+  const maxMp = maxSpeedAt(plane, altitude)
+  const minMp = planeStats(plane).predkosc_min
+  const turnDist = planeStats(plane).zwrotnosc
   const dir = plane.direction
   const moves: Record<string, number> = {}
 
@@ -62,9 +64,9 @@ export function movesMapFor(plane: PlaneInstance): Record<string, number> {
   return moves
 }
 
-export function possibleMovesFor(plane: PlaneInstance): string[] {
+export function possibleMovesFor(plane: PlaneInstance, altitude = altitudeOf(plane)): string[] {
   const result: string[] = []
-  for (const h of Object.keys(movesMapFor(plane)))
+  for (const h of Object.keys(movesMapFor(plane, altitude)))
     set_add(result, h)
   return result
 }

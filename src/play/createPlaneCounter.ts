@@ -5,6 +5,10 @@ import {NS_XLINK, svgNS} from "./svg/svgNS";
 import jammedSvg from "./markers/jammed.svg?raw";
 import {createSvgMarkerAt} from "./svg/createSvgMarkerAt";
 
+// Indexed by altitude; planes flying high carry no marker.
+const ALTITUDE_MARKERS = [undefined, './images/m_L.jpg', './images/m_VL.jpg']
+const ALTITUDE_MARKER_ASPECT = 14 / 80
+
 export function createPlaneCounter(plane: ViewPlaneInstance): SVGElement {
   const center = getHexCenterInSVGCoords(plane.at)
   const imgSrc = `./${plane.plane.img}${plane.damaged ? '_' : ''}.jpg`
@@ -21,6 +25,19 @@ export function createPlaneCounter(plane: ViewPlaneInstance): SVGElement {
 
   const group = document.createElementNS(svgNS, 'g')
   group.appendChild(counter)
+
+  const altitudeMarker = ALTITUDE_MARKERS[plane.altitude ?? 0]
+  if (altitudeMarker) {
+    const markerH = imgW * ALTITUDE_MARKER_ASPECT
+    const marker = document.createElementNS(svgNS, 'image')
+    marker.setAttribute('href', altitudeMarker)
+    marker.setAttribute('x', String(center.x - imgW / 2))
+    marker.setAttribute('y', String(center.y + imgH / 2 - markerH))
+    marker.setAttribute('width', String(imgW))
+    marker.setAttribute('height', String(markerH))
+    marker.style.pointerEvents = 'none'
+    group.appendChild(marker)
+  }
 
   if (plane.jammed) {
     group.appendChild(createSvgMarkerAt(center, jammedSvg))

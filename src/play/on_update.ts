@@ -6,6 +6,10 @@ import {createPlaneCounter} from "./createPlaneCounter";
 export function onUpdate() {
   action_button("undo", "Undo")
   action_button("done", "Done")
+  // action_button prepends, so the last one ends up first
+  action_button("bardzo_nisko", "Bardzo nisko")
+  action_button("nisko", "Nisko")
+  action_button("wysoko", "Wysoko")
 
   document.querySelectorAll('#hexes .action').forEach(el => el.classList.remove('action'))
 
