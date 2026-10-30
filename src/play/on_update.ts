@@ -70,6 +70,9 @@ export function onUpdate() {
           e.stopPropagation()
           send_action("select_plane", plane.id)
         })
+      } else {
+        // Let clicks through to the hex underneath
+        counter.style.pointerEvents = 'none'
       }
 
       unitsLayer.appendChild(counter)
