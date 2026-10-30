@@ -6,6 +6,8 @@ export function onUpdate() {
   action_button("bardzo_nisko", "Bardzo nisko")
   action_button("nisko", "Nisko")
   action_button("wysoko", "Wysoko")
+  action_button("unjam", "Odblokuj karabiny")
+  action_button("attack", "Atakuj")
   action_button("done", "Done")
   action_button("undo", "Undo")
 

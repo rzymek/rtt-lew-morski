@@ -3,10 +3,12 @@ import {G, L, R, V} from "../globals";
 import {movesMapFor} from "../game/hex";
 import {fireLineHexes} from "../game/combat";
 import {selectedPlaneOfTheActiveSide} from "../procedures/selectedPlaneOfTheActiveSide";
+import {fireTarget} from "../procedures/shooters";
 
 export function on_view() {
   V.board = G.board
   V.active_side = G.active as number
+  V.shot = G.shot
   if (R === G.active) {
     if (L.P === 'move_planes') {
       const moved = G.moved ?? []
@@ -20,6 +22,9 @@ export function on_view() {
         V.selected_plane = plane.id
         if (L.P === 'move_planes') {
           V.moves = movesMapFor(plane, G.board.planes, G.selected_altitude)
+        } else {
+          V.fire_line = fireLineHexes(plane)
+          V.fire_target = fireTarget(plane, G.active as number)?.plane.id
         }
       }
     }

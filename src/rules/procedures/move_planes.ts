@@ -1,7 +1,8 @@
 import {G, ROLES, V} from "../globals.js"
 import {movesMapFor, possibleMovesFor} from "../game/hex.js"
 import {ALT_HIGH, ALT_LOW, ALT_VERY_LOW, ALTITUDE_NAMES, altitudeOf, canChangeAltitude} from "../game/altitude";
-import {planesInFirelane} from "./planesInFirelane";
+import {shootersOf} from "./shooters";
+import {startCombat} from "./phases";
 import {changeSide, otherSide} from "../lifecycle/changeSide";
 import {select_plane} from "./select_plane.js";
 import {isEmpty} from "../generic/isEmpty";
@@ -56,18 +57,11 @@ export const movePlanes = {
   done() {
     G.moved = []
     delete G.selected_plane
-    const friendlyPlanesInFirelanes = planesInFirelane(G.active);
-    if (!isEmpty(friendlyPlanesInFirelanes)) {
+    if (!isEmpty(shootersOf(otherSide(G.active)))) {
       changeSide();
       return goto("moved_into_firelane");
     }
-    const enemyTargets = planesInFirelane(otherSide(G.active))
-    console.log({enemyTargets: enemyTargets.map(it=>it)})
-    if (!isEmpty(enemyTargets)) {
-      return goto("combat")
-    }
-    changeSide()
-    goto("move_planes")
+    startCombat()
   },
 
   select_plane,

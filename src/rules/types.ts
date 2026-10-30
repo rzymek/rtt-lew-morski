@@ -52,6 +52,7 @@ export interface ViewState {
   moves?: Record<string, number>
   selected_plane?: string
   fire_line?: string[]
+  fire_target?: string
   shot?: string[]
 }
 

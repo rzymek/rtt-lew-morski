@@ -84,7 +84,9 @@ export function drawPlanes() {
     }
 
     const isSelectable = view.actions?.select_plane?.includes(plane.id)
-    if (isSelectable) addBorder(plane, 'red')
+    const isFireTarget = plane.id === view.fire_target
+    if (isFireTarget) addBorder(plane, 'orange')
+    else if (isSelectable && plane.id !== view.selected_plane) addBorder(plane, 'red')
 
     if (!center && planesAt(plane.at).length > 1) {
       if (view.actions?.move_hex?.includes(plane.at)) {
@@ -98,6 +100,13 @@ export function drawPlanes() {
           drawPlanes()
         })
       }
+    } else if (isFireTarget) {
+      counter.style.cursor = 'pointer'
+      counter.addEventListener('click', e => {
+        e.stopPropagation()
+        expandedHex = undefined
+        send_action("attack", undefined)
+      })
     } else if (isSelectable) {
       counter.style.cursor = 'pointer'
       counter.addEventListener('click', e => {

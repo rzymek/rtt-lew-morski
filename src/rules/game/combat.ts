@@ -1,7 +1,7 @@
 import "../rtt/framework.d.ts";
 import type {PlaneInstance, Board} from "../types.js"
 import {hexStep} from "./hex.js"
-import {altitudeOf} from "./altitude.js"
+import {altitudeOf, planeStats} from "./altitude.js"
 
 // [atk][dist-1] = [min, max] roll to hit (2d6); null = no hit possible
 // Roll 2 or 12 always causes gun jam regardless of this table.
@@ -56,25 +56,36 @@ export interface ShotResult {
   result: string
 }
 
-export function resolveShot(attackerPlane: PlaneInstance, targetPlane: PlaneInstance, distance: number): ShotResult {
-  const atk = Math.max(0, attackerPlane.plane.sila_ataku)
+export interface ShotRoll extends ShotResult {
+  hit: boolean
+}
+
+// Rolls a shot without touching the target, so that hits can be applied simultaneously (5.4).
+export function rollShot(attackerPlane: PlaneInstance, distance: number): ShotRoll {
+  const atk = Math.max(0, planeStats(attackerPlane).sila_ataku)
   const roll = (random(6) + 1) + (random(6) + 1)
 
   if (roll === 2 || roll === 12) {
     attackerPlane.jammed = true
-    return {roll, atk, result: 'zacięcie karabinów'}
+    return {roll, atk, hit: false, result: 'zacięcie karabinów'}
   }
 
   const tableRow = Math.min(atk, COMBAT_TABLE.length - 1)
   const range = COMBAT_TABLE[tableRow][distance - 1]
-  if (range && roll >= range[0] && roll <= range[1]) {
-    if (targetPlane.damaged) {
-      targetPlane.destroyed = true
-      return {roll, atk, result: 'zestrzelony'}
-    } else {
-      targetPlane.damaged = true
-      return {roll, atk, result: 'uszkodzony'}
-    }
+  const hit = !!range && roll >= range[0] && roll <= range[1]
+  return {roll, atk, hit, result: hit ? 'trafienie' : 'pudło'}
+}
+
+export function applyHit(targetPlane: PlaneInstance): string {
+  if (targetPlane.damaged) {
+    targetPlane.destroyed = true
+    return 'zestrzelony'
   }
-  return {roll, atk, result: 'pudło'}
+  targetPlane.damaged = true
+  return 'uszkodzony'
+}
+
+export function resolveShot(attackerPlane: PlaneInstance, targetPlane: PlaneInstance, distance: number): ShotResult {
+  const shot = rollShot(attackerPlane, distance)
+  return {...shot, result: shot.hit ? applyHit(targetPlane) : shot.result}
 }
