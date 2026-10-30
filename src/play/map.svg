@@ -1,4 +1,4 @@
-<svg id="map" version="1.1" viewBox="0 0 1083.4 797.32" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg id="svg5" version="1.1" viewBox="0 0 1083.4 797.32" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
  <defs id="defs2">
   <filter id="filter3005" x="-.041391" y="-.057121" width="1.0828" height="1.1142" color-interpolation-filters="sRGB">
    <feGaussianBlur id="feGaussianBlur3007" stdDeviation="4.2687065"/>
@@ -588,7 +588,6 @@
   <use id="A40.B43" transform="matrix(0 -.99022 1.0014 0 408.32 -198.91)" xlink:href="#hexTemplate"/>
   <use id="A41.B44" transform="matrix(0 -.99022 1.0014 0 432.38 -212.64)" xlink:href="#hexTemplate"/>
   <use id="A42.B45" transform="matrix(0 -.99022 1.0014 0 456.45 -226.37)" xlink:href="#hexTemplate"/>
-  <use id="A43.B46" transform="matrix(0 -.99022 1.0014 0 480.52 -240.1)" xlink:href="#hexTemplate"/>
   <use id="A00.B04" transform="matrix(0 -.99022 1.0014 0 -554.39 322.8)" xlink:href="#hexTemplate"/>
   <use id="A01.B05" transform="matrix(0 -.99022 1.0014 0 -530.32 309.07)" xlink:href="#hexTemplate"/>
   <use id="A02.B06" transform="matrix(0 -.99022 1.0014 0 -506.25 295.34)" xlink:href="#hexTemplate"/>
@@ -627,7 +626,6 @@
   <use id="A39.B43" transform="matrix(0 -.99022 1.0014 0 384.25 -212.64)" xlink:href="#hexTemplate"/>
   <use id="A40.B44" transform="matrix(0 -.99022 1.0014 0 408.32 -226.37)" xlink:href="#hexTemplate"/>
   <use id="A41.B45" transform="matrix(0 -.99022 1.0014 0 432.38 -240.1)" xlink:href="#hexTemplate"/>
-  <use id="A43.B47" transform="matrix(0 -.99022 1.0014 0 480.52 -267.56)" xlink:href="#hexTemplate"/>
   <use id="A00.B05" transform="matrix(0 -.99022 1.0014 0 -554.39 295.34)" xlink:href="#hexTemplate"/>
   <use id="A01.B06" transform="matrix(0 -.99022 1.0014 0 -530.32 281.61)" xlink:href="#hexTemplate"/>
   <use id="A02.B07" transform="matrix(0 -.99022 1.0014 0 -506.25 267.88)" xlink:href="#hexTemplate"/>
@@ -664,7 +662,6 @@
   <use id="A38.B43" transform="matrix(0 -.99022 1.0014 0 360.18 -226.37)" xlink:href="#hexTemplate"/>
   <use id="A39.B44" transform="matrix(0 -.99022 1.0014 0 384.25 -240.1)" xlink:href="#hexTemplate"/>
   <use id="A40.B45" transform="matrix(0 -.99022 1.0014 0 408.32 -253.83)" xlink:href="#hexTemplate"/>
-  <use id="A43.B48" transform="matrix(0 -.99022 1.0014 0 480.52 -295.02)" xlink:href="#hexTemplate"/>
   <use id="A00.B06" transform="matrix(0 -.99022 1.0014 0 -554.39 267.88)" xlink:href="#hexTemplate"/>
   <use id="A01.B07" transform="matrix(0 -.99022 1.0014 0 -530.32 254.15)" xlink:href="#hexTemplate"/>
   <use id="A02.B08" transform="matrix(0 -.99022 1.0014 0 -506.25 240.42)" xlink:href="#hexTemplate"/>
@@ -698,7 +695,6 @@
   <use id="A37.B43" transform="matrix(0 -.99022 1.0014 0 336.11 -240.1)" xlink:href="#hexTemplate"/>
   <use id="A38.B44" transform="matrix(0 -.99022 1.0014 0 360.18 -253.83)" xlink:href="#hexTemplate"/>
   <use id="A39.B45" transform="matrix(0 -.99022 1.0014 0 384.25 -267.56)" xlink:href="#hexTemplate"/>
-  <use id="A43.B49" transform="matrix(0 -.99022 1.0014 0 480.52 -322.48)" xlink:href="#hexTemplate"/>
   <use id="A00.B07" transform="matrix(0 -.99022 1.0014 0 -554.39 240.42)" xlink:href="#hexTemplate"/>
   <use id="A01.B08" transform="matrix(0 -.99022 1.0014 0 -530.32 226.69)" xlink:href="#hexTemplate"/>
   <use id="A02.B09" transform="matrix(0 -.99022 1.0014 0 -506.25 212.96)" xlink:href="#hexTemplate"/>
@@ -731,7 +727,6 @@
   <use id="A37.B44" transform="matrix(0 -.99022 1.0014 0 336.11 -267.56)" xlink:href="#hexTemplate"/>
   <use id="A38.B45" transform="matrix(0 -.99022 1.0014 0 360.18 -281.29)" xlink:href="#hexTemplate"/>
   <use id="A39.B46" transform="matrix(0 -.99022 1.0014 0 384.25 -295.02)" xlink:href="#hexTemplate"/>
-  <use id="A42.B49" transform="matrix(0 -.99022 1.0014 0 456.45 -336.21)" xlink:href="#hexTemplate"/>
   <use id="A00.B08" transform="matrix(0 -.99022 1.0014 0 -554.39 212.96)" xlink:href="#hexTemplate"/>
   <use id="A01.B09" transform="matrix(0 -.99022 1.0014 0 -530.32 199.23)" xlink:href="#hexTemplate"/>
   <use id="A02.B10" transform="matrix(0 -.99022 1.0014 0 -506.25 185.5)" xlink:href="#hexTemplate"/>
@@ -763,7 +758,6 @@
   <use id="A36.B44" transform="matrix(0 -.99022 1.0014 0 312.05 -281.29)" xlink:href="#hexTemplate"/>
   <use id="A37.B45" transform="matrix(0 -.99022 1.0014 0 336.11 -295.02)" xlink:href="#hexTemplate"/>
   <use id="A38.B46" transform="matrix(0 -.99022 1.0014 0 360.18 -308.75)" xlink:href="#hexTemplate"/>
-  <use id="A40.B48" transform="matrix(0 -.99022 1.0014 0 408.32 -336.21)" xlink:href="#hexTemplate"/>
   <use id="A00.B09" transform="matrix(0 -.99022 1.0014 0 -554.39 185.5)" xlink:href="#hexTemplate"/>
   <use id="A01.B10" transform="matrix(0 -.99022 1.0014 0 -530.32 171.78)" xlink:href="#hexTemplate"/>
   <use id="A02.B11" transform="matrix(0 -.99022 1.0014 0 -506.25 158.05)" xlink:href="#hexTemplate"/>
@@ -1303,6 +1297,12 @@
    <use id="A40.B47" transform="matrix(0 -.99022 1.0014 0 408.32 -308.75)" xlink:href="#hexTemplate"/>
    <use id="A41.B48" transform="matrix(0 -.99022 1.0014 0 432.38 -322.48)" xlink:href="#hexTemplate"/>
    <use id="A39.B47" transform="matrix(0 -.99022 1.0014 0 384.25 -322.48)" xlink:href="#hexTemplate"/>
+   <use id="A43.B46" transform="matrix(0 -.99022 1.0014 0 480.52 -240.1)" xlink:href="#hexTemplate"/>
+   <use id="A43.B47" transform="matrix(0 -.99022 1.0014 0 480.52 -267.56)" xlink:href="#hexTemplate"/>
+   <use id="A43.B48" transform="matrix(0 -.99022 1.0014 0 480.52 -295.02)" xlink:href="#hexTemplate"/>
+   <use id="A43.B49" transform="matrix(0 -.99022 1.0014 0 480.52 -322.48)" xlink:href="#hexTemplate"/>
+   <use id="A42.B49" transform="matrix(0 -.99022 1.0014 0 456.45 -336.21)" xlink:href="#hexTemplate"/>
+   <use id="A40.B48" transform="matrix(0 -.99022 1.0014 0 408.32 -336.21)" xlink:href="#hexTemplate"/>
   </g>
  </g>
  <g id="markers" transform="translate(2.5433 -1.2716)">

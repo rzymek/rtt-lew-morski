@@ -2,6 +2,7 @@ import "../rtt/framework.d.ts";
 import type {PlaneInstance, Board} from "../types.js"
 import {hexStep} from "./hex.js"
 import {altitudeOf, planeStats} from "./altitude.js"
+import {cloudPenalty, isInCloud} from "./clouds.js"
 
 // [atk][dist-1] = [min, max] roll to hit (2d6); null = no hit possible
 // Roll 2 or 12 always causes gun jam regardless of this table.
@@ -17,7 +18,9 @@ export const COMBAT_TABLE: ([number, number] | null)[][] = [
 export function fireLineHexes(plane: PlaneInstance): string[] {
   const hexes: string[] = []
   let pos: string | null = plane.at
-  for (let i = 0; i < 5; i++) {
+  // 5.0.5
+  const range = isInCloud(plane) ? 1 : 5
+  for (let i = 0; i < range; i++) {
     pos = hexStep(pos, plane.direction)
     if (!pos) break
     hexes.push(pos)
@@ -61,8 +64,9 @@ export interface ShotRoll extends ShotResult {
 }
 
 // Rolls a shot without touching the target, so that hits can be applied simultaneously (5.4).
-export function rollShot(attackerPlane: PlaneInstance, distance: number): ShotRoll {
-  const atk = Math.max(0, planeStats(attackerPlane).sila_ataku)
+export function rollShot(attackerPlane: PlaneInstance, targetPlane: PlaneInstance, distance: number): ShotRoll {
+  // 5.0.2, 5.0.7
+  const atk = Math.max(0, planeStats(attackerPlane).sila_ataku - cloudPenalty(attackerPlane) - cloudPenalty(targetPlane))
   const roll = (random(6) + 1) + (random(6) + 1)
 
   if (roll === 2 || roll === 12) {
@@ -86,6 +90,6 @@ export function applyHit(targetPlane: PlaneInstance): string {
 }
 
 export function resolveShot(attackerPlane: PlaneInstance, targetPlane: PlaneInstance, distance: number): ShotResult {
-  const shot = rollShot(attackerPlane, distance)
+  const shot = rollShot(attackerPlane, targetPlane, distance)
   return {...shot, result: shot.hit ? applyHit(targetPlane) : shot.result}
 }

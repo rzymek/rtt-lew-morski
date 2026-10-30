@@ -43,7 +43,7 @@ export const movedIntoFirelane = {
     const hit = plane && fireTarget(plane, G.active)
     if (!plane || !hit) return
     markShot(plane)
-    const shot = rollShot(plane, hit.distance)
+    const shot = rollShot(plane, hit.plane, hit.distance)
     log(`${ROLES[G.active]} atakuje poza swoją fazą [SA:${shot.atk} odl:${hit.distance} rzut:${shot.roll}] → ${shot.result}`)
     if (!shot.hit) return afterShot()
     if (fireTarget(hit.plane, hit.side)?.plane.id === plane.id) {
