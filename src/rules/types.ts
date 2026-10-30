@@ -50,7 +50,7 @@ export interface ViewState {
   active_side?: number
   unmoved?: string[],
   moves?: Record<string, number>
-  selected_at?: string
+  selected_plane?: string
   fire_line?: string[]
   shot?: string[]
 }

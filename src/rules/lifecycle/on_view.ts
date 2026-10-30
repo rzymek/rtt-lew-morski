@@ -17,7 +17,7 @@ export function on_view() {
     if (G.selected_plane !== undefined) {
       const plane = selectedPlaneOfTheActiveSide();
       if (plane) {
-        V.selected_at = plane.at
+        V.selected_plane = plane.id
         if (L.P === 'move_planes') {
           V.moves = movesMapFor(plane, G.board.planes, G.selected_altitude)
         }

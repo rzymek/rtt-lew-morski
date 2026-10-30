@@ -15,7 +15,7 @@ export interface View {
     done?: number
   }
   unmoved?: string[]
-  selected_at?: string
+  selected_plane?: string
   fire_line?: string[]
   shot?: string[]
 }

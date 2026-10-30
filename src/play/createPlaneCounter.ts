@@ -9,8 +9,7 @@ import {createSvgMarkerAt} from "./svg/createSvgMarkerAt";
 const ALTITUDE_MARKERS = [undefined, './images/m_L.jpg', './images/m_VL.jpg']
 const ALTITUDE_MARKER_ASPECT = 14 / 80
 
-export function createPlaneCounter(plane: ViewPlaneInstance): SVGElement {
-  const center = getHexCenterInSVGCoords(plane.at)
+export function createPlaneCounter(plane: ViewPlaneInstance, center = getHexCenterInSVGCoords(plane.at)): SVGElement {
   const imgSrc = `./${plane.plane.img}${plane.damaged ? '_' : ''}.jpg`
   const imgW = parseFloat(planePlaceholder!.getAttribute('width')!)
   const imgH = parseFloat(planePlaceholder!.getAttribute('height')!)
