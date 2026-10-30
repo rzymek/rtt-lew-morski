@@ -42,10 +42,11 @@ export function onUpdate() {
   const unitsLayer = document.getElementById("units")!
   unitsLayer.innerHTML = ""
 
+  console.log(view.actions?.select_plane)
   Object.entries(view.board.planes).forEach(([roleStr, planes]) => {
     const roleIdx = parseInt(roleStr)
     const isActiveSide = roleIdx === view.active_side
-
+    console.log({planes})
     planes.forEach((plane, idx) => {
       if (!plane || plane.destroyed) return
       if (!document.getElementById(plane.at)) return
@@ -53,10 +54,14 @@ export function onUpdate() {
 
       // Dim planes that have already shot this phase
       const hasShot = view.shot?.includes(idx)
-      if (isActiveSide && hasShot && !plane.damaged)
+      if (isActiveSide && hasShot && !plane.damaged) {
         counter.setAttribute('opacity', '0.55')
+      }
 
-      if (isActiveSide && view.actions?.select_plane?.includes(plane.id)) {
+      if (view.actions?.select_plane?.includes(plane.id)) {
+        const rect = planeBorder(plane, 'red');
+        hexOverlay!.append(rect)
+
         counter.style.cursor = 'pointer'
         counter.addEventListener('click', e => {
           e.stopPropagation()

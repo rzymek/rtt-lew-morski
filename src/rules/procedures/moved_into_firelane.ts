@@ -9,7 +9,9 @@ export const movedIntoFirelane = {
   prompt() {
     prompt(`krzyżowanie się linii ognia`)
     button("done");
+    console.log('krzyżowanie się linii ognia');
     planesInFirelane(otherSide(G.active)).forEach(plane => {
+      console.log("select_plane", plane);
       action("select_plane", plane.id)
     })
   },
