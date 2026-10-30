@@ -36,7 +36,7 @@ export interface GameState {
   targets?: string[]
   moved?: number[]
   selected_plane?: string
-  shot?: number[]
+  shot?: string[]
   result?: string
 }
 
@@ -50,7 +50,7 @@ export interface ViewState {
   moves?: Record<string, number>
   selected_at?: string
   fire_line?: string[]
-  shot?: number[]
+  shot?: string[]
 }
 
 export interface StateDefinition {

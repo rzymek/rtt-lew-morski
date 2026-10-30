@@ -1,5 +1,7 @@
 import {G, R_Bryt, R_Niem, ROLES} from "../globals.js"
 import {firstOnFireLine, resolveShot} from "../game/combat.js"
+import {select_plane} from "./select_plane.js"
+import {selectedPlaneOfTheActiveSide} from "./selectedPlaneOfTheActiveSide"
 
 export const combat = {
   inactive: "faza walki",
@@ -16,43 +18,34 @@ export const combat = {
     prompt("Faza walki – inicjatywa: " + ROLES[G.active as number])
     button("done", true)
 
-    myPlanes.forEach((plane, idx) => {
+    myPlanes.forEach((plane) => {
       if (plane && !plane.destroyed)
-        action("select_plane", idx)
+        action("select_plane", plane.id)
     })
 
-    if (G.selected_plane !== undefined) {
-      const idx = G.selected_plane
-      const plane = myPlanes[idx]
-      if (plane && !set_has(shot, idx) && !plane.destroyed) {
-        if (plane.jammed) {
-          button("unjam", true)
-        } else {
-          const target = firstOnFireLine(plane, G.board.planes)
-          if (target && target.side === enemySide)
-            button("attack", true)
-        }
+    const plane = selectedPlaneOfTheActiveSide()
+    if (plane && !set_has(shot, plane.id) && !plane.destroyed) {
+      if (plane.jammed) {
+        button("unjam", true)
+      } else {
+        const target = firstOnFireLine(plane, G.board.planes)
+        if (target && target.side === enemySide)
+          button("attack", true)
       }
     }
   },
 
-  select_plane(idx: number) {
-    if (G.selected_plane === idx) delete G.selected_plane
-    else G.selected_plane = idx
-  },
+  select_plane,
 
   attack() {
-    const idx = G.selected_plane
-    if (idx === undefined) return
-    const myPlanes = G.board.planes[G.active as number] ?? []
-    const plane = myPlanes[idx]
+    const plane = selectedPlaneOfTheActiveSide()
     if (!plane || plane.jammed || plane.destroyed) return
     const enemySide = G.active === R_Niem ? R_Bryt : R_Niem
     const hit = firstOnFireLine(plane, G.board.planes)
     if (!hit || hit.side !== enemySide) return
 
     push_undo()
-    set_add(G.shot!, idx)
+    set_add(G.shot!, plane.id)
     const targetPlane = G.board.planes[hit.side][hit.idx]
     const {roll, atk, result} = resolveShot(plane, targetPlane!, hit.distance)
     log(`${ROLES[G.active as number]} atakuje [SA:${atk} odl:${hit.distance} rzut:${roll}] → ${result}`)
@@ -60,12 +53,10 @@ export const combat = {
   },
 
   unjam() {
-    const idx = G.selected_plane
-    if (idx === undefined) return
-    const plane = G.board.planes[G.active as number][idx]
+    const plane = selectedPlaneOfTheActiveSide()
     if (!plane || !plane.jammed) return
     push_undo()
-    set_add(G.shot!, idx)
+    set_add(G.shot!, plane.id)
     const roll = random(6) + 1
     if (roll === 6) {
       delete plane.jammed

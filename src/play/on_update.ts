@@ -46,13 +46,13 @@ export function onUpdate() {
     const roleIdx = parseInt(roleStr)
     const isActiveSide = roleIdx === view.active_side
     console.log({planes})
-    planes.forEach((plane, idx) => {
+    planes.forEach((plane) => {
       if (!plane || plane.destroyed) return
       if (!document.getElementById(plane.at)) return
       const counter = createPlaneCounter(plane);
 
       // Dim planes that have already shot this phase
-      const hasShot = view.shot?.includes(idx)
+      const hasShot = view.shot?.includes(plane.id)
       if (isActiveSide && hasShot && !plane.damaged) {
         counter.setAttribute('opacity', '0.55')
       }
