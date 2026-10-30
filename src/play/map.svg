@@ -1309,7 +1309,7 @@
   <image id="image62657" x="152.89" y="322.32" width="28.222" height="34.572" preserveAspectRatio="none" xlink:href="file:///home/rzymek/devel/rtt/modules/lew-morski-src/public/images/m_target.png"/>
   <image id="image62657-3" x="393.19" y="322.6" width="28.222" height="34.572" preserveAspectRatio="none" xlink:href="file:///home/rzymek/devel/rtt/modules/lew-morski-src/public/images/m_target.png"/>
  </g>
- <g id="units" transform="translate(2.5433 -1.2716)">
+ <g id="units">
   <image id="plane-placeholder" x="-37.737" y="34.959" width="20.204" height="20.204" preserveAspectRatio="none" xlink:href="file:///home/rzymek/devel/rtt/modules/lew-morski-src/public/planes/u_Spit.jpg"/>
  </g>
 </svg>
