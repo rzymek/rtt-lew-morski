@@ -55,10 +55,54 @@ describe('maxSpeedAt', () => {
 describe('movesMapFor', () => {
   it('range follows the chosen altitude', () => {
     // direction 0 advances B by one per hex
-    expect(movesMapFor(spit())).not.toHaveProperty(["A20.B27"]);
-    expect(movesMapFor(spit(), ALT_LOW)).toHaveProperty(["A20.B27"]);
-    expect(movesMapFor(spit({altitude: ALT_LOW}))).toHaveProperty(["A20.B26"]);
-    expect(movesMapFor(spit({altitude: ALT_LOW}), ALT_HIGH)).not.toHaveProperty(["A20.B26"]);
+    expect(movesMapFor(spit(), {})).not.toHaveProperty(["A20.B27"]);
+    expect(movesMapFor(spit(), {}, ALT_LOW)).toHaveProperty(["A20.B27"]);
+    expect(movesMapFor(spit({altitude: ALT_LOW}), {})).toHaveProperty(["A20.B26"]);
+    expect(movesMapFor(spit({altitude: ALT_LOW}), {}, ALT_HIGH)).not.toHaveProperty(["A20.B26"]);
+  });
+
+  describe('4.1.1 occupied hexes', () => {
+    const at = "A20.B23";
+
+    it('cannot enter or fly through a hex occupied at the same altitude', () => {
+      const moves = movesMapFor(spit(), {[R_Niem]: [he111({at})]});
+      expect(moves).not.toHaveProperty([at]);
+      expect(moves).not.toHaveProperty(["A20.B24"]);
+    });
+
+    it('also applies to friendly planes', () => {
+      const moves = movesMapFor(spit(), {[R_Bryt]: [spit({id: "1.1", at})]});
+      expect(moves).not.toHaveProperty([at]);
+    });
+
+    it('allows a hex occupied at another altitude', () => {
+      const moves = movesMapFor(spit(), {[R_Niem]: [he111({at, altitude: ALT_LOW})]});
+      expect(moves).toHaveProperty([at]);
+      expect(moves).toHaveProperty(["A20.B24"]);
+    });
+
+    it('checks the altitude the plane will end its move at', () => {
+      const moves = movesMapFor(spit(), {[R_Niem]: [he111({at, altitude: ALT_LOW})]}, ALT_LOW);
+      expect(moves).not.toHaveProperty([at]);
+    });
+
+    it('ignores destroyed planes', () => {
+      const moves = movesMapFor(spit(), {[R_Niem]: [he111({at, destroyed: true})]});
+      expect(moves).toHaveProperty([at]);
+    });
+
+    it('can turn away before the occupied hex', () => {
+      const free = movesMapFor(spit(), {});
+      const turned = Object.keys(free).find(hex => free[hex] !== 0)!;
+      const moves = movesMapFor(spit(), {[R_Niem]: [he111({at})]});
+      expect(moves).toHaveProperty([turned]);
+    });
+
+    it('cannot turn into an occupied hex or past it', () => {
+      const moves = movesMapFor(spit(), {[R_Niem]: [he111({at: "A22.B23"})]});
+      expect(moves).not.toHaveProperty(["A22.B23"]);
+      expect(moves).not.toHaveProperty(["A23.B24"]);
+    });
   });
 });
 

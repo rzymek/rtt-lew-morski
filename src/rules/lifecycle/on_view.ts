@@ -19,7 +19,7 @@ export function on_view() {
       if (plane) {
         V.selected_at = plane.at
         if (L.P === 'move_planes') {
-          V.moves = movesMapFor(plane, G.selected_altitude)
+          V.moves = movesMapFor(plane, G.board.planes, G.selected_altitude)
         }
       }
     }

@@ -39,7 +39,7 @@ export const movePlanes = {
     }
     button("done", (V!.unmoved ?? []).length === 0)
     if (selected !== undefined) {
-      for (const hex of possibleMovesFor(selected, G.selected_altitude)) {
+      for (const hex of possibleMovesFor(selected, G.board.planes, G.selected_altitude)) {
         action("move_hex", hex)
       }
       action("select_plane", G.selected_plane)
@@ -87,7 +87,7 @@ export const movePlanes = {
   move_hex(target: string) {
     if (G.selected_plane === undefined) return
     const plane = selectedPlaneOfTheActiveSide();
-    const moves = movesMapFor(plane!, G.selected_altitude)
+    const moves = movesMapFor(plane!, G.board.planes, G.selected_altitude)
     if (!(target in moves)) return
     push_undo()
     plane!.at = target

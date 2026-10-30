@@ -1,5 +1,5 @@
 import "../rtt/framework.d.ts";
-import {PlaneInstance} from "../types";
+import {Board, PlaneInstance} from "../types";
 import {altitudeOf, maxSpeedAt, planeStats} from "./altitude";
 
 // Clockwise from North: N, NE, SE, S, SW, NW
@@ -29,17 +29,25 @@ export function hexStep(id: string, dir: number): string | null {
 // Returns {hexId: finalDirection} for all valid destinations.
 // Prefers straight path over turning for tie-breaking on direction.
 // The range depends on the altitude the plane will end its move at.
-export function movesMapFor(plane: PlaneInstance, altitude = altitudeOf(plane)): Record<string, number> {
+// 4.1.1: hexes occupied at that altitude can neither be entered nor flown through.
+export function movesMapFor(plane: PlaneInstance, allPlanes: Board['planes'], altitude = altitudeOf(plane)): Record<string, number> {
   const maxMp = maxSpeedAt(plane, altitude)
   const minMp = planeStats(plane).predkosc_min
   const turnDist = planeStats(plane).zwrotnosc
   const dir = plane.direction
   const moves: Record<string, number> = {}
+  const occupied = Object.values(allPlanes).flat()
+    .filter(p => !p.destroyed && altitudeOf(p) === altitude)
+    .map(p => p.at)
+  const enter = (from: string | null, direction: number): string | null => {
+    const next = from && hexStep(from, direction)
+    return next && !occupied.includes(next) ? next : null
+  }
 
   // Precompute straight path (index = steps taken from start)
   const straight: (string | null)[] = [plane.at]
   for (let s = 1; s <= maxMp; s++)
-    straight.push(hexStep(straight[s - 1]!, dir))
+    straight.push(enter(straight[s - 1], dir))
 
   // No turn: final direction unchanged
   for (let d = minMp; d <= maxMp; d++)
@@ -53,7 +61,7 @@ export function movesMapFor(plane: PlaneInstance, altitude = altitudeOf(plane)):
       if (!straight[s]) break
       let pos: string | null = straight[s]
       for (let r = 1; s + r <= maxMp; r++) {
-        pos = hexStep(pos!, newDir)
+        pos = enter(pos, newDir)
         if (!pos) break
         if (s + r >= minMp && !(pos in moves))
           moves[pos] = newDir
@@ -64,9 +72,9 @@ export function movesMapFor(plane: PlaneInstance, altitude = altitudeOf(plane)):
   return moves
 }
 
-export function possibleMovesFor(plane: PlaneInstance, altitude = altitudeOf(plane)): string[] {
+export function possibleMovesFor(plane: PlaneInstance, allPlanes: Board['planes'], altitude = altitudeOf(plane)): string[] {
   const result: string[] = []
-  for (const h of Object.keys(movesMapFor(plane, altitude)))
+  for (const h of Object.keys(movesMapFor(plane, allPlanes, altitude)))
     set_add(result, h)
   return result
 }
