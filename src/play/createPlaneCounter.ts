@@ -44,5 +44,22 @@ export function createPlaneCounter(plane: ViewPlaneInstance, center = getHexCent
     group.appendChild(createSvgMarkerAt(center, jammedSvg))
   }
 
+  // 2.2: the series of bombs still on board, instead of the plane card.
+  const bombs = (plane.plane.udzwig_bomb ?? 0) - (plane.bombs_dropped ?? 0)
+  if (bombs > 0) {
+    const badge = document.createElementNS(svgNS, 'text')
+    badge.textContent = `💣${bombs}`
+    badge.setAttribute('x', String(center.x + imgW / 2))
+    badge.setAttribute('y', String(center.y - imgH / 2))
+    badge.setAttribute('font-size', '6')
+    badge.setAttribute('text-anchor', 'end')
+    badge.setAttribute('dominant-baseline', 'hanging')
+    badge.setAttribute('fill', 'white')
+    badge.setAttribute('stroke', 'black')
+    badge.setAttribute('stroke-width', '0.3')
+    badge.style.pointerEvents = 'none'
+    group.appendChild(badge)
+  }
+
   return group;
 }

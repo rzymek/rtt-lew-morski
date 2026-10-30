@@ -4,6 +4,8 @@ import {select_plane} from "./select_plane.js"
 import {selectedPlaneOfTheActiveSide} from "./selectedPlaneOfTheActiveSide"
 import {canUnjam, fireTarget, markShot} from "./shooters"
 import {endCombat} from "./phases"
+import {bombableHexes, canBomb, dropBomb} from "./bombers"
+import {bombsLeft} from "../game/bombs"
 
 export const combat = {
   inactive: "faza walki",
@@ -15,7 +17,7 @@ export const combat = {
     button("done", true)
 
     myPlanes.forEach((plane) => {
-      if (canUnjam(plane) || fireTarget(plane, G.active as number))
+      if (canUnjam(plane) || canBomb(plane) || fireTarget(plane, G.active as number))
         action("select_plane", plane.id)
     })
 
@@ -25,9 +27,29 @@ export const combat = {
     } else if (plane && fireTarget(plane, G.active as number)) {
       button("attack", true)
     }
+    if (plane) {
+      bombableHexes(plane).forEach(hex => action("bomb", hex))
+      // Counters on the hexes to bomb pass their clicks through, this plane's own included.
+      if (canBomb(plane)) button("deselect", true)
+    }
   },
 
   select_plane,
+
+  deselect() {
+    delete G.selected_plane
+  },
+
+  bomb(hex: string) {
+    const plane = selectedPlaneOfTheActiveSide()
+    if (!plane || !bombableHexes(plane).includes(hex)) return
+
+    push_undo()
+    dropBomb(plane, hex)
+    const onTarget = G.targets?.includes(hex) ? " – cel strategiczny" : ""
+    log(`${ROLES[G.active as number]} zrzuca bomby na ${hex}${onTarget} (pozostało serii: ${bombsLeft(plane)})`)
+    if (!canBomb(plane)) delete G.selected_plane
+  },
 
   attack() {
     const plane = selectedPlaneOfTheActiveSide()

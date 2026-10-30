@@ -39,6 +39,8 @@ export function on_setup(_scenario: string, _options: unknown) {
   G.targets = ['A06.B19', 'A16.B24']
   G.moved = []
   G.shot = []
+  G.flown_over = {}
+  G.bombed = []
   G.active = R_Niem
   call("move_planes")
 }

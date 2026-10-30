@@ -11,6 +11,8 @@ export interface View {
     bardzo_nisko?: number
     attack?: number
     unjam?: number
+    bomb?: string[]
+    deselect?: number
     undo?: number
     done?: number
   }
@@ -19,4 +21,5 @@ export interface View {
   fire_line?: string[]
   fire_target?: string
   shot?: string[]
+  bombed?: string[]
 }

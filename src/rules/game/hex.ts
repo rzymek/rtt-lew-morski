@@ -26,16 +26,22 @@ export function hexStep(id: string, dir: number): string | null {
   return hexId(na, nb)
 }
 
-// Returns {hexId: finalDirection} for all valid destinations.
+export interface Flight {
+  direction: number
+  // Hexes entered on the way, destination included.
+  path: string[]
+}
+
+// Returns {hexId: flight} for all valid destinations.
 // Prefers straight path over turning for tie-breaking on direction.
 // The range depends on the altitude the plane will end its move at.
 // 4.1.1: hexes occupied at that altitude can neither be entered nor flown through.
-export function movesMapFor(plane: PlaneInstance, allPlanes: Board['planes'], altitude = altitudeOf(plane)): Record<string, number> {
+export function flightsFor(plane: PlaneInstance, allPlanes: Board['planes'], altitude = altitudeOf(plane)): Record<string, Flight> {
   const maxMp = maxSpeedAt(plane, altitude)
   const minMp = planeStats(plane).predkosc_min
   const turnDist = planeStats(plane).zwrotnosc
   const dir = plane.direction
-  const moves: Record<string, number> = {}
+  const moves: Record<string, Flight> = {}
   const occupied = Object.values(allPlanes).flat()
     .filter(p => !p.destroyed && altitudeOf(p) === altitude)
     .map(p => p.at)
@@ -51,7 +57,7 @@ export function movesMapFor(plane: PlaneInstance, allPlanes: Board['planes'], al
 
   // No turn: final direction unchanged
   for (let d = minMp; d <= maxMp; d++)
-    if (straight[d]) moves[straight[d]!] = dir
+    if (straight[d]) moves[straight[d]!] = {direction: dir, path: straight.slice(1, d + 1) as string[]}
 
   // One turn of ±60° after at least turnDist straight steps,
   // followed by at least 1 hex in the new direction
@@ -60,16 +66,24 @@ export function movesMapFor(plane: PlaneInstance, allPlanes: Board['planes'], al
     for (let s = turnDist; s < maxMp; s++) {
       if (!straight[s]) break
       let pos: string | null = straight[s]
+      const path = straight.slice(1, s + 1) as string[]
       for (let r = 1; s + r <= maxMp; r++) {
         pos = enter(pos, newDir)
         if (!pos) break
+        path.push(pos)
         if (s + r >= minMp && !(pos in moves))
-          moves[pos] = newDir
+          moves[pos] = {direction: newDir, path: [...path]}
       }
     }
   }
 
   return moves
+}
+
+// Returns {hexId: finalDirection} for all valid destinations.
+export function movesMapFor(plane: PlaneInstance, allPlanes: Board['planes'], altitude = altitudeOf(plane)): Record<string, number> {
+  const flights = flightsFor(plane, allPlanes, altitude)
+  return Object.fromEntries(Object.entries(flights).map(([hex, flight]) => [hex, flight.direction]))
 }
 
 export function possibleMovesFor(plane: PlaneInstance, allPlanes: Board['planes'], altitude = altitudeOf(plane)): string[] {

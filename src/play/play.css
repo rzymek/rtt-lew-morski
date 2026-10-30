@@ -7,6 +7,6 @@
 	cursor: pointer;
 }
 
-#markers {
+#markers, #bombed {
 	pointer-events: none;
 }

@@ -1,11 +1,13 @@
 import {clearHexHighlights, highlightHexes} from "./highlightHexes";
 import {drawPlanes} from "./drawPlanes";
+import {drawBombed} from "./drawBombed";
 
 export function onUpdate() {
   // action_button prepends, so the last one ends up first
   action_button("bardzo_nisko", "Bardzo nisko")
   action_button("nisko", "Nisko")
   action_button("wysoko", "Wysoko")
+  action_button("deselect", "Odznacz samolot")
   action_button("unjam", "Odblokuj karabiny")
   action_button("attack", "Atakuj")
   action_button("done", "Done")
@@ -20,6 +22,8 @@ export function onUpdate() {
   clearHexHighlights();
   highlightHexes(view.actions?.move_hex, '#8080ff');
   highlightHexes(view.fire_line, '#ff4444');
+  highlightHexes(view.actions?.bomb, '#ff9900');
 
+  drawBombed()
   drawPlanes()
 }

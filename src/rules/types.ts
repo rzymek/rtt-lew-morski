@@ -8,6 +8,7 @@ export interface PlaneInstanceDef {
   damaged?: boolean
   destroyed?: boolean
   jammed?: boolean
+  bombs_dropped?: number
 }
 
 export interface PlaneInstance extends PlaneInstanceDef {
@@ -39,6 +40,8 @@ export interface GameState {
   selected_plane?: string
   selected_altitude?: number
   shot?: string[]
+  flown_over?: Record<string, string[]>
+  bombed?: string[]
   result?: string
 }
 
@@ -54,6 +57,7 @@ export interface ViewState {
   fire_line?: string[]
   fire_target?: string
   shot?: string[]
+  bombed?: string[]
 }
 
 export interface StateDefinition {

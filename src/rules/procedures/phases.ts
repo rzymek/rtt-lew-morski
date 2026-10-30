@@ -2,9 +2,11 @@ import {G} from "../globals";
 import {changeSide} from "../lifecycle/changeSide";
 import {isEmpty} from "../generic/isEmpty";
 import {canUnjam, shootersOf} from "./shooters";
+import {canBomb} from "./bombers";
 
 export function startCombat() {
-  if (G.board.planes[G.active].some(canUnjam) || !isEmpty(shootersOf(G.active))) {
+  const planes = G.board.planes[G.active]
+  if (planes.some(canUnjam) || planes.some(canBomb) || !isEmpty(shootersOf(G.active))) {
     goto("combat")
   } else {
     endCombat()
@@ -16,5 +18,6 @@ export function endCombat() {
   delete G.selected_plane
   changeSide()
   G.shot = []
+  G.flown_over = {}
   goto("move_planes")
 }

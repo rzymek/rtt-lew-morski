@@ -1,5 +1,5 @@
 import {G, ROLES, V} from "../globals.js"
-import {movesMapFor, possibleMovesFor} from "../game/hex.js"
+import {flightsFor, possibleMovesFor} from "../game/hex.js"
 import {ALT_HIGH, ALT_LOW, ALT_VERY_LOW, ALTITUDE_NAMES, altitudeOf, canChangeAltitude} from "../game/altitude";
 import {shootersOf} from "./shooters";
 import {startCombat} from "./phases";
@@ -81,12 +81,14 @@ export const movePlanes = {
   move_hex(target: string) {
     if (G.selected_plane === undefined) return
     const plane = selectedPlaneOfTheActiveSide();
-    const moves = movesMapFor(plane!, G.board.planes, G.selected_altitude)
-    if (!(target in moves)) return
+    const flights = flightsFor(plane!, G.board.planes, G.selected_altitude)
+    if (!(target in flights)) return
     push_undo()
     plane!.at = target
-    plane!.direction = moves[target]
+    plane!.direction = flights[target].direction
     plane!.altitude = G.selected_altitude ?? altitudeOf(plane!)
+    G.flown_over ??= {}
+    G.flown_over[plane!.id] = flights[target].path
     if (!G.moved) G.moved = []
     set_add(G.moved, G.selected_plane)
     delete G.selected_plane
