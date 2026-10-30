@@ -9,6 +9,11 @@ export function fireTarget(plane: PlaneInstance, side: number): FireTarget | nul
   return hit && hit.side !== side ? hit : null
 }
 
+// 5.3.4: one attempt per stage, which takes the place of the plane's shot.
+export function canUnjam(plane: PlaneInstance): boolean {
+  return !!plane.jammed && !plane.destroyed && !set_has(G.shot ?? [], plane.id)
+}
+
 export function markShot(plane: PlaneInstance) {
   G.shot ??= []
   set_add(G.shot, plane.id)

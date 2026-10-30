@@ -2,7 +2,7 @@ import {G, ROLES} from "../globals.js"
 import {resolveShot} from "../game/combat.js"
 import {select_plane} from "./select_plane.js"
 import {selectedPlaneOfTheActiveSide} from "./selectedPlaneOfTheActiveSide"
-import {fireTarget, markShot} from "./shooters"
+import {canUnjam, fireTarget, markShot} from "./shooters"
 import {endCombat} from "./phases"
 
 export const combat = {
@@ -10,24 +10,20 @@ export const combat = {
 
   prompt() {
     const myPlanes = G.board.planes[G.active as number] ?? []
-    const shot = G.shot ?? []
 
     prompt("Faza walki – inicjatywa: " + ROLES[G.active as number])
     button("done", true)
 
     myPlanes.forEach((plane) => {
-      if (plane && !plane.destroyed)
+      if (canUnjam(plane) || fireTarget(plane, G.active as number))
         action("select_plane", plane.id)
     })
 
     const plane = selectedPlaneOfTheActiveSide()
-    if (plane && !set_has(shot, plane.id) && !plane.destroyed) {
-      if (plane.jammed) {
-        button("unjam", true)
-      } else {
-        if (fireTarget(plane, G.active as number))
-          button("attack", true)
-      }
+    if (plane && canUnjam(plane)) {
+      button("unjam", true)
+    } else if (plane && fireTarget(plane, G.active as number)) {
+      button("attack", true)
     }
   },
 
@@ -48,7 +44,7 @@ export const combat = {
 
   unjam() {
     const plane = selectedPlaneOfTheActiveSide()
-    if (!plane || !plane.jammed || set_has(G.shot ?? [], plane.id)) return
+    if (!plane || !canUnjam(plane)) return
     clear_undo()
     markShot(plane)
     const roll = random(6) + 1

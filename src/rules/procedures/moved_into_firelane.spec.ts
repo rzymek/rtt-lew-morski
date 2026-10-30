@@ -3,6 +3,7 @@ import {G, L, planes, R_Bryt, R_Niem} from "../globals";
 import type {PlaneInstance} from "../types";
 import {movedIntoFirelane, returnFire} from "./moved_into_firelane";
 import {movePlanes} from "./move_planes";
+import {combat} from "./combat";
 
 vi.mock("../globals", async importOriginal => ({
   ...await importOriginal<typeof import("../globals")>(),
@@ -85,18 +86,18 @@ describe('reaction fire', () => {
     expect(goto).toHaveBeenCalledWith("combat");
   });
 
-  it('a plane that reacted cannot fire again in the same stage (5.3.1)', () => {
+  it('a plane that reacted can still fire in its own combat phase (3.0)', () => {
     setup([he111()], [spit()]);
     G.selected_plane = "1.0";
     roll(1, 2);
     movedIntoFirelane.attack();
     expect(G.active).toBe(R_Bryt);
-    expect(G.shot).toEqual(["1.0"]);
+    expect(goto).toHaveBeenLastCalledWith("move_planes");
+    expect(G.shot).toEqual([]);
     goto.mockClear();
     movePlanes.done();
-    expect(goto).toHaveBeenCalledWith("move_planes");
-    expect(G.active).toBe(R_Niem);
-    expect(G.shot).toEqual([]);
+    expect(goto).toHaveBeenCalledWith("combat");
+    expect(G.active).toBe(R_Bryt);
   });
 
   it('a damaged plane fires with the reduced attack (2.1.1)', () => {
@@ -126,6 +127,24 @@ describe('reaction fire', () => {
   });
 });
 
+describe('combat phase', () => {
+  it('offers only planes that can still act (5.3.1, 5.3.4)', () => {
+    const action = vi.fn();
+    vi.stubGlobal("prompt", vi.fn());
+    vi.stubGlobal("button", vi.fn());
+    vi.stubGlobal("action", action);
+    setup([he111()], [
+      spit(),
+      spit({id: "1.1", at: "A20.B19"}),
+      spit({id: "1.2", at: "A30.B30"}),
+      spit({id: "1.3", at: "A40.B40", jammed: true}),
+    ]);
+    G.shot = ["1.1"];
+    combat.prompt();
+    expect(action.mock.calls.map(it => it[1])).toEqual(["1.0", "1.3"]);
+  });
+});
+
 describe('coinciding fire lines', () => {
   function mutual() {
     const a = he111({direction: 3, damaged: true});
@@ -150,7 +169,17 @@ describe('coinciding fire lines', () => {
     returnFire.attack();
     expect(a.destroyed).toBe(true);
     expect(b.destroyed).toBe(true);
-    expect(G.shot).toEqual(["1.0", "0.0"]);
+  });
+
+  it('returning fire uses up the shot of that combat phase (5.3.1)', () => {
+    setup([he111({direction: 3})], [spit()]);
+    G.selected_plane = "1.0";
+    roll(4, 4); // Spit atk 4, distance 1: 7-11
+    movedIntoFirelane.attack();
+    roll(1, 2);
+    returnFire.attack();
+    expect(goto).not.toHaveBeenCalledWith("combat");
+    expect(goto).toHaveBeenLastCalledWith("move_planes");
   });
 
   it('the hit still lands when the target holds its fire', () => {
