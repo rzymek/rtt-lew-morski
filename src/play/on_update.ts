@@ -2,7 +2,6 @@ import {planeBorder} from "./planeBorder";
 import {clearHexHighlights, highlightHexes} from "./highlightHexes";
 import {hexOverlay} from "./refs/hexOverlay";
 import {createPlaneCounter} from "./createPlaneCounter";
-import "./rtt.d.ts";
 
 export function onUpdate() {
   action_button("undo", "Undo")

@@ -1,6 +1,6 @@
 import type {Player} from "../../shared/shared";
 
-interface View {
+interface BaseView {
   readonly log: unknown[];
   readonly log_start: number;
   readonly prompt: string;
@@ -12,8 +12,11 @@ declare global {
    The value may change if the client is in replay mode. */
   const player: Player;
 
+  /** Extension point: each game merges its own view fields into this. */
+  interface GameView {}
+
   /** This object contains the view for the role as returned by the rules view method. */
-  const view: View;
+  const view: BaseView & GameView;
 
   /** Call this when player performs an action (such as clicking on a piece).
    If the action is not in the legal list of actions in the view object,
