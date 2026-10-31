@@ -10,11 +10,11 @@ import {scorePlaneLost} from "./victory.js"
 // Roll 2 or 12 always causes gun jam regardless of this table.
 export const COMBAT_TABLE: ([number, number] | null)[][] = [
   [null, null, null, null, null],                      // atk 0
-  [[10, 11], [11, 11], null, null, null],              // atk 1
-  [[9, 11], [10, 11], [11, 11], null, null],           // atk 2
-  [[8, 11], [9, 11], [10, 11], [11, 11], null],        // atk 3
-  [[7, 11], [8, 11], [9, 11], [10, 11], [11, 11]],    // atk 4
-  [[6, 11], [7, 11], [8, 11], [9, 11], [10, 11]],     // atk 5
+  [[9, 11], [10, 11], [11, 11], null, null],           // atk 1
+  [[8, 11], [9, 11], [10, 11], [11, 11], null],        // atk 2
+  [[7, 11], [8, 11], [9, 11], [10, 11], [11, 11]],     // atk 3
+  [[6, 11], [7, 11], [8, 11], [9, 11], [10, 11]],      // atk 4
+  [[5, 11], [6, 11], [7, 11], [8, 11], [9, 11]],       // atk 5
 ]
 
 export function fireLineHexes(plane: PlaneInstance): string[] {

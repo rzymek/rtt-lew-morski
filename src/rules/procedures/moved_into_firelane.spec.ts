@@ -104,7 +104,7 @@ describe('reaction fire', () => {
     const target = he111();
     setup([target], [spit({damaged: true})]);
     G.selected_plane = "1.0";
-    roll(3, 4); // reduced Spit atk 3, distance 1: 8-11
+    roll(3, 3); // reduced Spit atk 3, distance 1: 7-11
     movedIntoFirelane.attack();
     expect(target.damaged).toBeUndefined();
   });
