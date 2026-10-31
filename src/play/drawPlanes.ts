@@ -1,4 +1,5 @@
 import {planeBorder} from "./planeBorder";
+import {HEX_ACTIONS} from "./hexActions";
 import {hexOverlay} from "./refs/hexOverlay";
 import {expandedStackLayer} from "./refs/expandedStackLayer";
 import {planePlaceholder} from "./refs/planePlaceholder";
@@ -89,7 +90,7 @@ export function drawPlanes() {
     if (isFireTarget || isAaTarget) addBorder(plane, 'orange')
     else if (isSelectable && plane.id !== view.selected_plane) addBorder(plane, 'red')
 
-    if (!center && (view.actions?.move_hex?.includes(plane.at) || view.actions?.bomb?.includes(plane.at) || view.actions?.place_gun?.includes(plane.at))) {
+    if (!center && HEX_ACTIONS.some(it => view.actions?.[it]?.includes(plane.at))) {
       // Let clicks through to the hex underneath
       counter.style.pointerEvents = 'none'
     } else if (!center && planesAt(plane.at).length > 1) {

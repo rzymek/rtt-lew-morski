@@ -33,6 +33,22 @@ export function hexStep(id: string, dir: number): string | null {
   return hexId(na, nb)
 }
 
+export function isOnBoard(a: number, b: number) {
+  const bottom = Math.floor(a / 2)
+  return a >= 0 && a <= 43 && b >= bottom && b <= bottom + 28
+}
+
+function isOffBoardStep(hex: string, direction: number): boolean {
+  const [a, b] = parseHex(hex) as [number, number]
+  const [da, db] = DIR_OFFSETS[direction]
+  return !isOnBoard(a + da, b + db)
+}
+
+// 4.3.1
+export function isEdgeHex(hex: string): boolean {
+  return DIR_OFFSETS.some((_, direction) => isOffBoardStep(hex, direction))
+}
+
 export interface Flight {
   direction: number
   // Hexes entered on the way, destination included.
@@ -48,45 +64,65 @@ function occupiedAt(allPlanes: Board['planes'], altitude: number): string[] {
 function crossesSouthEdge(hex: string, direction: number): boolean {
   const [a, b] = parseHex(hex) as [number, number]
   const [da, db] = DIR_OFFSETS[direction]
-  return b + db < Math.floor((a + da) / 2)
+  const na = a + da
+  return na >= 0 && na <= 43 && b + db < Math.floor(na / 2)
 }
 
-// 8.1: whether the plane can fly off the board through the south edge. That takes the last movement point at most.
-export function canLeaveSouth(plane: PlaneInstance, allPlanes: Board['planes'], altitude = altitudeOf(plane)): boolean {
-  const occupied = occupiedAt(allPlanes, altitude)
+export interface Exit {
+  // The last hex on the board.
+  hex: string
+  south: boolean
+}
+
+// 4.3.1, 8.1: the ways off the board. Crossing the edge takes one movement point, and counts as the hex required after a turn.
+export function exitsFor(plane: PlaneInstance, allPlanes: Board['planes'], altitude = altitudeOf(plane), ignoreOccupied = false): Exit[] {
+  const occupied = ignoreOccupied ? [] : occupiedAt(allPlanes, altitude)
   const maxSteps = maxSpeedAt(plane, altitude) - 1
   const turnDist = planeStats(plane).zwrotnosc
   const dir = plane.direction
+  const exits = new Map<string, boolean>()
   // The hexes passed, the starting one included.
   const walk = (from: string, direction: number, steps: number): string[] => {
     const hexes = [from]
     for (let s = 0; s < steps; s++) {
-      const next = hexStep(hexes[s], direction)
-      if (!next || occupied.includes(next)) break
+      if (isOffBoardStep(hexes[s], direction)) break
+      const next = hexStep(hexes[s], direction)!
+      if (occupied.includes(next)) break
       hexes.push(next)
     }
     return hexes
   }
-  return walk(plane.at, dir, maxSteps).some((hex, steps) =>
-    crossesSouthEdge(hex, dir) || (steps >= turnDist && [dir + 5, dir + 1].some(turned =>
-      walk(hex, turned % 6, maxSteps - steps).some(it => crossesSouthEdge(it, turned % 6))
-    ))
-  )
+  const addExits = (hexes: string[], direction: number) => {
+    for (const hex of hexes) {
+      if (isOffBoardStep(hex, direction))
+        exits.set(hex, !!exits.get(hex) || crossesSouthEdge(hex, direction))
+    }
+  }
+  const straight = walk(plane.at, dir, maxSteps)
+  addExits(straight, dir)
+  straight.forEach((hex, steps) => {
+    if (steps < turnDist) return
+    for (const turned of [(dir + 5) % 6, (dir + 1) % 6])
+      addExits(walk(hex, turned, maxSteps - steps), turned)
+  })
+  return [...exits].map(([hex, south]) => ({hex, south}))
 }
 
 // Returns {hexId: flight} for all valid destinations.
 // Prefers straight path over turning for tie-breaking on direction.
 // The range depends on the altitude the plane will end its move at.
 // 4.1.1: hexes occupied at that altitude can neither be entered nor flown through.
-export function flightsFor(plane: PlaneInstance, allPlanes: Board['planes'], altitude = altitudeOf(plane)): Record<string, Flight> {
+// 4.2.6: ignoreOccupied is for a plane with no other way to fly.
+export function flightsFor(plane: PlaneInstance, allPlanes: Board['planes'], altitude = altitudeOf(plane), ignoreOccupied = false): Record<string, Flight> {
   const maxMp = maxSpeedAt(plane, altitude)
   const minMp = planeStats(plane).predkosc_min
   const turnDist = planeStats(plane).zwrotnosc
   const dir = plane.direction
   const moves: Record<string, Flight> = {}
-  const occupied = occupiedAt(allPlanes, altitude)
+  const occupied = ignoreOccupied ? [] : occupiedAt(allPlanes, altitude)
   const enter = (from: string | null, direction: number): string | null => {
-    const next = from && hexStep(from, direction)
+    if (!from || isOffBoardStep(from, direction)) return null
+    const next = hexStep(from, direction)
     return next && !occupied.includes(next) ? next : null
   }
 
@@ -121,14 +157,14 @@ export function flightsFor(plane: PlaneInstance, allPlanes: Board['planes'], alt
 }
 
 // Returns {hexId: finalDirection} for all valid destinations.
-export function movesMapFor(plane: PlaneInstance, allPlanes: Board['planes'], altitude = altitudeOf(plane)): Record<string, number> {
-  const flights = flightsFor(plane, allPlanes, altitude)
+export function movesMapFor(plane: PlaneInstance, allPlanes: Board['planes'], altitude = altitudeOf(plane), ignoreOccupied = false): Record<string, number> {
+  const flights = flightsFor(plane, allPlanes, altitude, ignoreOccupied)
   return Object.fromEntries(Object.entries(flights).map(([hex, flight]) => [hex, flight.direction]))
 }
 
-export function possibleMovesFor(plane: PlaneInstance, allPlanes: Board['planes'], altitude = altitudeOf(plane)): string[] {
+export function possibleMovesFor(plane: PlaneInstance, allPlanes: Board['planes'], altitude = altitudeOf(plane), ignoreOccupied = false): string[] {
   const result: string[] = []
-  for (const h of Object.keys(movesMapFor(plane, allPlanes, altitude)))
+  for (const h of Object.keys(movesMapFor(plane, allPlanes, altitude, ignoreOccupied)))
     set_add(result, h)
   return result
 }

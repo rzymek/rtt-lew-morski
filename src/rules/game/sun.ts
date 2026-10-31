@@ -1,8 +1,7 @@
 import type {PlaneInstance} from "../types";
 import {G} from "../globals";
 import {cloudPenalty} from "./clouds";
-import {DIR_OFFSETS, hexId, hexStep, parseHex} from "./hex";
-import {isOnBoard} from "./scenarios";
+import {DIR_OFFSETS, hexId, hexStep, isOnBoard, parseHex} from "./hex";
 
 export type SunEdge = "E" | "S" | "W"
 

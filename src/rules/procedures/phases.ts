@@ -6,6 +6,7 @@ import {isEmpty} from "../generic/isEmpty";
 import {canUnjam, shootersOf} from "./shooters";
 import {canBomb} from "./bombers";
 import {gunsReady} from "./aa_guns";
+import {nextToReturn} from "./return_planes";
 
 export function startCombat() {
   const planes = G.board.planes[G.active]
@@ -21,12 +22,16 @@ export function endCombat() {
   delete G.selected_plane
   delete G.selected_gun
   changeSide()
-  if (G.active === R_Niem) G.stage++
+  if (G.active === R_Niem) {
+    G.stage++
+    // 2.0
+    log(`Etap ${G.stage}`)
+  }
   G.shot = []
   G.aa_fired = []
   G.flown_over = {}
   enterReinforcements()
-  goto("move_planes")
+  goto(nextToReturn() ? "return_planes" : "move_planes")
 }
 
 // 9: an occupied entry hex gives way to the nearest free one.
@@ -38,7 +43,8 @@ function enterReinforcements() {
       .filter(p => !p.destroyed && altitudeOf(p) === ALT_HIGH)
       .map(p => p.at)
     const hex = hexesAround(at, 5).find(it => !occupied.includes(it))!
-    planes.push({plane, at: hex, direction, id: `${G.active}.${planes.length}`})
+    const offBoard = (G.off_board ?? []).filter(it => parseInt(it.plane.id) === G.active).length
+    planes.push({plane, at: hex, direction, id: `${G.active}.${planes.length + offBoard}`})
     log(`${ROLES[G.active]}: posiłki ${plane.nazwa} na ${hex}`)
   }
   if (entering.length > 0)

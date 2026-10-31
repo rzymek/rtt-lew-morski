@@ -89,7 +89,7 @@ export const data: { planes: Record<string, PlaneData> } = {
 			nazwa: "Me 109 E",
 			predkosc_max: 6,
 			predkosc_min: 2,
-			sila_ataku: 4,
+			sila_ataku: 3,
 			zwrotnosc: 0,
 			udzwig_bomb: null,
 			img: "planes/u_ME109",

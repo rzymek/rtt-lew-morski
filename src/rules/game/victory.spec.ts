@@ -3,7 +3,7 @@ import {G, planes, R_Bryt, R_Niem} from "../globals";
 import type {PlaneInstance} from "../types";
 import {applyHit} from "./combat";
 import {checkGameEnd, endingGame, winner} from "./victory";
-import {canLeaveSouth} from "./hex";
+import {exitsFor} from "./hex";
 import {dropBomb} from "../procedures/bombers";
 
 vi.mock("../globals", async importOriginal => ({
@@ -185,7 +185,8 @@ describe('8.2: the winner', () => {
 
 describe('8.1: leaving through the south edge', () => {
   const S = 3, NE = 1, N = 0;
-  const canLeave = (it: PlaneInstance) => canLeaveSouth(it, {[R_Niem]: [it]});
+  const canLeaveSouth = (it: PlaneInstance, all = {[R_Niem]: [it]}) => exitsFor(it, all).some(exit => exit.south);
+  const canLeave = (it: PlaneInstance) => canLeaveSouth(it);
 
   it('straight ahead, from the edge', () => {
     expect(canLeave(plane("0.0", "ME109", {at: "A20.B10", direction: S}))).toBe(true);

@@ -4,7 +4,7 @@ import {FireTarget, firstOnFireLine} from "../game/combat";
 
 // The enemy plane `plane` may fire at right now, if any (5.3.1, 5.3.2, 5.3.4).
 export function fireTarget(plane: PlaneInstance, side: number): FireTarget | null {
-  if (plane.destroyed || plane.jammed || set_has(G.shot ?? [], plane.id)) return null
+  if (plane.destroyed || plane.jammed || (plane.unjammed_stage !== undefined && plane.unjammed_stage === G.stage) || set_has(G.shot ?? [], plane.id)) return null
   const hit = firstOnFireLine(plane, G.board.planes)
   return hit && hit.side !== side ? hit : null
 }

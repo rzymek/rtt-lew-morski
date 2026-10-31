@@ -9,6 +9,12 @@ import {sunHexes} from "../game/sun";
 export function on_view() {
   V.board = G.board
   V.active_side = G.active as number
+  V.stage = G.stage
+  V.off_board = (G.off_board ?? []).map(it => ({
+    name: it.plane.plane.nazwa,
+    side: parseInt(it.plane.id),
+    return_stage: it.return_stage,
+  }))
   V.shot = G.shot
   V.bombed = G.bombed
   V.targets = G.targets
@@ -23,7 +29,7 @@ export function on_view() {
     if (L.P === 'move_planes') {
       const moved = G.moved ?? []
       V.unmoved = G.board.planes[G.active as number]
-        .filter(plane => !plane.destroyed && !set_has(moved, [plane.id]))
+        .filter(plane => !plane.destroyed && !set_has(moved, plane.id))
         .map(plane => plane.id)
     }
     if (G.selected_plane !== undefined) {
@@ -34,7 +40,9 @@ export function on_view() {
           V.moves = movesMapFor(plane, G.board.planes, G.selected_altitude)
         } else {
           V.fire_line = fireLineHexes(plane)
-          V.fire_target = fireTarget(plane, G.active as number)?.plane.id
+          // Nothing to shoot at while setting up.
+          if (L.P !== 'place_planes' && L.P !== 'return_planes')
+            V.fire_target = fireTarget(plane, G.active as number)?.plane.id
         }
       }
     }

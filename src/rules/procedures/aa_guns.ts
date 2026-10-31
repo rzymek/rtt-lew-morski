@@ -33,8 +33,7 @@ export const placeAaGuns = {
     if (gunsLeftToPlace() > 0) return
     clear_undo()
     log(`${ROLES[R_Bryt]}: rozstawiono działka p-lot (${G.aa_guns!.length})`)
-    G.active = R_Niem
-    goto("move_planes")
+    goto("place_planes")
   },
 }
 

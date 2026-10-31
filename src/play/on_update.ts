@@ -7,6 +7,11 @@ import {drawSun} from "./drawSun";
 
 export function onUpdate() {
   // action_button prepends, so the last one ends up first
+  action_button("next_type", "Inny typ samolotu")
+  action_button("turn_right", "Obróć w prawo")
+  action_button("turn_left", "Obróć w lewo")
+  action_button("leave_forever", "Nie wróci")
+  action_button("leave_return", "Wróci")
   action_button("leave_board", "Opuść planszę")
   action_button("bardzo_nisko", "Bardzo nisko")
   action_button("nisko", "Nisko")
@@ -28,6 +33,15 @@ export function onUpdate() {
   highlightHexes(view.fire_line, '#ff4444');
   highlightHexes(view.actions?.bomb, '#ff9900');
   highlightHexes(view.actions?.place_gun, '#ffff66');
+  highlightHexes(view.actions?.place_plane, '#66ff66');
+  highlightHexes(view.actions?.return_hex, '#66ff66');
+  highlightHexes(view.actions?.leave_hex, '#ff66ff');
+
+  // 2.0, 4.3.1: the stage track.
+  document.getElementById('turn_info')!.textContent = [
+    `Etap ${view.stage}`,
+    ...(view.off_board ?? []).map(it => `${it.name}: powrót w etapie ${it.return_stage}`),
+  ].join('\n')
 
   // 8.0
   for (const side of Object.keys(view.vp ?? {})) {

@@ -87,6 +87,8 @@ export const combat = {
     const roll = random(6) + 1
     if (roll === 6) {
       delete plane.jammed
+      // 5.3.4
+      plane.unjammed_stage = G.stage
       log(`${ROLES[G.active as number]} odblokował karabiny (rzut:${roll}) – sukces`)
     } else {
       log(`${ROLES[G.active as number]} nie odblokował karabinów (rzut:${roll})`)

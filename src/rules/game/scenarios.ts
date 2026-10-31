@@ -1,5 +1,5 @@
 import {data, PlaneData} from "./data.js"
-import {hexId, parseHex} from "./hex.js"
+import {hexId, isOnBoard, parseHex} from "./hex.js"
 
 const {Hur, HurL, Spit, SpitL, ME109, ME109L, ME110, ME110L, HE111, JU88} = data.planes
 
@@ -132,11 +132,6 @@ export const SCENARIOS: Record<string, Scenario> = {
     targets: ALL_TARGETS,
     all_targets_vp: 5,
   },
-}
-
-export function isOnBoard(a: number, b: number) {
-  const bottom = Math.floor(a / 2)
-  return a >= 0 && a <= 43 && b >= bottom && b <= bottom + 28
 }
 
 export function boardHexes(): string[] {

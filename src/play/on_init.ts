@@ -6,6 +6,7 @@ import {sunLayer} from "./refs/sunLayer";
 import {planePlaceholder} from "./refs/planePlaceholder";
 import {expandedStackLayer} from "./refs/expandedStackLayer";
 import {collapseStack} from "./drawPlanes";
+import {HEX_ACTIONS} from "./hexActions";
 
 export function onInit(scenario: string, options: unknown, static_view: unknown) {
   planePlaceholder.remove()
@@ -14,12 +15,8 @@ export function onInit(scenario: string, options: unknown, static_view: unknown)
   // Click on a hex → send move_hex or bomb if it's a valid target
   document.querySelectorAll('#hexes use').forEach(el => {
     el.addEventListener('click', () => {
-      if (view.actions?.move_hex?.includes(el.id))
-        send_action("move_hex", el.id)
-      else if (view.actions?.bomb?.includes(el.id))
-        send_action("bomb", el.id)
-      else if (view.actions?.place_gun?.includes(el.id))
-        send_action("place_gun", el.id)
+      const hexAction = HEX_ACTIONS.find(it => view.actions?.[it]?.includes(el.id))
+      if (hexAction) send_action(hexAction, el.id)
     })
   })
 

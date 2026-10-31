@@ -3,6 +3,8 @@ import {ViewPlaneInstance} from "./viewPlaneInstance";
 export interface View {
   board: { planes: Record<number, ViewPlaneInstance[]> }
   active_side: number
+  stage?: number
+  off_board?: { name: string, side: number, return_stage: number }[]
   actions?: {
     move_hex?: string[]
     select_plane?: string[]
@@ -13,6 +15,14 @@ export interface View {
     unjam?: number
     bomb?: string[]
     place_gun?: string[]
+    place_plane?: string[]
+    return_hex?: string[]
+    leave_hex?: string[]
+    leave_return?: number
+    leave_forever?: number
+    next_type?: number
+    turn_left?: number
+    turn_right?: number
     select_gun?: string[]
     aa_fire?: string[]
     deselect?: number

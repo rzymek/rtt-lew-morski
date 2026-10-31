@@ -1,5 +1,6 @@
 import type {PlaneInstance} from "../types";
 import {G, R_Bryt, R_Niem, ROLES} from "../globals";
+import {otherSide} from "../lifecycle/changeSide";
 
 // Table 1
 const VP_BOMB_ON_TARGET = 3
@@ -16,18 +17,13 @@ function addVp(side: number, points: number, reason: string) {
 }
 
 // Table 1: the Me-110 carries bombs, but counts as a fighter.
-export function scorePlaneLost(plane: PlaneInstance) {
+// 4.2.6: nobody shot down a plane lost in a collision, so only its owner's score changes.
+export function scorePlaneLost(plane: PlaneInstance, {shotDown = true} = {}) {
   const name = plane.plane.nazwa
-  if (parseInt(plane.id) === R_Bryt) {
-    addVp(R_Bryt, VP_FIGHTER_LOST, `stracony ${name}`)
-    addVp(R_Niem, VP_FIGHTER_SHOT_DOWN, `zestrzelony ${name}`)
-  } else if (plane.plane.bombowiec) {
-    addVp(R_Niem, VP_BOMBER_LOST, `stracony ${name}`)
-    addVp(R_Bryt, VP_BOMBER_SHOT_DOWN, `zestrzelony ${name}`)
-  } else {
-    addVp(R_Niem, VP_FIGHTER_LOST, `stracony ${name}`)
-    addVp(R_Bryt, VP_FIGHTER_SHOT_DOWN, `zestrzelony ${name}`)
-  }
+  const side = parseInt(plane.id)
+  const bomber = side === R_Niem && !!plane.plane.bombowiec
+  addVp(side, bomber ? VP_BOMBER_LOST : VP_FIGHTER_LOST, `stracony ${name}`)
+  if (shotDown) addVp(otherSide(side), bomber ? VP_BOMBER_SHOT_DOWN : VP_FIGHTER_SHOT_DOWN, `zestrzelony ${name}`)
 }
 
 export function scoreBombOnTarget(hex: string) {
@@ -39,9 +35,11 @@ export function scoreAllTargetsBombed() {
   if (G.all_targets_vp) addVp(R_Niem, G.all_targets_vp, "zbombardowane wszystkie cele")
 }
 
-// 8.1: reinforcements yet to come count as well, or a side could lose before they enter.
+// 8.1: planes yet to come count as well, or a side could lose before they enter.
 function hasUnitsLeft(side: number): boolean {
   return G.board.planes[side].some(plane => !plane.destroyed)
+    || (G.to_place?.[side] ?? []).length > 0
+    || (G.off_board ?? []).some(it => parseInt(it.plane.id) === side)
     || (G.reinforcements?.[side] ?? []).length > 0
     || (side === R_Bryt && (G.aa_guns ?? []).length > 0)
 }

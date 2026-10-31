@@ -1,5 +1,7 @@
 import {G, R_Niem, ROLES, V} from "../globals.js"
-import {canLeaveSouth, flightsFor, possibleMovesFor} from "../game/hex.js"
+import {exitsFor, flightsFor, possibleMovesFor} from "../game/hex.js"
+import {applyHit} from "../game/combat";
+import {scorePlaneLost} from "../game/victory";
 import {ALT_HIGH, ALT_LOW, ALT_VERY_LOW, ALTITUDE_NAMES, altitudeOf, canChangeAltitude} from "../game/altitude";
 import {shootersOf} from "./shooters";
 import {startCombat} from "./phases";
@@ -25,9 +27,72 @@ function selectAltitude(altitude: number) {
   }
 }
 
-// 8.1
-function canLeaveBoard(plane: PlaneInstance): boolean {
-  return G.active === R_Niem && canLeaveSouth(plane, G.board.planes, G.selected_altitude)
+const RETURN_AFTER_STAGES = 5
+const COLLISION_ROLL = 6
+
+// 4.2.6: only when no altitude within reach leaves any other way to fly.
+export function isForced(plane: PlaneInstance): boolean {
+  return ALTITUDE_ACTIONS.every(([, level]) => !canChangeAltitude(plane, level)
+    || (Object.keys(flightsFor(plane, G.board.planes, level)).length === 0
+      && exitsFor(plane, G.board.planes, level).length === 0))
+}
+
+function exits(plane: PlaneInstance) {
+  return exitsFor(plane, G.board.planes, G.selected_altitude, isForced(plane))
+}
+
+function takeOffBoard(plane: PlaneInstance, from: string) {
+  plane.at = from
+  plane.altitude = G.selected_altitude ?? altitudeOf(plane)
+  const side = G.active
+  G.board.planes[side] = G.board.planes[side].filter(it => it !== plane)
+  G.off_board ??= []
+  const return_stage = G.stage + RETURN_AFTER_STAGES
+  G.off_board.push({plane, return_stage, from})
+  log(`${ROLES[side]}: ${plane.plane.nazwa} opuszcza planszę na ${from} – powrót w etapie ${return_stage}`)
+  clearSelection()
+}
+
+function clearSelection() {
+  delete G.selected_plane
+  delete G.selected_altitude
+  delete G.leaving
+  delete G.leaving_south_from
+}
+
+// 4.3.2: the British may have caught a German plane leaving the board anywhere but in the south.
+function leaveUnderFire(plane: PlaneInstance, from: string) {
+  clear_undo()
+  const roll = random(6) + 1
+  plane.at = from
+  plane.altitude = G.selected_altitude ?? altitudeOf(plane)
+  if (roll === 1 || (roll === 2 && plane.damaged)) {
+    plane.destroyed = true
+    log(`${ROLES[G.active]}: ${plane.plane.nazwa} opuszcza planszę na ${from} [rzut:${roll}] → zestrzelony`)
+    scorePlaneLost(plane)
+    clearSelection()
+    return
+  }
+  log(`${ROLES[G.active]}: ${plane.plane.nazwa} opuszcza planszę na ${from} [rzut:${roll}] → ${roll === 2 ? applyHit(plane) : "bez strat"}`)
+  takeOffBoard(plane, from)
+}
+
+// 4.2.6
+function collide(plane: PlaneInstance) {
+  const others = Object.values(G.board.planes).flat()
+    .filter(it => it !== plane && !it.destroyed && it.at === plane.at && altitudeOf(it) === altitudeOf(plane))
+  if (others.length === 0) return
+  clear_undo()
+  const roll = random(6) + 1
+  if (roll !== COLLISION_ROLL) {
+    log(`${plane.plane.nazwa} wlatuje na zajęty heks ${plane.at} [rzut:${roll}] → bez kolizji`)
+    return
+  }
+  log(`${plane.plane.nazwa} wlatuje na zajęty heks ${plane.at} [rzut:${roll}] → zderzenie`)
+  for (const it of [plane, ...others]) {
+    it.destroyed = true
+    scorePlaneLost(it, {shotDown: false})
+  }
 }
 
 export const movePlanes = {
@@ -35,19 +100,32 @@ export const movePlanes = {
 
   prompt() {
     const selected = selectedPlaneOfTheActiveSide();
+    if (selected !== undefined && G.leaving_south_from !== undefined) {
+      prompt(`${selected.plane.nazwa} opuszcza planszę przez południową krawędź – czy wróci do gry?`)
+      button("leave_return")
+      button("leave_forever")
+      return
+    }
+    if (selected !== undefined && G.leaving) {
+      prompt(`${selected.plane.nazwa} – wybierz heks, przez który opuści planszę`)
+      exits(selected).forEach(({hex}) => action("leave_hex", hex))
+      button("leave_board")
+      return
+    }
     if (selected !== undefined) {
       const altitude = G.selected_altitude ?? altitudeOf(selected)
-      prompt(`faza ruchu samolotów ${ROLES[G.active]} – koniec ruchu na wysokości: ${ALTITUDE_NAMES[altitude]}`)
+      const forced = isForced(selected)
+      prompt(`faza ruchu samolotów ${ROLES[G.active]} – koniec ruchu na wysokości: ${ALTITUDE_NAMES[altitude]}${forced ? " – brak wolnej drogi, wejście na zajęty heks grozi zderzeniem" : ""}`)
       for (const [verb, level] of ALTITUDE_ACTIONS) {
         button(verb, level !== altitude && canChangeAltitude(selected, level))
       }
-      if (canLeaveBoard(selected)) button("leave_board")
+      if (exits(selected).length > 0) button("leave_board")
     } else {
       prompt(`faza ruchu samolotów ${ROLES[G.active]}`)
     }
     button("done", (V!.unmoved ?? []).length === 0)
     if (selected !== undefined) {
-      for (const hex of possibleMovesFor(selected, G.board.planes, G.selected_altitude)) {
+      for (const hex of possibleMovesFor(selected, G.board.planes, G.selected_altitude, isForced(selected))) {
         action("move_hex", hex)
       }
       action("select_plane", G.selected_plane)
@@ -85,22 +163,50 @@ export const movePlanes = {
     selectAltitude(ALT_VERY_LOW)
   },
 
-  // 8.1: the plane does not come back. It is out of the game, but the enemy gets no points for it.
   leave_board() {
     const plane = selectedPlaneOfTheActiveSide();
-    if (!plane || !canLeaveBoard(plane)) return
-    push_undo()
+    if (!plane) return
+    if (G.leaving) delete G.leaving
+    else if (exits(plane).length > 0) G.leaving = true
+  },
+
+  leave_hex(hex: string) {
+    const plane = selectedPlaneOfTheActiveSide();
+    const exit = plane && G.leaving ? exits(plane).find(it => it.hex === hex) : undefined
+    if (!plane || !exit) return
+    if (G.active !== R_Niem) {
+      push_undo()
+      takeOffBoard(plane, hex)
+    } else if (exit.south) {
+      push_undo()
+      delete G.leaving
+      G.leaving_south_from = hex
+    } else {
+      leaveUnderFire(plane, hex)
+    }
+  },
+
+  // 8.1, 4.3.2: the south edge is the safe way home: no die roll.
+  leave_return() {
+    const plane = selectedPlaneOfTheActiveSide();
+    if (!plane || G.leaving_south_from === undefined) return
+    takeOffBoard(plane, G.leaving_south_from)
+  },
+
+  // 8.1: the plane does not come back. It is out of the game, but the enemy gets no points for it.
+  leave_forever() {
+    const plane = selectedPlaneOfTheActiveSide();
+    if (!plane || G.leaving_south_from === undefined) return
     plane.destroyed = true
     plane.left_board = true
-    delete G.selected_plane
-    delete G.selected_altitude
-    log(`${ROLES[G.active]}: ${plane.plane.nazwa} opuszcza planszę`)
+    log(`${ROLES[G.active]}: ${plane.plane.nazwa} opuszcza planszę i nie wróci`)
+    clearSelection()
   },
 
   move_hex(target: string) {
     if (G.selected_plane === undefined) return
     const plane = selectedPlaneOfTheActiveSide();
-    const flights = flightsFor(plane!, G.board.planes, G.selected_altitude)
+    const flights = flightsFor(plane!, G.board.planes, G.selected_altitude, isForced(plane!))
     if (!(target in flights)) return
     push_undo()
     plane!.at = target
@@ -110,7 +216,7 @@ export const movePlanes = {
     G.flown_over[plane!.id] = flights[target].path
     if (!G.moved) G.moved = []
     set_add(G.moved, G.selected_plane)
-    delete G.selected_plane
-    delete G.selected_altitude
+    clearSelection()
+    collide(plane!)
   },
 };

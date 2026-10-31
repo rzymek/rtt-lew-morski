@@ -1,37 +1,26 @@
 import {G, R_Niem, R_Bryt} from "../globals.js"
 import "../rtt/framework.d.ts";
-import {PlaneInstance, PlaneInstanceDef} from "../types";
-import {Deployment, hexesAround, SCENARIOS} from "../game/scenarios";
+import type {PlaneToPlace} from "../types";
+import {Deployment, SCENARIOS} from "../game/scenarios";
 import {SUN_EDGE_NAMES, sunEdgeFor} from "../game/sun";
 
 export const scenarios = Object.keys(SCENARIOS)
 
-function withIds(def: Record<number, PlaneInstanceDef[]>): Record<number, PlaneInstance[]> {
-  return Object
-    .entries(def)
-    .map(([side, planes]) => ({
-      [side]: planes.map((plane, idx) => ({...plane, id: `${side}.${idx}`}))
-    }))
-    .reduce((acc, it) => ({
-      ...acc,
-      ...it
-    }), {})
-}
-
-// 9.3: players choose the starting hexes in the manual, here each plane gets the next one nearest to the center.
-function deploy({center, radius, direction, planes}: Deployment): PlaneInstanceDef[] {
-  const hexes = hexesAround(center, radius)
-  return planes.map((plane, idx) => ({plane, at: hexes[idx], direction}))
+// 9.3
+function toPlace(side: number, deployments: Deployment[]): PlaneToPlace[] {
+  return deployments
+    .flatMap(({center, radius, direction, planes}) => planes.map(plane => ({center, radius, direction, plane})))
+    .map((it, idx) => ({...it, id: `${side}.${idx}`}))
 }
 
 export function on_setup(scenario: string, _options: unknown) {
   const {brytyjczycy, niemcy, targets, all_targets_vp} = SCENARIOS[scenario]
-  G.board = {
-    planes: withIds({
-      [R_Bryt]: brytyjczycy.deployments.flatMap(deploy),
-      [R_Niem]: niemcy.deployments.flatMap(deploy),
-    })
+  G.board = {planes: {[R_Niem]: [], [R_Bryt]: []}}
+  G.to_place = {
+    [R_Bryt]: toPlace(R_Bryt, brytyjczycy.deployments),
+    [R_Niem]: toPlace(R_Niem, niemcy.deployments),
   }
+  G.off_board = []
   G.reinforcements = {
     [R_Bryt]: brytyjczycy.reinforcements ?? [],
     [R_Niem]: niemcy.reinforcements ?? [],
@@ -51,11 +40,10 @@ export function on_setup(scenario: string, _options: unknown) {
   log(`Słońce: ${SUN_EDGE_NAMES[G.sun]}`)
   G.aa_guns = []
   G.aa_fired = []
+  G.active = R_Bryt
   if (brytyjczycy.aa_guns) {
-    G.active = R_Bryt
     call("place_aa_guns", {count: brytyjczycy.aa_guns})
   } else {
-    G.active = R_Niem
-    call("move_planes")
+    call("place_planes")
   }
 }

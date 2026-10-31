@@ -84,8 +84,8 @@ describe('setup (6)', () => {
   it('is skipped in a scenario without guns', () => {
     roll(1);
     on_setup("Wariant 1", undefined);
-    expect(G.active).toBe(R_Niem);
-    expect(call).toHaveBeenCalledWith("move_planes");
+    expect(G.active).toBe(R_Bryt);
+    expect(call).toHaveBeenCalledWith("place_planes");
   });
 
   it('allows one gun per hex, not on a river or in clouds (6.0.1, 6.0.2)', () => {
@@ -101,7 +101,7 @@ describe('setup (6)', () => {
     expect(offered).toContain(ADJACENT);
   });
 
-  it('ends only with all the guns placed, then the Germans move', () => {
+  it('ends only with all the guns placed, then the British set up their planes', () => {
     Object.assign(L, {count: 2});
     setup([], [GUN]);
     placeAaGuns.done();
@@ -110,8 +110,8 @@ describe('setup (6)', () => {
     placeAaGuns.place_gun(FAR);
     expect(G.aa_guns).toHaveLength(2);
     placeAaGuns.done();
-    expect(G.active).toBe(R_Niem);
-    expect(goto).toHaveBeenCalledWith("move_planes");
+    expect(G.active).toBe(R_Bryt);
+    expect(goto).toHaveBeenCalledWith("place_planes");
   });
 });
 

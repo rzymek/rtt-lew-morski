@@ -13,11 +13,29 @@ export interface PlaneInstanceDef {
   // 8.1: out of the game, yet not shot down.
   left_board?: boolean
   jammed?: boolean
+  // 5.3.4: the guns work again from the next stage on.
+  unjammed_stage?: number
   bombs_dropped?: number
 }
 
 export interface PlaneInstance extends PlaneInstanceDef {
   id: string;
+}
+
+// 4.3.1: waiting on the stage track, outside of G.board.
+export interface OffBoardPlane {
+  plane: PlaneInstance
+  return_stage: number
+  from: string
+}
+
+// 9.3: a plane its player has yet to set up.
+export interface PlaneToPlace {
+  id: string
+  plane: PlaneData
+  center: string
+  radius: number
+  direction: number
 }
 
 export interface Board {
@@ -42,6 +60,11 @@ export interface GameState {
   board: Board
   stage: number
   reinforcements?: Record<number, Reinforcement[]>
+  to_place?: Record<number, PlaneToPlace[]>
+  off_board?: OffBoardPlane[]
+  // 8.1: choosing a way off the board; the hex once the player still has to decide about the return.
+  leaving?: boolean
+  leaving_south_from?: string
   targets?: string[]
   moved?: number[]
   selected_plane?: string
@@ -65,6 +88,8 @@ export interface ViewState {
   actions: Record<string, number | (string | number)[]>
   board?: Board
   active_side?: number
+  stage?: number
+  off_board?: { name: string, side: number, return_stage: number }[]
   unmoved?: string[],
   moves?: Record<string, number>
   selected_plane?: string
