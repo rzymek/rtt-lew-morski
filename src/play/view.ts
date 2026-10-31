@@ -22,4 +22,5 @@ export interface View {
   fire_target?: string
   shot?: string[]
   bombed?: string[]
+  targets?: string[]
 }

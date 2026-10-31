@@ -1,6 +1,7 @@
 import {clearHexHighlights, highlightHexes} from "./highlightHexes";
 import {drawPlanes} from "./drawPlanes";
 import {drawBombed} from "./drawBombed";
+import {drawTargets} from "./drawTargets";
 
 export function onUpdate() {
   // action_button prepends, so the last one ends up first
@@ -24,6 +25,7 @@ export function onUpdate() {
   highlightHexes(view.fire_line, '#ff4444');
   highlightHexes(view.actions?.bomb, '#ff9900');
 
+  drawTargets()
   drawBombed()
   drawPlanes()
 }

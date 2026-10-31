@@ -1,5 +1,6 @@
 import {hexOverlay} from "./refs/hexOverlay";
 import {bombedLayer} from "./refs/bombedLayer";
+import {targetsLayer} from "./refs/targetsLayer";
 import {planePlaceholder} from "./refs/planePlaceholder";
 import {expandedStackLayer} from "./refs/expandedStackLayer";
 import {collapseStack} from "./drawPlanes";
@@ -19,6 +20,8 @@ export function onInit(scenario: string, options: unknown, static_view: unknown)
   })
 
   const svg = document.querySelector('#mapwrap svg')!
+  targetsLayer.id = 'targets'
+  svg.insertBefore(targetsLayer, document.getElementById('units'))
   bombedLayer.id = 'bombed'
   svg.insertBefore(bombedLayer, document.getElementById('units'))
   hexOverlay.id = 'hex-overlay'

@@ -1,4 +1,5 @@
 import type {PlaneData} from "./game/data.js"
+import type {Reinforcement} from "./game/scenarios.js"
 
 export interface PlaneInstanceDef {
   plane: PlaneData
@@ -35,6 +36,8 @@ export interface GameState {
   undo: any[]
   L: FrameState | null
   board: Board
+  stage: number
+  reinforcements?: Record<number, Reinforcement[]>
   targets?: string[]
   moved?: number[]
   selected_plane?: string
@@ -58,6 +61,7 @@ export interface ViewState {
   fire_target?: string
   shot?: string[]
   bombed?: string[]
+  targets?: string[]
 }
 
 export interface StateDefinition {

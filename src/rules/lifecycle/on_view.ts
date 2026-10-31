@@ -10,6 +10,7 @@ export function on_view() {
   V.active_side = G.active as number
   V.shot = G.shot
   V.bombed = G.bombed
+  V.targets = G.targets
   if (R === G.active) {
     if (L.P === 'move_planes') {
       const moved = G.moved ?? []

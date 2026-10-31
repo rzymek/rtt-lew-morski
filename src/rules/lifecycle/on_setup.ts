@@ -1,6 +1,9 @@
-import {G, R_Niem, R_Bryt, planes} from "../globals.js"
+import {G, R_Niem, R_Bryt} from "../globals.js"
 import "../rtt/framework.d.ts";
 import {PlaneInstance, PlaneInstanceDef} from "../types";
+import {Deployment, hexesAround, SCENARIOS} from "../game/scenarios";
+
+export const scenarios = Object.keys(SCENARIOS)
 
 function withIds(def: Record<number, PlaneInstanceDef[]>): Record<number, PlaneInstance[]> {
   return Object
@@ -14,29 +17,26 @@ function withIds(def: Record<number, PlaneInstanceDef[]>): Record<number, PlaneI
     }), {})
 }
 
-export function on_setup(_scenario: string, _options: unknown) {
+// 9.3: players choose the starting hexes in the manual, here each plane gets the next one nearest to the center.
+function deploy({center, radius, direction, planes}: Deployment): PlaneInstanceDef[] {
+  const hexes = hexesAround(center, radius)
+  return planes.map((plane, idx) => ({plane, at: hexes[idx], direction}))
+}
+
+export function on_setup(scenario: string, _options: unknown) {
+  const {brytyjczycy, niemcy, targets} = SCENARIOS[scenario]
   G.board = {
     planes: withIds({
-      [R_Bryt]: [
-        {plane: planes.SpitL, at: 'A32.B30', direction: 1},
-        {plane: planes.Spit, at: 'A32.B31', direction: 1},
-        {plane: planes.Spit, at: 'A32.B32', direction: 2},
-        // {plane: planes.SpitL, at: 'A10.B08', direction: 0},
-        // {plane: planes.Spit, at: 'A11.B08', direction: 1},
-        // {plane: planes.Spit, at: 'A09.B08', direction: 2},
-      ],
-      [R_Niem]: [
-        {plane: planes.ME110, at: 'A40.B35', direction: 4},
-        {plane: planes.ME110, at: 'A40.B36', direction: 4},
-
-        {plane: planes.HE111, at: 'A41.B35', direction: 4},
-        {plane: planes.HE111, at: 'A42.B35', direction: 4},
-        {plane: planes.HE111, at: 'A39.B35', direction: 4},
-        {plane: planes.HE111, at: 'A38.B35', direction: 4},
-      ]
+      [R_Bryt]: brytyjczycy.deployments.flatMap(deploy),
+      [R_Niem]: niemcy.deployments.flatMap(deploy),
     })
   }
-  G.targets = ['A06.B19', 'A16.B24']
+  G.reinforcements = {
+    [R_Bryt]: brytyjczycy.reinforcements ?? [],
+    [R_Niem]: niemcy.reinforcements ?? [],
+  }
+  G.stage = 1
+  G.targets = targets
   G.moved = []
   G.shot = []
   G.flown_over = {}
