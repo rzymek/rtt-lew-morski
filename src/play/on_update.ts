@@ -2,6 +2,7 @@ import {clearHexHighlights, highlightHexes} from "./highlightHexes";
 import {drawPlanes} from "./drawPlanes";
 import {drawBombed} from "./drawBombed";
 import {drawTargets} from "./drawTargets";
+import {drawAaGuns} from "./drawAaGuns";
 
 export function onUpdate() {
   // action_button prepends, so the last one ends up first
@@ -24,8 +25,10 @@ export function onUpdate() {
   highlightHexes(view.actions?.move_hex, '#8080ff');
   highlightHexes(view.fire_line, '#ff4444');
   highlightHexes(view.actions?.bomb, '#ff9900');
+  highlightHexes(view.actions?.place_gun, '#ffff66');
 
   drawTargets()
   drawBombed()
   drawPlanes()
+  drawAaGuns()
 }

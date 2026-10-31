@@ -139,6 +139,15 @@ function isOnBoard(a: number, b: number) {
   return a >= 0 && a <= 43 && b >= bottom && b <= bottom + 28
 }
 
+export function boardHexes(): string[] {
+  const hexes: string[] = []
+  for (let a = 0; a <= 43; a++) {
+    const bottom = Math.floor(a / 2)
+    for (let b = bottom; b <= bottom + 28; b++) hexes.push(hexId(a, b))
+  }
+  return hexes
+}
+
 // Hexes on the board within the radius, nearest to the center first.
 export function hexesAround(center: string, radius: number): string[] {
   const [a, b] = parseHex(center) as [number, number]

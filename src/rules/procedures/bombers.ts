@@ -1,11 +1,12 @@
 import type {PlaneInstance} from "../types";
 import {G} from "../globals";
 import {bombsLeft} from "../game/bombs";
+import {hasGun} from "./aa_guns";
 
-// 7.0.2, 7.0.4: the strategic objects flown over this stage that the plane has not bombed yet.
+// 7.0.2, 7.0.4, 7.0.6: the strategic objects and AA guns flown over this stage that the plane has not bombed yet.
 export function bombableHexes(plane: PlaneInstance): string[] {
   if (plane.destroyed || bombsLeft(plane) <= 0) return []
-  return (G.flown_over?.[plane.id] ?? []).filter(hex => G.targets?.includes(hex))
+  return (G.flown_over?.[plane.id] ?? []).filter(hex => G.targets?.includes(hex) || hasGun(hex))
 }
 
 export function canBomb(plane: PlaneInstance): boolean {
@@ -17,5 +18,5 @@ export function dropBomb(plane: PlaneInstance, hex: string) {
   G.flown_over![plane.id] = G.flown_over![plane.id].filter(it => it !== hex)
   // 7.0.7
   G.bombed ??= []
-  set_add(G.bombed, hex)
+  if (G.targets?.includes(hex)) set_add(G.bombed, hex)
 }

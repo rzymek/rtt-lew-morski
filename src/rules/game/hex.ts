@@ -17,6 +17,13 @@ export function hexId(a: number, b: number): string {
   return `A${String(a).padStart(2, '0')}.B${String(b).padStart(2, '0')}`
 }
 
+export function hexDistance(from: string, to: string): number {
+  const [a1, b1] = parseHex(from) as [number, number]
+  const [a2, b2] = parseHex(to) as [number, number]
+  const da = a2 - a1, db = b2 - b1
+  return Math.max(Math.abs(da), Math.abs(db), Math.abs(da - db))
+}
+
 export function hexStep(id: string, dir: number): string | null {
   const [a, b] = parseHex(id)
   if (a === null) return null

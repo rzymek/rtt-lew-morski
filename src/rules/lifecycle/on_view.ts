@@ -11,6 +11,9 @@ export function on_view() {
   V.shot = G.shot
   V.bombed = G.bombed
   V.targets = G.targets
+  V.aa_guns = G.aa_guns
+  V.aa_fired = G.aa_fired
+  V.selected_gun = G.selected_gun
   if (R === G.active) {
     if (L.P === 'move_planes') {
       const moved = G.moved ?? []

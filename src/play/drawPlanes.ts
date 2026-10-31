@@ -85,10 +85,11 @@ export function drawPlanes() {
 
     const isSelectable = view.actions?.select_plane?.includes(plane.id)
     const isFireTarget = plane.id === view.fire_target
-    if (isFireTarget) addBorder(plane, 'orange')
+    const isAaTarget = view.actions?.aa_fire?.includes(plane.id)
+    if (isFireTarget || isAaTarget) addBorder(plane, 'orange')
     else if (isSelectable && plane.id !== view.selected_plane) addBorder(plane, 'red')
 
-    if (!center && (view.actions?.move_hex?.includes(plane.at) || view.actions?.bomb?.includes(plane.at))) {
+    if (!center && (view.actions?.move_hex?.includes(plane.at) || view.actions?.bomb?.includes(plane.at) || view.actions?.place_gun?.includes(plane.at))) {
       // Let clicks through to the hex underneath
       counter.style.pointerEvents = 'none'
     } else if (!center && planesAt(plane.at).length > 1) {
@@ -97,6 +98,13 @@ export function drawPlanes() {
         e.stopPropagation()
         expandedHex = plane.at
         drawPlanes()
+      })
+    } else if (isAaTarget) {
+      counter.style.cursor = 'pointer'
+      counter.addEventListener('click', e => {
+        e.stopPropagation()
+        expandedHex = undefined
+        send_action("aa_fire", plane.id)
       })
     } else if (isFireTarget) {
       counter.style.cursor = 'pointer'

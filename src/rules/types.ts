@@ -45,6 +45,9 @@ export interface GameState {
   shot?: string[]
   flown_over?: Record<string, string[]>
   bombed?: string[]
+  aa_guns?: string[]
+  aa_fired?: string[]
+  selected_gun?: string
   result?: string
 }
 
@@ -62,6 +65,9 @@ export interface ViewState {
   shot?: string[]
   bombed?: string[]
   targets?: string[]
+  aa_guns?: string[]
+  aa_fired?: string[]
+  selected_gun?: string
 }
 
 export interface StateDefinition {

@@ -1,0 +1,235 @@
+import {beforeEach, describe, expect, it, vi} from "vitest";
+import {G, L, planes, R_Bryt, R_Niem} from "../globals";
+import type {PlaneInstance} from "../types";
+import {ALT_LOW, ALT_VERY_LOW} from "../game/altitude";
+import {on_setup} from "../lifecycle/on_setup";
+import {placeAaGuns} from "./aa_guns";
+import {combat} from "./combat";
+import {movePlanes} from "./move_planes";
+
+vi.mock("../globals", async importOriginal => ({
+  ...await importOriginal<typeof import("../globals")>(),
+  G: {},
+  L: {},
+  V: {unmoved: []},
+}));
+
+const GUN = "A20.B20"
+const ADJACENT = "A20.B21"
+const FAR = "A20.B22"
+const RIVER = "A08.B25"
+const CLOUD = "A30.B36"
+const CLOUD_EDGE = "A30.B34"
+
+const goto = vi.fn();
+let dice: number[];
+const roll = (value: number) => dice = [value - 1];
+
+function he111(overrides: Partial<PlaneInstance> = {}): PlaneInstance {
+  return {id: "0.0", plane: planes.HE111, at: GUN, direction: 3, altitude: ALT_LOW, ...overrides}
+}
+
+function setup(niem: PlaneInstance[], guns = [GUN], active = R_Bryt) {
+  Object.assign(G, {
+    active, shot: [], moved: [], targets: [], bombed: [], flown_over: {}, aa_guns: guns, aa_fired: [],
+    board: {planes: {[R_Niem]: niem, [R_Bryt]: []}},
+  });
+  delete G.selected_plane;
+  delete G.selected_gun;
+}
+
+function actions(state: { prompt(): void }) {
+  const action = vi.fn();
+  vi.stubGlobal("prompt", vi.fn());
+  vi.stubGlobal("button", vi.fn());
+  vi.stubGlobal("action", action);
+  state.prompt();
+  return action.mock.calls;
+}
+
+function shoot(plane: PlaneInstance, value: number, gun = GUN) {
+  roll(value);
+  G.selected_gun = gun;
+  combat.aa_fire(plane.id);
+}
+
+beforeEach(() => {
+  goto.mockClear();
+  vi.stubGlobal("goto", goto);
+  vi.stubGlobal("call", vi.fn());
+  vi.stubGlobal("log", vi.fn());
+  vi.stubGlobal("push_undo", vi.fn());
+  vi.stubGlobal("clear_undo", vi.fn());
+  vi.stubGlobal("random", () => dice.shift());
+  vi.stubGlobal("set_has", (set: unknown[], item: unknown) => set.includes(item));
+  vi.stubGlobal("set_add", (set: unknown[], item: unknown) => set.push(item));
+  vi.stubGlobal("set_delete", (set: unknown[], item: unknown) => set.splice(set.indexOf(item), 1));
+});
+
+describe('setup (6)', () => {
+  it('starts with the British placing the guns of the scenario', () => {
+    on_setup("Wariant 3", undefined);
+    expect(G.active).toBe(R_Bryt);
+    expect(call).toHaveBeenCalledWith("place_aa_guns", {count: 12});
+  });
+
+  it('is skipped in a scenario without guns', () => {
+    on_setup("Wariant 1", undefined);
+    expect(G.active).toBe(R_Niem);
+    expect(call).toHaveBeenCalledWith("move_planes");
+  });
+
+  it('allows one gun per hex, not on a river or in clouds (6.0.1, 6.0.2)', () => {
+    Object.assign(L, {count: 5});
+    setup([], []);
+    for (const hex of [GUN, GUN, RIVER, CLOUD, CLOUD_EDGE]) placeAaGuns.place_gun(hex);
+    expect(G.aa_guns).toEqual([GUN]);
+    const offered = actions(placeAaGuns).map(it => it[1]);
+    expect(offered).not.toContain(GUN);
+    expect(offered).not.toContain(RIVER);
+    expect(offered).not.toContain(CLOUD);
+    expect(offered).not.toContain(CLOUD_EDGE);
+    expect(offered).toContain(ADJACENT);
+  });
+
+  it('ends only with all the guns placed, then the Germans move', () => {
+    Object.assign(L, {count: 2});
+    setup([], [GUN]);
+    placeAaGuns.done();
+    expect(goto).not.toHaveBeenCalled();
+    placeAaGuns.place_gun(ADJACENT);
+    placeAaGuns.place_gun(FAR);
+    expect(G.aa_guns).toHaveLength(2);
+    placeAaGuns.done();
+    expect(G.active).toBe(R_Niem);
+    expect(goto).toHaveBeenCalledWith("move_planes");
+  });
+});
+
+describe('firing table (table 4)', () => {
+  it.each([
+    ["high, same hex", 0, GUN, 5, 6],
+    ["low, same hex", ALT_LOW, GUN, 4, 5],
+    ["low, adjacent", ALT_LOW, ADJACENT, 5, 6],
+    ["very low, same hex", ALT_VERY_LOW, GUN, 3, 4],
+    ["very low, adjacent", ALT_VERY_LOW, ADJACENT, 4, 5],
+  ])('%s', (_name, altitude, at, miss, hit) => {
+    const missed = he111({altitude, at});
+    setup([missed]);
+    shoot(missed, miss);
+    expect(missed.damaged).toBeUndefined();
+
+    const target = he111({altitude, at});
+    setup([target]);
+    shoot(target, hit);
+    expect(target.damaged).toBe(true);
+  });
+
+  it('cannot reach a high plane on an adjacent hex, nor anything further', () => {
+    setup([he111({altitude: 0, at: ADJACENT}), he111({id: "0.1", altitude: ALT_VERY_LOW, at: FAR})]);
+    expect(actions(combat)).toEqual([]);
+  });
+
+  it('cannot hit in clouds (6.2.5)', () => {
+    setup([he111({altitude: 0, at: CLOUD})], [CLOUD]);
+    expect(actions(combat)).toEqual([]);
+  });
+
+  it('destroys a plane that was already damaged (6.1)', () => {
+    const target = he111({damaged: true});
+    setup([target]);
+    shoot(target, 6);
+    expect(target.destroyed).toBe(true);
+  });
+});
+
+describe('firing', () => {
+  it('stops at the combat phase when only a gun can act (6.1)', () => {
+    setup([he111()]);
+    movePlanes.done();
+    expect(goto).toHaveBeenCalledWith("combat");
+    expect(G.active).toBe(R_Bryt);
+  });
+
+  it('is not possible in the German combat phase (6.1)', () => {
+    setup([he111()], [GUN], R_Niem);
+    expect(actions(combat)).toEqual([]);
+    movePlanes.done();
+    expect(goto).toHaveBeenCalledWith("move_planes");
+  });
+
+  it('offers the guns, and the targets of the selected one', () => {
+    setup([he111(), he111({id: "0.1", at: FAR})], [GUN]);
+    expect(actions(combat)).toEqual([["select_gun", GUN]]);
+    combat.select_gun(GUN);
+    expect(actions(combat)).toEqual([["select_gun", GUN], ["aa_fire", "0.0"]]);
+  });
+
+  it('selecting a plane drops the gun, and the other way around', () => {
+    setup([he111()]);
+    combat.select_gun(GUN);
+    combat.select_plane("1.0");
+    expect(G.selected_gun).toBeUndefined();
+    combat.select_gun(GUN);
+    expect(G.selected_plane).toBeUndefined();
+    expect(G.selected_gun).toBe(GUN);
+  });
+
+  it('one shot per gun (6.2.1), renewed with the next stage', () => {
+    const target = he111();
+    setup([target]);
+    shoot(target, 1);
+    expect(actions(combat)).toEqual([]);
+    roll(6);
+    G.selected_gun = GUN;
+    combat.aa_fire(target.id);
+    expect(target.damaged).toBeUndefined();
+    combat.done();
+    expect(G.aa_fired).toEqual([]);
+  });
+
+  it('many guns can fire at one plane (6.2.2)', () => {
+    const target = he111();
+    setup([target], [GUN, ADJACENT]);
+    shoot(target, 5);
+    shoot(target, 6, ADJACENT);
+    expect(target.destroyed).toBe(true);
+  });
+
+  it('can be declined (6.2.4)', () => {
+    setup([he111()]);
+    combat.done();
+    expect(G.active).toBe(R_Niem);
+  });
+});
+
+describe('bombing a gun (6.2.6, 7.0.6)', () => {
+  function bomb(value: number) {
+    setup([he111()], [ADJACENT], R_Niem);
+    G.flown_over = {"0.0": [ADJACENT]};
+    G.selected_plane = "0.0";
+    roll(value);
+    combat.bomb(ADJACENT);
+  }
+
+  it('offers a hex with a gun, without marking it as a bombed target', () => {
+    setup([he111()], [ADJACENT], R_Niem);
+    G.flown_over = {"0.0": [ADJACENT]};
+    G.selected_plane = "0.0";
+    expect(actions(combat).filter(it => it[0] === "bomb")).toEqual([["bomb", ADJACENT]]);
+    roll(1);
+    combat.bomb(ADJACENT);
+    expect(G.bombed).toEqual([]);
+  });
+
+  it('destroys the gun on 4-6', () => {
+    bomb(4);
+    expect(G.aa_guns).toEqual([]);
+    expect(clear_undo).toHaveBeenCalled();
+  });
+
+  it('leaves it on 1-3', () => {
+    bomb(3);
+    expect(G.aa_guns).toEqual([ADJACENT]);
+  });
+});

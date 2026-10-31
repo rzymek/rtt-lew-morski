@@ -1,6 +1,7 @@
 import {hexOverlay} from "./refs/hexOverlay";
 import {bombedLayer} from "./refs/bombedLayer";
 import {targetsLayer} from "./refs/targetsLayer";
+import {aaGunsLayer} from "./refs/aaGunsLayer";
 import {planePlaceholder} from "./refs/planePlaceholder";
 import {expandedStackLayer} from "./refs/expandedStackLayer";
 import {collapseStack} from "./drawPlanes";
@@ -16,6 +17,8 @@ export function onInit(scenario: string, options: unknown, static_view: unknown)
         send_action("move_hex", el.id)
       else if (view.actions?.bomb?.includes(el.id))
         send_action("bomb", el.id)
+      else if (view.actions?.place_gun?.includes(el.id))
+        send_action("place_gun", el.id)
     })
   })
 
@@ -26,6 +29,9 @@ export function onInit(scenario: string, options: unknown, static_view: unknown)
   svg.insertBefore(bombedLayer, document.getElementById('units'))
   hexOverlay.id = 'hex-overlay'
   svg.insertBefore(hexOverlay, document.getElementById('units'))
+  // Above the planes: a gun under a counter must stay clickable.
+  aaGunsLayer.id = 'aa-guns'
+  svg.appendChild(aaGunsLayer)
   expandedStackLayer.id = 'expanded-stack'
   svg.appendChild(expandedStackLayer)
 

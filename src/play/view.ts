@@ -12,6 +12,9 @@ export interface View {
     attack?: number
     unjam?: number
     bomb?: string[]
+    place_gun?: string[]
+    select_gun?: string[]
+    aa_fire?: string[]
     deselect?: number
     undo?: number
     done?: number
@@ -23,4 +26,7 @@ export interface View {
   shot?: string[]
   bombed?: string[]
   targets?: string[]
+  aa_guns?: string[]
+  aa_fired?: string[]
+  selected_gun?: string
 }

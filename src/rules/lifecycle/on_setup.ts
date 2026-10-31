@@ -41,6 +41,13 @@ export function on_setup(scenario: string, _options: unknown) {
   G.shot = []
   G.flown_over = {}
   G.bombed = []
-  G.active = R_Niem
-  call("move_planes")
+  G.aa_guns = []
+  G.aa_fired = []
+  if (brytyjczycy.aa_guns) {
+    G.active = R_Bryt
+    call("place_aa_guns", {count: brytyjczycy.aa_guns})
+  } else {
+    G.active = R_Niem
+    call("move_planes")
+  }
 }

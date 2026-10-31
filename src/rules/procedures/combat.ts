@@ -6,6 +6,7 @@ import {canUnjam, fireTarget, markShot} from "./shooters"
 import {endCombat} from "./phases"
 import {bombableHexes, canBomb, dropBomb} from "./bombers"
 import {bombsLeft} from "../game/bombs"
+import {aaTargets, bombGun, fireGun, gunsReady, hasGun, selectGun} from "./aa_guns"
 
 export const combat = {
   inactive: "faza walki",
@@ -32,9 +33,20 @@ export const combat = {
       // Counters on the hexes to bomb pass their clicks through, this plane's own included.
       if (canBomb(plane)) button("deselect", true)
     }
+
+    gunsReady().forEach(gun => action("select_gun", gun))
+    if (G.selected_gun !== undefined)
+      aaTargets(G.selected_gun).forEach(target => action("aa_fire", target.id))
   },
 
-  select_plane,
+  select_plane(planeId: string) {
+    delete G.selected_gun
+    select_plane(planeId)
+  },
+
+  select_gun: selectGun,
+
+  aa_fire: fireGun,
 
   deselect() {
     delete G.selected_plane
@@ -44,9 +56,13 @@ export const combat = {
     const plane = selectedPlaneOfTheActiveSide()
     if (!plane || !bombableHexes(plane).includes(hex)) return
 
-    push_undo()
+    // A die roll for a gun cannot be taken back.
+    const gun = hasGun(hex)
+    if (gun) clear_undo()
+    else push_undo()
     dropBomb(plane, hex)
     log(`${ROLES[G.active as number]} zrzuca bomby na ${hex} (pozostało serii: ${bombsLeft(plane)})`)
+    if (gun) bombGun(hex)
     if (!canBomb(plane)) delete G.selected_plane
   },
 

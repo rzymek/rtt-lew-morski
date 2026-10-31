@@ -5,10 +5,11 @@ import {changeSide} from "../lifecycle/changeSide";
 import {isEmpty} from "../generic/isEmpty";
 import {canUnjam, shootersOf} from "./shooters";
 import {canBomb} from "./bombers";
+import {gunsReady} from "./aa_guns";
 
 export function startCombat() {
   const planes = G.board.planes[G.active]
-  if (planes.some(canUnjam) || planes.some(canBomb) || !isEmpty(shootersOf(G.active))) {
+  if (planes.some(canUnjam) || planes.some(canBomb) || !isEmpty(shootersOf(G.active)) || !isEmpty(gunsReady())) {
     goto("combat")
   } else {
     endCombat()
@@ -18,9 +19,11 @@ export function startCombat() {
 // 3.0: firing during the enemy's combat phase does not use up the shot in the plane's own phase.
 export function endCombat() {
   delete G.selected_plane
+  delete G.selected_gun
   changeSide()
   if (G.active === R_Niem) G.stage++
   G.shot = []
+  G.aa_fired = []
   G.flown_over = {}
   enterReinforcements()
   goto("move_planes")
