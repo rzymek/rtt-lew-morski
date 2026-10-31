@@ -1,5 +1,6 @@
 import type {PlaneData} from "./game/data.js"
 import type {Reinforcement} from "./game/scenarios.js"
+import type {SunEdge} from "./game/sun.js"
 
 export interface PlaneInstanceDef {
   plane: PlaneData
@@ -48,6 +49,7 @@ export interface GameState {
   aa_guns?: string[]
   aa_fired?: string[]
   selected_gun?: string
+  sun?: SunEdge
   result?: string
 }
 
@@ -68,6 +70,8 @@ export interface ViewState {
   aa_guns?: string[]
   aa_fired?: string[]
   selected_gun?: string
+  sun?: SunEdge
+  sun_hexes?: string[]
 }
 
 export interface StateDefinition {

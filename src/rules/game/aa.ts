@@ -4,6 +4,7 @@ import {ALT_HIGH, ALT_LOW, ALT_VERY_LOW, altitudeOf} from "./altitude";
 import {cloudPenalty} from "./clouds";
 import {hexDistance} from "./hex";
 import {RIVER_HEXES} from "./rivers";
+import {isAgainstSun} from "./sun";
 
 // Table 4: [altitude][distance] = the lowest roll of 1d6 that hits; null = cannot hit.
 const AA_TABLE: Record<number, (number | null)[]> = {
@@ -17,7 +18,7 @@ export const GUN_DESTROYED_FROM = 4
 
 // 6.1, 6.2.5: null when a shot would be pointless, so that no die is rolled.
 export function aaHitFrom(gun: string, plane: PlaneInstance): number | null {
-  if (plane.destroyed || cloudPenalty(plane) > 0) return null
+  if (plane.destroyed || cloudPenalty(plane) > 0 || isAgainstSun(gun, plane)) return null
   return AA_TABLE[altitudeOf(plane)][hexDistance(gun, plane.at)] ?? null
 }
 

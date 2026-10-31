@@ -36,6 +36,7 @@ function setup(niem: PlaneInstance[], guns = [GUN], active = R_Bryt) {
   });
   delete G.selected_plane;
   delete G.selected_gun;
+  delete G.sun;
 }
 
 function actions(state: { prompt(): void }) {
@@ -67,13 +68,21 @@ beforeEach(() => {
 });
 
 describe('setup (6)', () => {
+  it('rolls the edge of the sun (5.0.1)', () => {
+    roll(5);
+    on_setup("Wariant 1", undefined);
+    expect(G.sun).toBe("W");
+  });
+
   it('starts with the British placing the guns of the scenario', () => {
+    roll(1);
     on_setup("Wariant 3", undefined);
     expect(G.active).toBe(R_Bryt);
     expect(call).toHaveBeenCalledWith("place_aa_guns", {count: 12});
   });
 
   it('is skipped in a scenario without guns', () => {
+    roll(1);
     on_setup("Wariant 1", undefined);
     expect(G.active).toBe(R_Niem);
     expect(call).toHaveBeenCalledWith("move_planes");

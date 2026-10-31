@@ -134,7 +134,7 @@ export const SCENARIOS: Record<string, Scenario> = {
   },
 }
 
-function isOnBoard(a: number, b: number) {
+export function isOnBoard(a: number, b: number) {
   const bottom = Math.floor(a / 2)
   return a >= 0 && a <= 43 && b >= bottom && b <= bottom + 28
 }

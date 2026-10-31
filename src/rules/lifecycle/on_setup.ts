@@ -2,6 +2,7 @@ import {G, R_Niem, R_Bryt} from "../globals.js"
 import "../rtt/framework.d.ts";
 import {PlaneInstance, PlaneInstanceDef} from "../types";
 import {Deployment, hexesAround, SCENARIOS} from "../game/scenarios";
+import {SUN_EDGE_NAMES, sunEdgeFor} from "../game/sun";
 
 export const scenarios = Object.keys(SCENARIOS)
 
@@ -41,6 +42,9 @@ export function on_setup(scenario: string, _options: unknown) {
   G.shot = []
   G.flown_over = {}
   G.bombed = []
+  // 5.0.1
+  G.sun = sunEdgeFor(random(6) + 1)
+  log(`Słońce: ${SUN_EDGE_NAMES[G.sun]}`)
   G.aa_guns = []
   G.aa_fired = []
   if (brytyjczycy.aa_guns) {

@@ -29,4 +29,6 @@ export interface View {
   aa_guns?: string[]
   aa_fired?: string[]
   selected_gun?: string
+  sun?: 'E' | 'S' | 'W'
+  sun_hexes?: string[]
 }

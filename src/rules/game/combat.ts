@@ -3,6 +3,7 @@ import type {PlaneInstance, Board} from "../types.js"
 import {hexStep} from "./hex.js"
 import {altitudeOf, planeStats} from "./altitude.js"
 import {cloudPenalty, isInCloud} from "./clouds.js"
+import {sunPenalty} from "./sun.js"
 
 // [atk][dist-1] = [min, max] roll to hit (2d6); null = no hit possible
 // Roll 2 or 12 always causes gun jam regardless of this table.
@@ -65,8 +66,8 @@ export interface ShotRoll extends ShotResult {
 
 // Rolls a shot without touching the target, so that hits can be applied simultaneously (5.4).
 export function rollShot(attackerPlane: PlaneInstance, targetPlane: PlaneInstance, distance: number): ShotRoll {
-  // 5.0.2, 5.0.7
-  const atk = Math.max(0, planeStats(attackerPlane).sila_ataku - cloudPenalty(attackerPlane) - cloudPenalty(targetPlane))
+  // 5.0.1, 5.0.2, 5.0.7
+  const atk = Math.max(0, planeStats(attackerPlane).sila_ataku - cloudPenalty(attackerPlane) - cloudPenalty(targetPlane) - sunPenalty(attackerPlane, targetPlane))
   const roll = (random(6) + 1) + (random(6) + 1)
 
   if (roll === 2 || roll === 12) {
