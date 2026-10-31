@@ -60,8 +60,8 @@ export const combat = {
     const gun = hasGun(hex)
     if (gun) clear_undo()
     else push_undo()
+    log(`${ROLES[G.active as number]} zrzuca bomby na ${hex} (pozostało serii: ${bombsLeft(plane) - 1})`)
     dropBomb(plane, hex)
-    log(`${ROLES[G.active as number]} zrzuca bomby na ${hex} (pozostało serii: ${bombsLeft(plane)})`)
     if (gun) bombGun(hex)
     if (!canBomb(plane)) delete G.selected_plane
   },

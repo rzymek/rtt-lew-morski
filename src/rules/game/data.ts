@@ -14,6 +14,8 @@ export interface PlaneData {
 	sila_ataku: number
 	zwrotnosc: number
 	udzwig_bomb: number | null
+	// Table 1: He-111 and Ju-88. The Me-110 carries bombs too, but counts as a fighter.
+	bombowiec?: boolean
 	img: string
 	predkosc_max_bez_bomb?: number
 	reduced: PlaneReducedStats
@@ -152,6 +154,7 @@ export const data: { planes: Record<string, PlaneData> } = {
 			sila_ataku: 2,
 			zwrotnosc: 2,
 			udzwig_bomb: 2,
+			bombowiec: true,
 			img: "planes/u_HE111",
 			reduced: {
 				predkosc_max: 3,
@@ -167,6 +170,7 @@ export const data: { planes: Record<string, PlaneData> } = {
 			sila_ataku: 1,
 			zwrotnosc: 2,
 			udzwig_bomb: 3,
+			bombowiec: true,
 			img: "planes/u_JU88",
 			predkosc_max_bez_bomb: 5,
 			reduced: {

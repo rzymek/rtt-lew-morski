@@ -18,6 +18,9 @@ declare global {
   /** This object contains the view for the role as returned by the rules view method. */
   const view: BaseView & GameView;
 
+  /** The role panels, by the role name and by its index. */
+  const roles: Record<string, { stat: HTMLElement } | undefined>;
+
   /** Call this when player performs an action (such as clicking on a piece).
    If the action is not in the legal list of actions in the view object,
    this function does nothing and returns false. Returns true if the action is legal.

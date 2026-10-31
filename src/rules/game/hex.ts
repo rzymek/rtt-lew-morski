@@ -39,6 +39,41 @@ export interface Flight {
   path: string[]
 }
 
+function occupiedAt(allPlanes: Board['planes'], altitude: number): string[] {
+  return Object.values(allPlanes).flat()
+    .filter(p => !p.destroyed && altitudeOf(p) === altitude)
+    .map(p => p.at)
+}
+
+function crossesSouthEdge(hex: string, direction: number): boolean {
+  const [a, b] = parseHex(hex) as [number, number]
+  const [da, db] = DIR_OFFSETS[direction]
+  return b + db < Math.floor((a + da) / 2)
+}
+
+// 8.1: whether the plane can fly off the board through the south edge. That takes the last movement point at most.
+export function canLeaveSouth(plane: PlaneInstance, allPlanes: Board['planes'], altitude = altitudeOf(plane)): boolean {
+  const occupied = occupiedAt(allPlanes, altitude)
+  const maxSteps = maxSpeedAt(plane, altitude) - 1
+  const turnDist = planeStats(plane).zwrotnosc
+  const dir = plane.direction
+  // The hexes passed, the starting one included.
+  const walk = (from: string, direction: number, steps: number): string[] => {
+    const hexes = [from]
+    for (let s = 0; s < steps; s++) {
+      const next = hexStep(hexes[s], direction)
+      if (!next || occupied.includes(next)) break
+      hexes.push(next)
+    }
+    return hexes
+  }
+  return walk(plane.at, dir, maxSteps).some((hex, steps) =>
+    crossesSouthEdge(hex, dir) || (steps >= turnDist && [dir + 5, dir + 1].some(turned =>
+      walk(hex, turned % 6, maxSteps - steps).some(it => crossesSouthEdge(it, turned % 6))
+    ))
+  )
+}
+
 // Returns {hexId: flight} for all valid destinations.
 // Prefers straight path over turning for tie-breaking on direction.
 // The range depends on the altitude the plane will end its move at.
@@ -49,9 +84,7 @@ export function flightsFor(plane: PlaneInstance, allPlanes: Board['planes'], alt
   const turnDist = planeStats(plane).zwrotnosc
   const dir = plane.direction
   const moves: Record<string, Flight> = {}
-  const occupied = Object.values(allPlanes).flat()
-    .filter(p => !p.destroyed && altitudeOf(p) === altitude)
-    .map(p => p.at)
+  const occupied = occupiedAt(allPlanes, altitude)
   const enter = (from: string | null, direction: number): string | null => {
     const next = from && hexStep(from, direction)
     return next && !occupied.includes(next) ? next : null

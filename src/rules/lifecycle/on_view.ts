@@ -15,13 +15,15 @@ export function on_view() {
   V.aa_guns = G.aa_guns
   V.aa_fired = G.aa_fired
   V.selected_gun = G.selected_gun
+  V.vp = G.vp
+  V.min_vp = G.min_vp
   V.sun = G.sun
   V.sun_hexes = G.sun && sunHexes(G.sun)
   if (R === G.active) {
     if (L.P === 'move_planes') {
       const moved = G.moved ?? []
       V.unmoved = G.board.planes[G.active as number]
-        .filter(plane => !set_has(moved, [plane.id]))
+        .filter(plane => !plane.destroyed && !set_has(moved, [plane.id]))
         .map(plane => plane.id)
     }
     if (G.selected_plane !== undefined) {

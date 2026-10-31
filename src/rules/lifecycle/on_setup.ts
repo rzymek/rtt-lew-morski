@@ -25,7 +25,7 @@ function deploy({center, radius, direction, planes}: Deployment): PlaneInstanceD
 }
 
 export function on_setup(scenario: string, _options: unknown) {
-  const {brytyjczycy, niemcy, targets} = SCENARIOS[scenario]
+  const {brytyjczycy, niemcy, targets, all_targets_vp} = SCENARIOS[scenario]
   G.board = {
     planes: withIds({
       [R_Bryt]: brytyjczycy.deployments.flatMap(deploy),
@@ -42,6 +42,10 @@ export function on_setup(scenario: string, _options: unknown) {
   G.shot = []
   G.flown_over = {}
   G.bombed = []
+  // 8.0
+  G.vp = {[R_Niem]: 0, [R_Bryt]: 0}
+  G.min_vp = {[R_Niem]: niemcy.min_vp, [R_Bryt]: brytyjczycy.min_vp}
+  G.all_targets_vp = all_targets_vp
   // 5.0.1
   G.sun = sunEdgeFor(random(6) + 1)
   log(`Słońce: ${SUN_EDGE_NAMES[G.sun]}`)

@@ -4,6 +4,7 @@ import {hexStep} from "./hex.js"
 import {altitudeOf, planeStats} from "./altitude.js"
 import {cloudPenalty, isInCloud} from "./clouds.js"
 import {sunPenalty} from "./sun.js"
+import {scorePlaneLost} from "./victory.js"
 
 // [atk][dist-1] = [min, max] roll to hit (2d6); null = no hit possible
 // Roll 2 or 12 always causes gun jam regardless of this table.
@@ -84,6 +85,7 @@ export function rollShot(attackerPlane: PlaneInstance, targetPlane: PlaneInstanc
 export function applyHit(targetPlane: PlaneInstance): string {
   if (targetPlane.damaged) {
     targetPlane.destroyed = true
+    scorePlaneLost(targetPlane)
     return 'zestrzelony'
   }
   targetPlane.damaged = true

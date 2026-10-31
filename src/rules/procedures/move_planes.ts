@@ -1,5 +1,5 @@
-import {G, ROLES, V} from "../globals.js"
-import {flightsFor, possibleMovesFor} from "../game/hex.js"
+import {G, R_Niem, ROLES, V} from "../globals.js"
+import {canLeaveSouth, flightsFor, possibleMovesFor} from "../game/hex.js"
 import {ALT_HIGH, ALT_LOW, ALT_VERY_LOW, ALTITUDE_NAMES, altitudeOf, canChangeAltitude} from "../game/altitude";
 import {shootersOf} from "./shooters";
 import {startCombat} from "./phases";
@@ -7,6 +7,7 @@ import {changeSide, otherSide} from "../lifecycle/changeSide";
 import {select_plane} from "./select_plane.js";
 import {isEmpty} from "../generic/isEmpty";
 import {selectedPlaneOfTheActiveSide} from "./selectedPlaneOfTheActiveSide";
+import type {PlaneInstance} from "../types";
 
 const ALTITUDE_ACTIONS: [string, number][] = [
   ["wysoko", ALT_HIGH],
@@ -24,6 +25,11 @@ function selectAltitude(altitude: number) {
   }
 }
 
+// 8.1
+function canLeaveBoard(plane: PlaneInstance): boolean {
+  return G.active === R_Niem && canLeaveSouth(plane, G.board.planes, G.selected_altitude)
+}
+
 export const movePlanes = {
   inactive: "faza ruchu samolotów",
 
@@ -35,6 +41,7 @@ export const movePlanes = {
       for (const [verb, level] of ALTITUDE_ACTIONS) {
         button(verb, level !== altitude && canChangeAltitude(selected, level))
       }
+      if (canLeaveBoard(selected)) button("leave_board")
     } else {
       prompt(`faza ruchu samolotów ${ROLES[G.active]}`)
     }
@@ -47,7 +54,7 @@ export const movePlanes = {
     } else {
       const moved = G.moved ?? []
       G.board.planes[G.active].forEach((plane) => {
-        if (!set_has(moved, plane.id)) {
+        if (!plane.destroyed && !set_has(moved, plane.id)) {
           action("select_plane", plane.id)
         }
       })
@@ -76,6 +83,18 @@ export const movePlanes = {
 
   bardzo_nisko() {
     selectAltitude(ALT_VERY_LOW)
+  },
+
+  // 8.1: the plane does not come back. It is out of the game, but the enemy gets no points for it.
+  leave_board() {
+    const plane = selectedPlaneOfTheActiveSide();
+    if (!plane || !canLeaveBoard(plane)) return
+    push_undo()
+    plane.destroyed = true
+    plane.left_board = true
+    delete G.selected_plane
+    delete G.selected_altitude
+    log(`${ROLES[G.active]}: ${plane.plane.nazwa} opuszcza planszę`)
   },
 
   move_hex(target: string) {

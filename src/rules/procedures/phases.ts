@@ -41,4 +41,6 @@ function enterReinforcements() {
     planes.push({plane, at: hex, direction, id: `${G.active}.${planes.length}`})
     log(`${ROLES[G.active]}: posiłki ${plane.nazwa} na ${hex}`)
   }
+  if (entering.length > 0)
+    G.reinforcements![G.active] = G.reinforcements![G.active].filter(it => it.stage !== G.stage)
 }

@@ -7,6 +7,7 @@ import {drawSun} from "./drawSun";
 
 export function onUpdate() {
   // action_button prepends, so the last one ends up first
+  action_button("leave_board", "Opuść planszę")
   action_button("bardzo_nisko", "Bardzo nisko")
   action_button("nisko", "Nisko")
   action_button("wysoko", "Wysoko")
@@ -27,6 +28,12 @@ export function onUpdate() {
   highlightHexes(view.fire_line, '#ff4444');
   highlightHexes(view.actions?.bomb, '#ff9900');
   highlightHexes(view.actions?.place_gun, '#ffff66');
+
+  // 8.0
+  for (const side of Object.keys(view.vp ?? {})) {
+    const stat = roles[side]?.stat
+    if (stat) stat.textContent = `${view.vp![Number(side)]} / ${view.min_vp?.[Number(side)]} PZ`
+  }
 
   drawSun()
   drawTargets()

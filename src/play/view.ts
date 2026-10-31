@@ -16,6 +16,7 @@ export interface View {
     select_gun?: string[]
     aa_fire?: string[]
     deselect?: number
+    leave_board?: number
     undo?: number
     done?: number
   }
@@ -31,4 +32,6 @@ export interface View {
   selected_gun?: string
   sun?: 'E' | 'S' | 'W'
   sun_hexes?: string[]
+  vp?: Record<number, number>
+  min_vp?: Record<number, number>
 }

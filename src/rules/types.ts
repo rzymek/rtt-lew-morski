@@ -8,7 +8,10 @@ export interface PlaneInstanceDef {
   direction: number
   altitude?: number
   damaged?: boolean
+  // Out of the game: shot down, or left the board for good.
   destroyed?: boolean
+  // 8.1: out of the game, yet not shot down.
+  left_board?: boolean
   jammed?: boolean
   bombs_dropped?: number
 }
@@ -50,6 +53,9 @@ export interface GameState {
   aa_fired?: string[]
   selected_gun?: string
   sun?: SunEdge
+  vp?: Record<number, number>
+  min_vp?: Record<number, number>
+  all_targets_vp?: number
   result?: string
 }
 
@@ -72,6 +78,8 @@ export interface ViewState {
   selected_gun?: string
   sun?: SunEdge
   sun_hexes?: string[]
+  vp?: Record<number, number>
+  min_vp?: Record<number, number>
 }
 
 export interface StateDefinition {
