@@ -1,4 +1,5 @@
 import {aaGunsLayer} from "./refs/aaGunsLayer";
+import {clickableAaGunsLayer} from "./refs/clickableAaGunsLayer";
 import {getHexCenterInSVGCoords} from "./svg/getHexCenterInSVGCoords";
 import {svgNS} from "@rally-the-troops/module/client";
 
@@ -8,6 +9,7 @@ const MARKER_HEIGHT = MARKER_WIDTH * 77 / 88
 // In the corner of the hex, not to cover a plane above the gun.
 export function drawAaGuns() {
   aaGunsLayer.innerHTML = ""
+  clickableAaGunsLayer.innerHTML = ""
   for (const hex of view.aa_guns ?? []) {
     const center = getHexCenterInSVGCoords(hex)
     const x = center.x + 1, y = center.y + 1
@@ -30,15 +32,16 @@ export function drawAaGuns() {
       ring.setAttribute('fill', 'none')
       ring.setAttribute('stroke', isSelected ? 'blue' : 'red')
       ring.style.pointerEvents = 'none'
-      aaGunsLayer.appendChild(ring)
+      clickableAaGunsLayer.appendChild(ring)
       marker.style.cursor = 'pointer'
       marker.addEventListener('click', e => {
         e.stopPropagation()
         send_action("select_gun", hex)
       })
+      clickableAaGunsLayer.appendChild(marker)
     } else {
       marker.style.pointerEvents = 'none'
+      aaGunsLayer.appendChild(marker)
     }
-    aaGunsLayer.appendChild(marker)
   }
 }
