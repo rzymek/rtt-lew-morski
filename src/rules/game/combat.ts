@@ -65,21 +65,63 @@ export interface ShotRoll extends ShotResult {
   hit: boolean
 }
 
+// 5.0.1, 5.0.2, 5.0.7
+function attackStrength(attackerPlane: PlaneInstance, targetPlane: PlaneInstance): number {
+  return Math.max(0, planeStats(attackerPlane).sila_ataku - cloudPenalty(attackerPlane) - cloudPenalty(targetPlane) - sunPenalty(attackerPlane, targetPlane))
+}
+
+function hitRange(atk: number, distance: number): [number, number] | null {
+  return COMBAT_TABLE[Math.min(atk, COMBAT_TABLE.length - 1)][distance - 1]
+}
+
+const isJam = (roll: number) => roll === 2 || roll === 12
+
 // Rolls a shot without touching the target, so that hits can be applied simultaneously (5.4).
 export function rollShot(attackerPlane: PlaneInstance, targetPlane: PlaneInstance, distance: number): ShotRoll {
-  // 5.0.1, 5.0.2, 5.0.7
-  const atk = Math.max(0, planeStats(attackerPlane).sila_ataku - cloudPenalty(attackerPlane) - cloudPenalty(targetPlane) - sunPenalty(attackerPlane, targetPlane))
+  const atk = attackStrength(attackerPlane, targetPlane)
   const roll = (random(6) + 1) + (random(6) + 1)
 
-  if (roll === 2 || roll === 12) {
+  if (isJam(roll)) {
     attackerPlane.jammed = true
     return {roll, atk, hit: false, result: 'zacięcie karabinów'}
   }
 
-  const tableRow = Math.min(atk, COMBAT_TABLE.length - 1)
-  const range = COMBAT_TABLE[tableRow][distance - 1]
+  const range = hitRange(atk, distance)
   const hit = !!range && roll >= range[0] && roll <= range[1]
   return {roll, atk, hit, result: hit ? 'trafienie' : 'pudło'}
+}
+
+// The number of the 36 outcomes of 2d6 that sum up to a value matching the predicate.
+function waysToRoll(matches: (roll: number) => boolean): number {
+  let ways = 0
+  for (let d1 = 1; d1 <= 6; d1++)
+    for (let d2 = 1; d2 <= 6; d2++)
+      if (matches(d1 + d2)) ways++
+  return ways
+}
+
+export function hitChance(atk: number, distance: number): number {
+  const range = hitRange(atk, distance)
+  return range ? waysToRoll(roll => !isJam(roll) && roll >= range[0] && roll <= range[1]) / 36 : 0
+}
+
+const percent = (chance: number) => `${Math.round(chance * 100)}%`
+
+// All that makes up the odds of a shot, for the player about to fire it.
+export function describeShot(attackerPlane: PlaneInstance, targetPlane: PlaneInstance, distance: number): string {
+  const modifiers: [string, number][] = [
+    ["chmura atakującego", cloudPenalty(attackerPlane)],
+    ["chmura celu", cloudPenalty(targetPlane)],
+    ["słońce", sunPenalty(attackerPlane, targetPlane)],
+  ]
+  const base = planeStats(attackerPlane).sila_ataku
+  const atk = attackStrength(attackerPlane, targetPlane)
+  const applied = modifiers.filter(([, value]) => value > 0).map(([name, value]) => `${name} −${value}`)
+  const strength = [`SA ${base}${attackerPlane.damaged ? " (uszkodzony)" : ""}`, ...applied].join(", ")
+  const total = applied.length > 0 ? ` = SA ${atk}` : ""
+  const range = hitRange(atk, distance)
+  const rolls = range ? `rzut ${range[0]}–${range[1]}` : "bez szans"
+  return `${strength}${total}, odległość ${distance}: ${rolls} – trafienie ${percent(hitChance(atk, distance))}, zacięcie ${percent(waysToRoll(isJam) / 36)}`
 }
 
 export function applyHit(targetPlane: PlaneInstance): string {

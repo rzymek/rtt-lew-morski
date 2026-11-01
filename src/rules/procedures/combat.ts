@@ -1,5 +1,5 @@
 import {G, ROLES} from "../globals.js"
-import {resolveShot} from "../game/combat.js"
+import {describeShot, resolveShot} from "../game/combat.js"
 import {select_plane} from "./select_plane.js"
 import {selectedPlaneOfTheActiveSide} from "./selectedPlaneOfTheActiveSide"
 import {canUnjam, fireTarget, markShot} from "./shooters"
@@ -14,7 +14,8 @@ export const combat = {
   prompt() {
     const myPlanes = G.board.planes[G.active as number] ?? []
 
-    prompt("Faza walki – inicjatywa: " + ROLES[G.active as number])
+    const initiative = "Faza walki – inicjatywa: " + ROLES[G.active as number]
+    prompt(initiative)
     button("done", true)
 
     myPlanes.forEach((plane) => {
@@ -25,8 +26,12 @@ export const combat = {
     const plane = selectedPlaneOfTheActiveSide()
     if (plane && canUnjam(plane)) {
       button("unjam", true)
-    } else if (plane && fireTarget(plane, G.active as number)) {
-      button("attack", true)
+    } else if (plane) {
+      const hit = fireTarget(plane, G.active as number)
+      if (hit) {
+        prompt(`${initiative} – ${describeShot(plane, hit.plane, hit.distance)}`)
+        button("attack", true)
+      }
     }
     if (plane) {
       bombableHexes(plane).forEach(hex => action("bomb", hex))

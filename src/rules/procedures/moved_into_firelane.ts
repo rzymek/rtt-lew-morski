@@ -1,6 +1,6 @@
 import type {PlaneInstance} from "../types";
 import {G, L, ROLES} from "../globals";
-import {applyHit, resolveShot, rollShot} from "../game/combat";
+import {applyHit, describeShot, resolveShot, rollShot} from "../game/combat";
 import {changeSide, otherSide} from "../lifecycle/changeSide";
 import {isEmpty} from "../generic/isEmpty";
 import {select_plane} from "./select_plane";
@@ -29,10 +29,12 @@ export const movedIntoFirelane = {
   inactive: "krzyżowanie się linii ognia",
 
   prompt() {
-    prompt(`krzyżowanie się linii ognia – ostrzał ${ROLES[G.active]}`)
     shootersOf(G.active).forEach(plane => action("select_plane", plane.id))
     const selected = selectedPlaneOfTheActiveSide()
-    button("attack", !!selected && !!fireTarget(selected, G.active))
+    const hit = selected && fireTarget(selected, G.active)
+    const title = `krzyżowanie się linii ognia – ostrzał ${ROLES[G.active]}`
+    prompt(hit ? `${title} – ${describeShot(selected, hit.plane, hit.distance)}` : title)
+    button("attack", !!hit)
     button("done")
   },
 
@@ -75,7 +77,10 @@ export const returnFire = {
   inactive: "równoczesny ostrzał",
 
   prompt() {
-    prompt(`Samolot ${ROLES[G.active]} został trafiony – może jeszcze odpowiedzieć ogniem`)
+    const plane = planeById(L.target)
+    const hit = fireTarget(plane, G.active)
+    const title = `Samolot ${ROLES[G.active]} został trafiony – może jeszcze odpowiedzieć ogniem`
+    prompt(hit ? `${title} – ${describeShot(plane, hit.plane, hit.distance)}` : title)
     button("attack")
     button("done")
   },
