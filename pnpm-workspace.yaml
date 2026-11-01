@@ -1,5 +1,2 @@
 allowBuilds:
-  esbuild: true
   sharp: true
-minimumReleaseAgeExclude:
-  - '@rzymek/rally-the-troops-module@0.1.0'
