@@ -1,4 +1,4 @@
-import type {BaseGameState} from "@rally-the-troops/module/rules"
+import type {BaseGameState} from "@rzymek/rally-the-troops-module/rules"
 import type {PlaneData} from "./game/data.js"
 import type {Reinforcement} from "./game/scenarios.js"
 import type {SunEdge} from "./game/sun.js"

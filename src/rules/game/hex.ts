@@ -1,4 +1,4 @@
-import {DIR_OFFSETS, hexStep, isEdgeHex as isEdgeHexOn, isOffBoardStep as isOffBoardStepOn, parseHex} from "@rally-the-troops/module/rules";
+import {DIR_OFFSETS, hexStep, isEdgeHex as isEdgeHexOn, isOffBoardStep as isOffBoardStepOn, parseHex} from "@rzymek/rally-the-troops-module/rules";
 import {Board, PlaneInstance} from "../types";
 import {altitudeOf, maxSpeedAt, planeStats} from "./altitude";
 

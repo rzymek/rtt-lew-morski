@@ -1,5 +1,5 @@
 import {data} from "./game/data.js"
-import type {FrameState, StateDefinition} from "@rally-the-troops/module/rules"
+import type {FrameState, StateDefinition} from "@rzymek/rally-the-troops-module/rules"
 import type {View} from "../shared/view"
 import {ROLE_NAMES} from "../shared/shared"
 import type {GameState} from "./types.js"

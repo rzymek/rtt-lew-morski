@@ -1,5 +1,5 @@
 import type {PlaneInstance, Board} from "../types.js"
-import {hexStep} from "@rally-the-troops/module/rules"
+import {hexStep} from "@rzymek/rally-the-troops-module/rules"
 import {altitudeOf, planeStats} from "./altitude.js"
 import {cloudPenalty, isInCloud} from "./clouds.js"
 import {sunPenalty} from "./sun.js"

@@ -1,6 +1,6 @@
 import {sunLayer} from "./refs/sunLayer";
 import {getHexCenterInSVGCoords} from "./svg/getHexCenterInSVGCoords";
-import {svgNS} from "@rally-the-troops/module/client";
+import {svgNS} from "@rzymek/rally-the-troops-module/client";
 
 const THICKNESS = 8
 const HEX_SIZE = 24

@@ -1,4 +1,4 @@
-import type {BaseViewState} from "@rally-the-troops/module/rules";
+import type {BaseViewState} from "@rzymek/rally-the-troops-module/rules";
 import type {SunEdge} from "../rules/game/sun";
 
 export interface ViewPlaneInstance {

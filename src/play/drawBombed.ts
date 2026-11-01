@@ -1,6 +1,6 @@
 import {bombedLayer} from "./refs/bombedLayer";
 import {getHexCenterInSVGCoords} from "./svg/getHexCenterInSVGCoords";
-import {svgNS} from "@rally-the-troops/module/client";
+import {svgNS} from "@rzymek/rally-the-troops-module/client";
 
 const MARKER_SIZE = 20
 

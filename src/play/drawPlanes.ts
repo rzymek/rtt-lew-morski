@@ -5,7 +5,7 @@ import {expandedStackLayer} from "./refs/expandedStackLayer";
 import {planePlaceholder} from "./refs/planePlaceholder";
 import {createPlaneCounter} from "./createPlaneCounter";
 import {getHexCenterInSVGCoords} from "./svg/getHexCenterInSVGCoords";
-import {svgNS} from "@rally-the-troops/module/client";
+import {svgNS} from "@rzymek/rally-the-troops-module/client";
 import {ViewPlaneInstance} from "../shared/view";
 
 const STACK_STEP = 2.5

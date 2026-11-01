@@ -1,4 +1,4 @@
-import {defineRttModule} from '@rally-the-troops/module/vite';
+import {defineRttModule} from '@rzymek/rally-the-troops-module/vite';
 import {mapClouds} from './tools/map-clouds.ts'
 
 export default defineRttModule({

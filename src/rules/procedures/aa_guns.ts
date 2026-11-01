@@ -4,7 +4,7 @@ import {aaHitFrom, canPlaceGun, GUN_DESTROYED_FROM} from "../game/aa";
 import {ALTITUDE_NAMES, altitudeOf} from "../game/altitude";
 import {applyHit} from "../game/combat";
 import {boardHexes} from "../game/scenarios";
-import {hexDistance} from "@rally-the-troops/module/rules";
+import {hexDistance} from "@rzymek/rally-the-troops-module/rules";
 
 function gunsLeftToPlace(): number {
   return (L.count as number) - (G.aa_guns ?? []).length

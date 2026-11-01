@@ -1,4 +1,4 @@
 {
-  "extends": "@rally-the-troops/module/tsconfig.json",
+  "extends": "@rzymek/rally-the-troops-module/tsconfig.json",
   "include": ["src", "tools", "vite.config.ts"]
 }

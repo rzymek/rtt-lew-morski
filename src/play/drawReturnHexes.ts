@@ -1,6 +1,6 @@
 import {returnHexesLayer} from "./refs/returnHexesLayer";
 import {getHexCenterInSVGCoords} from "./svg/getHexCenterInSVGCoords";
-import {svgNS} from "@rally-the-troops/module/client";
+import {svgNS} from "@rzymek/rally-the-troops-module/client";
 
 const RADIUS = 6
 // Both sides may wait for the same hex: their badges stand side by side.

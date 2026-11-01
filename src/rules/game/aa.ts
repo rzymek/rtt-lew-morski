@@ -2,7 +2,7 @@ import {CLOUD_EDGE_HEXES, CLOUD_HEXES} from "virtual:map-clouds";
 import type {PlaneInstance} from "../types";
 import {ALT_HIGH, ALT_LOW, ALT_VERY_LOW, altitudeOf} from "./altitude";
 import {cloudPenalty} from "./clouds";
-import {hexDistance} from "@rally-the-troops/module/rules";
+import {hexDistance} from "@rzymek/rally-the-troops-module/rules";
 import {RIVER_HEXES} from "./rivers";
 import {isAgainstSun} from "./sun";
 

@@ -1,5 +1,5 @@
 import {data, PlaneData} from "./data.js"
-import {hexesAround as hexesAroundOn, hexId} from "@rally-the-troops/module/rules"
+import {hexesAround as hexesAroundOn, hexId} from "@rzymek/rally-the-troops-module/rules"
 import {isOnBoard} from "./hex.js"
 
 const {Hur, HurL, Spit, SpitL, ME109, ME109L, ME110, ME110L, HE111, JU88} = data.planes

@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, it, vi} from "vitest";
-import {stubFramework} from "@rally-the-troops/module/testing";
+import {stubFramework} from "@rzymek/rally-the-troops-module/testing";
 import {G, L, planes, R_Bryt, R_Niem} from "../globals";
 import type {PlaneInstance} from "../types";
 import {movedIntoFirelane, returnFire} from "./moved_into_firelane";

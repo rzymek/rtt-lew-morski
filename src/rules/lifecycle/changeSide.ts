@@ -1,4 +1,4 @@
-import {nextActiveRole} from "@rally-the-troops/module/rules";
+import {nextActiveRole} from "@rzymek/rally-the-troops-module/rules";
 import {G, ROLES} from "../globals";
 
 export function changeSide() {

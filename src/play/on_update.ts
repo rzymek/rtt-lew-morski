@@ -1,4 +1,4 @@
-import {clearHexHighlights, highlightHexes} from "@rally-the-troops/module/client";
+import {clearHexHighlights, highlightHexes} from "@rzymek/rally-the-troops-module/client";
 import {drawPlanes} from "./drawPlanes";
 import {drawBombed} from "./drawBombed";
 import {drawTargets} from "./drawTargets";

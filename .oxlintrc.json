@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "extends": ["./node_modules/@rally-the-troops/module/oxlint.base.json"],
+  "extends": ["./node_modules/@rzymek/rally-the-troops-module/oxlint.base.json"],
   "ignorePatterns": [
     "public/",
     "markers/"

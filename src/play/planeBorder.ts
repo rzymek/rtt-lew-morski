@@ -1,6 +1,6 @@
 import {ViewPlaneInstance} from "../shared/view";
 import {getHexCenterInSVGCoords} from "./svg/getHexCenterInSVGCoords";
-import {svgNS} from "@rally-the-troops/module/client";
+import {svgNS} from "@rzymek/rally-the-troops-module/client";
 import {planePlaceholder} from "./refs/planePlaceholder";
 
 export function planeBorder(selectedPlane: ViewPlaneInstance, color: string, center = getHexCenterInSVGCoords(selectedPlane.at)) {

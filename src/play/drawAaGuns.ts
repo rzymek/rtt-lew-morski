@@ -1,7 +1,7 @@
 import {aaGunsLayer} from "./refs/aaGunsLayer";
 import {clickableAaGunsLayer} from "./refs/clickableAaGunsLayer";
 import {getHexCenterInSVGCoords} from "./svg/getHexCenterInSVGCoords";
-import {svgNS} from "@rally-the-troops/module/client";
+import {svgNS} from "@rzymek/rally-the-troops-module/client";
 
 const MARKER_WIDTH = 12
 const MARKER_HEIGHT = MARKER_WIDTH * 77 / 88

@@ -1,9 +1,9 @@
 import {ViewPlaneInstance} from "../shared/view";
 import {getHexCenterInSVGCoords} from "./svg/getHexCenterInSVGCoords";
 import {planePlaceholder} from "./refs/planePlaceholder";
-import {NS_XLINK, svgNS} from "@rally-the-troops/module/client";
+import {NS_XLINK, svgNS} from "@rzymek/rally-the-troops-module/client";
 import jammedSvg from "./markers/jammed.svg?raw";
-import {createSvgMarkerAt} from "@rally-the-troops/module/client";
+import {createSvgMarkerAt} from "@rzymek/rally-the-troops-module/client";
 
 // Counter artwork size; the overlays below are drawn in its pixels.
 const ART_SIZE = 80

@@ -1,7 +1,7 @@
 // it.each covers both branches of the outcome check.
 /* oxlint-disable vitest/no-conditional-expect */
 import {beforeEach, describe, expect, it, vi} from "vitest";
-import {stubFramework} from "@rally-the-troops/module/testing";
+import {stubFramework} from "@rzymek/rally-the-troops-module/testing";
 import {G, planes, R_Bryt, R_Niem, V} from "../globals";
 import {on_view} from "../lifecycle/on_view";
 import type {PlaneInstance} from "../types";
