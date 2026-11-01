@@ -3,9 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "vite build",
-    "dev": "npm run build -- --watch",
-    "tsc": "tsc --noEmit",
+    "dev": "vite",
+    "build": "npm-run-all -p build:*",
+    "build:bundle": "CI=1 vite build",
+    "build:tsc": "tsc --noEmit",
+    "build:test": "CI=1 vitest",
     "test": "vitest"
   },
   "devDependencies": {
