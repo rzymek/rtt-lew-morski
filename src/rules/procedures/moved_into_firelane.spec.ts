@@ -1,4 +1,5 @@
 import {beforeEach, describe, expect, it, vi} from "vitest";
+import {stubFramework} from "@rally-the-troops/module/testing";
 import {G, L, planes, R_Bryt, R_Niem} from "../globals";
 import type {PlaneInstance} from "../types";
 import {movedIntoFirelane, returnFire} from "./moved_into_firelane";
@@ -33,12 +34,7 @@ const roll = (...values: number[]) => dice = values.map(it => it - 1);
 
 beforeEach(() => {
   goto.mockClear();
-  vi.stubGlobal("goto", goto);
-  vi.stubGlobal("log", vi.fn());
-  vi.stubGlobal("clear_undo", vi.fn());
-  vi.stubGlobal("random", () => dice.shift());
-  vi.stubGlobal("set_has", (set: unknown[], item: unknown) => set.includes(item));
-  vi.stubGlobal("set_add", (set: unknown[], item: unknown) => set.push(item));
+  stubFramework({goto, random: () => dice.shift()});
 });
 
 describe('moving into a fire line', () => {

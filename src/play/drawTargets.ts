@@ -1,6 +1,6 @@
 import {targetsLayer} from "./refs/targetsLayer";
 import {getHexCenterInSVGCoords} from "./svg/getHexCenterInSVGCoords";
-import {svgNS} from "./svg/svgNS";
+import {svgNS} from "@rally-the-troops/module/client";
 
 const MARKER_WIDTH = 28.222
 const MARKER_HEIGHT = 34.572

@@ -5,8 +5,8 @@ import {expandedStackLayer} from "./refs/expandedStackLayer";
 import {planePlaceholder} from "./refs/planePlaceholder";
 import {createPlaneCounter} from "./createPlaneCounter";
 import {getHexCenterInSVGCoords} from "./svg/getHexCenterInSVGCoords";
-import {svgNS} from "./svg/svgNS";
-import {ViewPlaneInstance} from "./viewPlaneInstance";
+import {svgNS} from "@rally-the-troops/module/client";
+import {ViewPlaneInstance} from "../shared/view";
 
 const STACK_STEP = 2.5
 // Keeps big stacks within their hex: the step shrinks rather than the stack growing past this.

@@ -1,4 +1,5 @@
 import {beforeEach, describe, expect, it, vi} from "vitest";
+import {stubFramework} from "@rally-the-troops/module/testing";
 import {G, planes, R_Bryt, R_Niem} from "../globals";
 import type {PlaneInstance} from "../types";
 import {maxSpeedAt} from "../game/altitude";
@@ -49,12 +50,7 @@ function actionsOf(prompt: () => void) {
 beforeEach(() => {
   goto.mockClear();
   log.mockClear();
-  vi.stubGlobal("goto", goto);
-  vi.stubGlobal("log", log);
-  vi.stubGlobal("push_undo", vi.fn());
-  vi.stubGlobal("clear_undo", vi.fn());
-  vi.stubGlobal("set_has", (set: unknown[], item: unknown) => set.includes(item));
-  vi.stubGlobal("set_add", (set: unknown[], item: unknown) => set.push(item));
+  stubFramework({goto, log});
 });
 
 describe('flight path', () => {

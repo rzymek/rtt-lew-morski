@@ -1,55 +1,7 @@
-import {defineConfig, createLogger} from 'vite'
-import injectHTML from 'vite-plugin-html-inject';
-import {covers} from './tools/covers-plugin.ts';
-import {flattenHtmlOutputs} from './tools/flatten-html-outputs.ts';
-import {cleanupSvg} from './tools/cleanup-svg.ts';
-import {appendRttFramework} from './tools/append-rtt-framework.ts'
+import {defineRttModule} from '@rally-the-troops/module/vite';
 import {mapClouds} from './tools/map-clouds.ts'
 
-const SUPPRESSED = [
-  "can't be bundled without type=\"module\"",
-  "doesn't exist at build time",
-]
-const logger = createLogger()
-const warn = logger.warn.bind(logger)
-const warnOnce = logger.warnOnce.bind(logger)
-const suppress = (msg: string) => SUPPRESSED.some(s => msg.includes(s))
-logger.warn = (msg, options) => {
-  if (!suppress(msg)) warn(msg, options)
-}
-logger.warnOnce = (msg, options) => {
-  if (!suppress(msg)) warnOnce(msg, options)
-}
-
-export default defineConfig({
-  customLogger: logger,
-  plugins: [covers(), injectHTML(), cleanupSvg(), flattenHtmlOutputs(),
-    appendRttFramework(), mapClouds()],
-  base: './',
-  build: {
-    outDir: '../../server/public/lew-morski/',
-    // outDir: 'out',
-    minify: false,
-    modulePreload: false,
-    rollupOptions: {
-      preserveEntrySignatures: 'exports-only',
-      onwarn(warning, defaultHandler) {
-        if (warning.code === 'EVAL') return;
-        defaultHandler(warning);
-      },
-      input: {
-        play: 'src/play/play.html',
-        about: 'src/about.html',
-        create: 'src/create.html',
-        rules: 'src/rules/index.ts',
-      },
-      output: {
-        format: 'commonjs',
-        cleanDir: true,
-        chunkFileNames: '[name][extname]',
-        entryFileNames: '[name].js',
-        assetFileNames: '[name][extname]'
-      },
-    },
-  },
+export default defineRttModule({
+  outDir: '../../server/public/lew-morski/',
+  plugins: [mapClouds()],
 })

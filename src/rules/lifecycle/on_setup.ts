@@ -1,5 +1,4 @@
 import {G, R_Niem, R_Bryt} from "../globals.js"
-import "../rtt/framework.d.ts";
 import type {PlaneToPlace} from "../types";
 import {Deployment, SCENARIOS} from "../game/scenarios";
 import {SUN_EDGE_NAMES, sunEdgeFor} from "../game/sun";

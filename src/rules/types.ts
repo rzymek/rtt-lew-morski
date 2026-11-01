@@ -1,3 +1,4 @@
+import type {BaseGameState} from "@rally-the-troops/module/rules"
 import type {PlaneData} from "./game/data.js"
 import type {Reinforcement} from "./game/scenarios.js"
 import type {SunEdge} from "./game/sun.js"
@@ -42,21 +43,7 @@ export interface Board {
   planes: Record<number, PlaneInstance[]>
 }
 
-export interface FrameState {
-  P: string
-  I: number
-  L: FrameState | null
-  $?: unknown
-  message?: string
-  [key: string]: unknown
-}
-
-export interface GameState {
-  active: number;
-  seed: number
-  log: string[]
-  undo: any[]
-  L: FrameState | null
+export interface GameState extends BaseGameState {
   board: Board
   stage: number
   reinforcements?: Record<number, Reinforcement[]>
@@ -79,39 +66,4 @@ export interface GameState {
   vp?: Record<number, number>
   min_vp?: Record<number, number>
   all_targets_vp?: number
-  result?: string
-}
-
-export interface ViewState {
-  log: string[]
-  prompt: string | null
-  actions: Record<string, number | (string | number)[]>
-  board?: Board
-  active_side?: number
-  stage?: number
-  off_board?: { name: string, side: number, return_stage: number }[]
-  unmoved?: string[],
-  moves?: Record<string, number>
-  selected_plane?: string
-  fire_line?: string[]
-  fire_target?: string
-  shot?: string[]
-  bombed?: string[]
-  targets?: string[]
-  aa_guns?: string[]
-  aa_fired?: string[]
-  selected_gun?: string
-  sun?: SunEdge
-  sun_hexes?: string[]
-  vp?: Record<number, number>
-  min_vp?: Record<number, number>
-}
-
-export interface StateDefinition {
-  inactive?: string
-  _begin?: () => void
-  _end?: () => void
-  _resume?: () => void
-  prompt?: () => void
-  [action: string]: unknown
 }

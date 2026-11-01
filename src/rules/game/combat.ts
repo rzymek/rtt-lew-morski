@@ -1,6 +1,5 @@
-import "../rtt/framework.d.ts";
 import type {PlaneInstance, Board} from "../types.js"
-import {hexStep} from "./hex.js"
+import {hexStep} from "@rally-the-troops/module/rules"
 import {altitudeOf, planeStats} from "./altitude.js"
 import {cloudPenalty, isInCloud} from "./clouds.js"
 import {sunPenalty} from "./sun.js"

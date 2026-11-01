@@ -1,9 +1,9 @@
-import {ViewPlaneInstance} from "./viewPlaneInstance";
+import {ViewPlaneInstance} from "../shared/view";
 import {getHexCenterInSVGCoords} from "./svg/getHexCenterInSVGCoords";
 import {planePlaceholder} from "./refs/planePlaceholder";
-import {NS_XLINK, svgNS} from "./svg/svgNS";
+import {NS_XLINK, svgNS} from "@rally-the-troops/module/client";
 import jammedSvg from "./markers/jammed.svg?raw";
-import {createSvgMarkerAt} from "./svg/createSvgMarkerAt";
+import {createSvgMarkerAt} from "@rally-the-troops/module/client";
 
 // Indexed by altitude; planes flying high carry no marker.
 const ALTITUDE_MARKERS = [undefined, './images/m_L.jpg', './images/m_VL.jpg']

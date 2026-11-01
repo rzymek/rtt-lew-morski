@@ -1,3 +1,4 @@
+import {nextActiveRole} from "@rally-the-troops/module/rules";
 import {G, ROLES} from "../globals";
 
 export function changeSide() {
@@ -5,5 +6,5 @@ export function changeSide() {
 }
 
 export function otherSide(active: number) {
-  return (active + 1) % ROLES.length
+  return nextActiveRole(active, ROLES.length)
 }

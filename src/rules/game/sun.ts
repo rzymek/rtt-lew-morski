@@ -1,7 +1,8 @@
 import type {PlaneInstance} from "../types";
 import {G} from "../globals";
 import {cloudPenalty} from "./clouds";
-import {DIR_OFFSETS, hexId, hexStep, isOnBoard, parseHex} from "./hex";
+import {DIR_OFFSETS, hexId, hexStep, parseHex} from "@rally-the-troops/module/rules";
+import {isOnBoard} from "./hex";
 
 export type SunEdge = "E" | "S" | "W"
 

@@ -1,5 +1,6 @@
 import {data, PlaneData} from "./data.js"
-import {hexId, isOnBoard, parseHex} from "./hex.js"
+import {hexesAround as hexesAroundOn, hexId} from "@rally-the-troops/module/rules"
+import {isOnBoard} from "./hex.js"
 
 const {Hur, HurL, Spit, SpitL, ME109, ME109L, ME110, ME110L, HE111, JU88} = data.planes
 
@@ -145,14 +146,5 @@ export function boardHexes(): string[] {
 
 // Hexes on the board within the radius, nearest to the center first.
 export function hexesAround(center: string, radius: number): string[] {
-  const [a, b] = parseHex(center) as [number, number]
-  const hexes: { hex: string, distance: number }[] = []
-  for (let da = -radius; da <= radius; da++) {
-    for (let db = -radius; db <= radius; db++) {
-      const distance = Math.max(Math.abs(da), Math.abs(db), Math.abs(da - db))
-      if (distance <= radius && isOnBoard(a + da, b + db))
-        hexes.push({hex: hexId(a + da, b + db), distance})
-    }
-  }
-  return hexes.sort((x, y) => x.distance - y.distance).map(it => it.hex)
+  return hexesAroundOn(center, radius, isOnBoard)
 }

@@ -1,6 +1,7 @@
 // it.each covers both branches of the outcome check.
 /* oxlint-disable vitest/no-conditional-expect */
 import {beforeEach, describe, expect, it, vi} from "vitest";
+import {stubFramework} from "@rally-the-troops/module/testing";
 import {G, planes, R_Bryt, R_Niem} from "../globals";
 import type {PlaneInstance} from "../types";
 import {exitsFor, flightsFor, isEdgeHex} from "../game/hex";
@@ -48,13 +49,7 @@ function buttons(state: { prompt(): void }) {
 
 beforeEach(() => {
   goto.mockClear();
-  vi.stubGlobal("goto", goto);
-  vi.stubGlobal("log", vi.fn());
-  vi.stubGlobal("push_undo", vi.fn());
-  vi.stubGlobal("clear_undo", vi.fn());
-  vi.stubGlobal("random", () => dice.shift());
-  vi.stubGlobal("set_has", (set: unknown[], item: unknown) => set.includes(item));
-  vi.stubGlobal("set_add", (set: unknown[], item: unknown) => set.push(item));
+  stubFramework({goto, random: () => dice.shift()});
 });
 
 const EAST_EDGE = "A43.B30";

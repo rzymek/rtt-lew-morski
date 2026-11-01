@@ -2,7 +2,7 @@ import {G, R_Niem, ROLES} from "../globals";
 import {ALT_HIGH, altitudeOf} from "../game/altitude";
 import {hexesAround} from "../game/scenarios";
 import {changeSide} from "../lifecycle/changeSide";
-import {isEmpty} from "../generic/isEmpty";
+import {isEmpty} from "@rally-the-troops/module/rules";
 import {canUnjam, shootersOf} from "./shooters";
 import {gunsReady} from "./aa_guns";
 import {nextToReturn} from "./return_planes";

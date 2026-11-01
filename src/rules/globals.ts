@@ -1,5 +1,8 @@
 import {data} from "./game/data.js"
-import type {GameState, FrameState, ViewState, StateDefinition} from "./types.js"
+import type {FrameState, StateDefinition} from "@rally-the-troops/module/rules"
+import type {View} from "../shared/view"
+import {ROLE_NAMES} from "../shared/shared"
+import type {GameState} from "./types.js"
 
 /** G - the (global) game state
 
@@ -45,12 +48,13 @@ export let R!: number
 
  The view object that is being generated for the client is held in V during the execution of the on_view hook and the state prompt functions (see below).
  */
-export let V: ViewState
+export let V: View
 
 /** States and procedures */
 export const P: Record<string, StateDefinition | string | Array<() => void>> = {}
 
-export const ROLES = ["Niemcy", "Brytyjczycy"]
+// framework.js links to these by name: they have to stay declared at the top level of this bundle.
+export const ROLES = [...ROLE_NAMES]
 export const R_Niem = 0
 export const R_Bryt = 1
 export const sides = [R_Niem, R_Bryt];

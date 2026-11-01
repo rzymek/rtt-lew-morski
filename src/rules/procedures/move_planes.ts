@@ -7,7 +7,7 @@ import {shootersOf} from "./shooters";
 import {startCombat} from "./phases";
 import {changeSide, otherSide} from "../lifecycle/changeSide";
 import {select_plane} from "./select_plane.js";
-import {isEmpty} from "../generic/isEmpty";
+import {isEmpty} from "@rally-the-troops/module/rules";
 import {selectedPlaneOfTheActiveSide} from "./selectedPlaneOfTheActiveSide";
 import {bombableHexes, canBomb, dropBomb} from "./bombers";
 import {bombsLeft} from "../game/bombs";

@@ -1,18 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta name="viewport"
-          content="width=device-width, height=device-height, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover">
-    <meta name="theme-color" content="#444">
-    <meta charset="UTF-8">
     <title>Lew Morski</title>
-    <link rel="stylesheet" href="/fonts/fonts.css">
-    <link rel="stylesheet" href="/common/client.css">
-    <script defer src="/common/client.js"></script>
-    <script>
-        var on_update;
-        var on_init;
-    </script>
+    <load src="node_modules/@rally-the-troops/module/client/head.html"/>
     <!--suppress CssUnresolvedCustomProperty -->
     <style lang="css">
         .hex {
@@ -27,16 +17,7 @@
 </head>
 <body>
 
-<header>
-    <div id="toolbar">
-        <details>
-            <summary><img src="/images/cog.svg"></summary>
-            <menu>
-                <li class="separator">
-            </menu>
-        </details>
-    </div>
-</header>
+<load src="node_modules/@rally-the-troops/module/client/header.html"/>
 
 <aside>
     <div id="roles"></div>
@@ -51,6 +32,6 @@
     </div>
 </main>
 
-<footer id="status"></footer>
+<load src="node_modules/@rally-the-troops/module/client/footer.html"/>
 
 </body>

@@ -1,4 +1,5 @@
 import {beforeEach, describe, expect, it, vi} from "vitest";
+import {stubFramework} from "@rally-the-troops/module/testing";
 import {G, planes, R_Bryt, R_Niem} from "../globals";
 import type {PlaneInstance} from "../types";
 import {applyHit} from "./combat";
@@ -19,10 +20,7 @@ function plane(id: string, type: keyof typeof planes, overrides: Partial<PlaneIn
 
 beforeEach(() => {
   finish.mockClear();
-  vi.stubGlobal("finish", finish);
-  vi.stubGlobal("log", vi.fn());
-  vi.stubGlobal("set_has", (set: unknown[], item: unknown) => set.includes(item));
-  vi.stubGlobal("set_add", (set: unknown[], item: unknown) => set.push(item));
+  stubFramework({finish});
   for (const key of Object.keys(G)) delete (G as any)[key];
   Object.assign(G, {
     vp: {[R_Niem]: 0, [R_Bryt]: 0},

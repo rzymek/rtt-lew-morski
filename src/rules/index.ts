@@ -1,4 +1,3 @@
-import "./rtt/framework.d.ts"
 
 import {P} from "./globals";
 import {movePlanes} from "./procedures/move_planes";

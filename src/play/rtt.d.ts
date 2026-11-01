@@ -1,7 +1,10 @@
-import type {View} from "./view";
+import type {Player} from "../shared/shared";
+import type {View} from "../shared/view";
 
 declare global {
   interface GameView extends View {}
 
-  function toggle_zoom(): void;
+  interface GameTypes {
+    player: Player
+  }
 }

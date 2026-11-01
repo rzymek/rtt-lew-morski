@@ -1,0 +1,63 @@
+import type {BaseViewState} from "@rally-the-troops/module/rules";
+import type {SunEdge} from "../rules/game/sun";
+
+export interface ViewPlaneInstance {
+  id: string;
+  plane: { img: string, udzwig_bomb: number | null }
+  at: string
+  direction: number
+  altitude?: number
+  damaged?: boolean
+  destroyed?: boolean
+  jammed?: boolean
+  bombs_dropped?: number
+}
+
+export interface ViewActions {
+  move_hex?: string[]
+  select_plane?: string[]
+  wysoko?: number
+  nisko?: number
+  bardzo_nisko?: number
+  attack?: number
+  unjam?: number
+  bomb?: string[]
+  place_gun?: string[]
+  place_plane?: string[]
+  return_hex?: string[]
+  leave_hex?: string[]
+  leave_return?: number
+  leave_forever?: number
+  next_type?: number
+  turn_left?: number
+  turn_right?: number
+  select_gun?: string[]
+  aa_fire?: string[]
+  deselect?: number
+  leave_board?: number
+  undo?: number
+  done?: number
+}
+
+/** What on_view sends to the client. */
+export interface View extends BaseViewState<ViewActions> {
+  board: { planes: Record<number, ViewPlaneInstance[]> }
+  active_side: number
+  stage?: number
+  off_board?: { name: string, side: number, return_stage: number }[]
+  unmoved?: string[]
+  moves?: Record<string, number>
+  selected_plane?: string
+  fire_line?: string[]
+  fire_target?: string
+  shot?: string[]
+  bombed?: string[]
+  targets?: string[]
+  aa_guns?: string[]
+  aa_fired?: string[]
+  selected_gun?: string
+  sun?: SunEdge
+  sun_hexes?: string[]
+  vp?: Record<number, number>
+  min_vp?: Record<number, number>
+}

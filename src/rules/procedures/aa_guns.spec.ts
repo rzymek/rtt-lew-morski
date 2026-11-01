@@ -1,4 +1,5 @@
 import {beforeEach, describe, expect, it, vi} from "vitest";
+import {stubFramework} from "@rally-the-troops/module/testing";
 import {G, L, planes, R_Bryt, R_Niem} from "../globals";
 import type {PlaneInstance} from "../types";
 import {ALT_LOW, ALT_VERY_LOW} from "../game/altitude";
@@ -56,15 +57,7 @@ function shoot(plane: PlaneInstance, value: number, gun = GUN) {
 
 beforeEach(() => {
   goto.mockClear();
-  vi.stubGlobal("goto", goto);
-  vi.stubGlobal("call", vi.fn());
-  vi.stubGlobal("log", vi.fn());
-  vi.stubGlobal("push_undo", vi.fn());
-  vi.stubGlobal("clear_undo", vi.fn());
-  vi.stubGlobal("random", () => dice.shift());
-  vi.stubGlobal("set_has", (set: unknown[], item: unknown) => set.includes(item));
-  vi.stubGlobal("set_add", (set: unknown[], item: unknown) => set.push(item));
-  vi.stubGlobal("set_delete", (set: unknown[], item: unknown) => set.splice(set.indexOf(item), 1));
+  stubFramework({goto, random: () => dice.shift()});
 });
 
 describe('setup (6)', () => {

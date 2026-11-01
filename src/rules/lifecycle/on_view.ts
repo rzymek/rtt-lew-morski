@@ -1,4 +1,3 @@
-import "../rtt/framework.d.ts";
 import {G, L, R, V} from "../globals";
 import {movesMapFor} from "../game/hex";
 import {fireLineHexes} from "../game/combat";
