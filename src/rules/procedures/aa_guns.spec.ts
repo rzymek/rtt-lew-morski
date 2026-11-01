@@ -155,6 +155,8 @@ describe('firing', () => {
 
   it('is not possible in the German combat phase (6.1)', () => {
     setup([he111()], [GUN], R_Niem);
+    // A British plane on the board, or their movement phase would be skipped.
+    G.board.planes[R_Bryt].push({id: "1.0", plane: planes.Spit, at: "A40.B40", direction: 0});
     expect(actions(combat)).toEqual([]);
     movePlanes.done();
     expect(goto).toHaveBeenCalledWith("move_planes");

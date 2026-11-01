@@ -187,6 +187,65 @@ describe('4.3: leaving the board', () => {
   });
 });
 
+describe('no own plane on the board', () => {
+  const offBoard = (id: string, return_stage: number) =>
+    ({plane: plane(id, id.startsWith("0") ? "HE111" : "Spit"), return_stage, from: EAST_EDGE});
+
+  it('skips the movement phase of that side', () => {
+    setup([plane("0.0", "HE111")], []);
+    G.off_board = [offBoard("1.0", 8)];
+    endCombat();
+    expect(G.active).toBe(R_Niem);
+    expect(G.stage).toBe(4);
+    expect(goto).toHaveBeenCalledTimes(1);
+    expect(goto).toHaveBeenCalledWith("move_planes");
+  });
+
+  it('destroyed planes do not count', () => {
+    setup([plane("0.0", "HE111")], [plane("1.0", "Spit", {destroyed: true})]);
+    G.off_board = [offBoard("1.1", 8)];
+    endCombat();
+    expect(G.active).toBe(R_Niem);
+  });
+
+  it('keeps the movement phase when a plane returns or a reinforcement enters', () => {
+    setup([plane("0.0", "HE111")], []);
+    G.off_board = [offBoard("1.0", 3)];
+    endCombat();
+    expect(G.active).toBe(R_Bryt);
+    expect(goto).toHaveBeenCalledWith("return_planes");
+
+    goto.mockClear();
+    setup([plane("0.0", "HE111")], []);
+    G.off_board = [offBoard("1.0", 8)];
+    G.reinforcements![R_Bryt] = [{stage: 3, plane: planes.Spit, at: "A01.B09", direction: 1}];
+    endCombat();
+    expect(G.active).toBe(R_Bryt);
+    expect(goto).toHaveBeenCalledWith("move_planes");
+  });
+
+  it('keeps the combat phase for the AA guns', () => {
+    const he = plane("0.0", "HE111", {at: "A20.B20", altitude: 2});
+    setup([he], []);
+    G.off_board = [offBoard("1.0", 8)];
+    G.aa_guns = ["A20.B20"];
+    endCombat();
+    expect(G.active).toBe(R_Bryt);
+    expect(goto).toHaveBeenCalledTimes(1);
+    expect(goto).toHaveBeenCalledWith("combat");
+  });
+
+  it('moves the stages on while both sides are off the board', () => {
+    setup([], []);
+    G.off_board = [offBoard("0.0", 6), offBoard("1.0", 8)];
+    endCombat();
+    expect(G.active).toBe(R_Niem);
+    expect(G.stage).toBe(6);
+    expect(goto).toHaveBeenCalledTimes(1);
+    expect(goto).toHaveBeenCalledWith("return_planes");
+  });
+});
+
 describe('4.2.6: no free way to fly', () => {
   // A He-111 at max speed 4, min 3, turns after 2. Boxed in on all altitudes it can reach.
   function boxed(extra: Partial<PlaneInstance> = {}) {

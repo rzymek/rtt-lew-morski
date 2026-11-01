@@ -6,6 +6,7 @@ import {isEmpty} from "@rally-the-troops/module/rules";
 import {canUnjam, shootersOf} from "./shooters";
 import {gunsReady} from "./aa_guns";
 import {nextToReturn} from "./return_planes";
+import {isGameOver} from "../game/victory";
 
 export function startCombat() {
   const planes = G.board.planes[G.active]
@@ -29,7 +30,16 @@ export function endCombat() {
   G.shot = []
   G.aa_fired = []
   enterReinforcements()
-  goto(nextToReturn() ? "return_planes" : "move_planes")
+  startMovement()
+}
+
+function startMovement() {
+  if (nextToReturn()) return goto("return_planes")
+  // A finished game ends once the action is complete (endingGame), so it must not skip on until then.
+  if (isGameOver() || G.board.planes[G.active].some(plane => !plane.destroyed)) return goto("move_planes")
+  // With no own plane on the board nothing can be moved or fired at, but AA guns may still have targets.
+  log(`${ROLES[G.active]}: brak samolotów na planszy – faza ruchu pominięta`)
+  startCombat()
 }
 
 // 9: an occupied entry hex gives way to the nearest free one.
