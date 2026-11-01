@@ -10,6 +10,7 @@ export function covers(root?: string): Plugin {
   let resolvedRoot: string;
   return {
     name: 'covers',
+    apply: 'build',
     configResolved(config) {
       resolvedRoot = root ?? config.root;
     },
