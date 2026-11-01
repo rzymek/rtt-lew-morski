@@ -1,7 +1,4 @@
-import {PlaneInstance} from "../types";
 import {G} from "../globals";
-import {fireLineHexes} from "../game/combat";
-import {otherSide} from "../lifecycle/changeSide";
 import {describe, expect, it, vi} from "vitest";
 import {planesInFirelane} from "./planesInFirelane";
 

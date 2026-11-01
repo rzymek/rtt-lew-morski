@@ -1,3 +1,5 @@
+// it.each covers both branches of the outcome check.
+/* oxlint-disable vitest/no-conditional-expect */
 import {beforeEach, describe, expect, it, vi} from "vitest";
 import {G, planes, R_Bryt, R_Niem} from "../globals";
 import type {PlaneInstance} from "../types";

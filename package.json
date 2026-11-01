@@ -8,10 +8,13 @@
     "build:bundle": "CI=1 vite build",
     "build:tsc": "tsc --noEmit",
     "build:test": "CI=1 vitest",
+    "build:lint": "oxlint",
     "test": "vitest"
   },
   "devDependencies": {
     "@xmldom/xmldom": "^0.9.12",
+    "npm-run-all2": "^9.0.4",
+    "oxlint": "^1.90.0",
     "sharp": "^0.35.5",
     "typescript": "^7.0.2",
     "vite": "^8.3.5",

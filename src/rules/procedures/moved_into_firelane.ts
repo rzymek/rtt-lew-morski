@@ -1,7 +1,7 @@
 import type {PlaneInstance} from "../types";
 import {G, L, ROLES} from "../globals";
 import {applyHit, describeShot, resolveShot, rollShot} from "../game/combat";
-import {changeSide, otherSide} from "../lifecycle/changeSide";
+import {changeSide} from "../lifecycle/changeSide";
 import {isEmpty} from "../generic/isEmpty";
 import {select_plane} from "./select_plane";
 import {selectedPlaneOfTheActiveSide} from "./selectedPlaneOfTheActiveSide";

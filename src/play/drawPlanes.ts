@@ -60,7 +60,7 @@ export function drawPlanes() {
   expandedStackLayer.innerHTML = ""
 
   const planes = Object.entries(view.board.planes)
-    .flatMap(([roleStr, planes]) => planes
+    .flatMap(([roleStr, rolePlanes]) => rolePlanes
       .filter(plane => plane && !plane.destroyed && document.getElementById(plane.at))
       .map(plane => ({plane, isActiveSide: parseInt(roleStr) === view.active_side})))
     // Higher value = flying lower, so the lowest planes are drawn first and end up covered.

@@ -3,7 +3,6 @@ import injectHTML from 'vite-plugin-html-inject';
 import {covers} from './tools/covers-plugin.ts';
 import {flattenHtmlOutputs} from './tools/flatten-html-outputs.ts';
 import {cleanupSvg} from './tools/cleanup-svg.ts';
-import {cjsRules} from './tools/cjs-rules.ts';
 import {appendRttFramework} from './tools/append-rtt-framework.ts'
 import {mapClouds} from './tools/map-clouds.ts'
 
@@ -34,9 +33,9 @@ export default defineConfig({
     modulePreload: false,
     rollupOptions: {
       preserveEntrySignatures: 'exports-only',
-      onwarn(warning, warn) {
+      onwarn(warning, defaultHandler) {
         if (warning.code === 'EVAL') return;
-        warn(warning);
+        defaultHandler(warning);
       },
       input: {
         play: 'src/play/play.html',

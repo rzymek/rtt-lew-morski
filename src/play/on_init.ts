@@ -8,7 +8,7 @@ import {expandedStackLayer} from "./refs/expandedStackLayer";
 import {collapseStack} from "./drawPlanes";
 import {HEX_ACTIONS} from "./hexActions";
 
-export function onInit(scenario: string, options: unknown, static_view: unknown) {
+export function onInit() {
   planePlaceholder.remove()
   toggle_zoom()
 
