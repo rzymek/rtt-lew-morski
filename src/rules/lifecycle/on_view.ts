@@ -3,6 +3,7 @@ import {movesMapFor} from "../game/hex";
 import {fireLineHexes} from "../game/combat";
 import {selectedPlaneOfTheActiveSide} from "../procedures/selectedPlaneOfTheActiveSide";
 import {fireTarget} from "../procedures/shooters";
+import {returnHexes} from "../procedures/return_planes";
 import {sunHexes} from "../game/sun";
 
 export function on_view() {
@@ -13,6 +14,7 @@ export function on_view() {
     name: it.plane.plane.nazwa,
     side: parseInt(it.plane.id),
     return_stage: it.return_stage,
+    hexes: returnHexes(it),
   }))
   V.shot = G.shot
   V.bombed = G.bombed

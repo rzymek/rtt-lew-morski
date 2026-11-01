@@ -2,7 +2,8 @@
 /* oxlint-disable vitest/no-conditional-expect */
 import {beforeEach, describe, expect, it, vi} from "vitest";
 import {stubFramework} from "@rally-the-troops/module/testing";
-import {G, planes, R_Bryt, R_Niem} from "../globals";
+import {G, planes, R_Bryt, R_Niem, V} from "../globals";
+import {on_view} from "../lifecycle/on_view";
 import type {PlaneInstance} from "../types";
 import {exitsFor, flightsFor, isEdgeHex} from "../game/hex";
 import {fireTarget} from "./shooters";
@@ -174,6 +175,18 @@ describe('4.3: leaving the board', () => {
     goto.mockClear();
     returnPlanes.done();
     expect(goto).toHaveBeenCalledWith("move_planes");
+  });
+
+  it('shows the players the free hexes a plane may come back to', () => {
+    const it = plane("0.0", "HE111", {at: EAST_EDGE});
+    setup([plane("0.1", "HE111", {at: "A43.B31"})], []);
+    G.off_board = [{plane: it, return_stage: 8, from: EAST_EDGE}];
+    on_view();
+    const [waiting] = V.off_board!;
+    expect(waiting).toMatchObject({side: R_Niem, return_stage: 8});
+    expect(waiting.hexes).toEqual(returnHexes(G.off_board[0]));
+    expect(waiting.hexes).toContain("A43.B35");
+    expect(waiting.hexes).not.toContain("A43.B31");
   });
 
   it('does not come back too early, and reinforcements get an unused id', () => {

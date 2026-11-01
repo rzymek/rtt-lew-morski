@@ -44,7 +44,7 @@ export interface View extends BaseViewState<ViewActions> {
   board: { planes: Record<number, ViewPlaneInstance[]> }
   active_side: number
   stage?: number
-  off_board?: { name: string, side: number, return_stage: number }[]
+  off_board?: { name: string, side: number, return_stage: number, hexes: string[] }[]
   unmoved?: string[]
   moves?: Record<string, number>
   selected_plane?: string

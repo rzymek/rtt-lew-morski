@@ -3,6 +3,7 @@ import {bombedLayer} from "./refs/bombedLayer";
 import {targetsLayer} from "./refs/targetsLayer";
 import {aaGunsLayer} from "./refs/aaGunsLayer";
 import {sunLayer} from "./refs/sunLayer";
+import {returnHexesLayer} from "./refs/returnHexesLayer";
 import {planePlaceholder} from "./refs/planePlaceholder";
 import {expandedStackLayer} from "./refs/expandedStackLayer";
 import {collapseStack} from "./drawPlanes";
@@ -27,6 +28,8 @@ export function onInit() {
   svg.insertBefore(targetsLayer, document.getElementById('units'))
   bombedLayer.id = 'bombed'
   svg.insertBefore(bombedLayer, document.getElementById('units'))
+  returnHexesLayer.id = 'return-hexes'
+  svg.insertBefore(returnHexesLayer, document.getElementById('units'))
   hexOverlay.id = 'hex-overlay'
   svg.insertBefore(hexOverlay, document.getElementById('units'))
   // Above the planes: a gun under a counter must stay clickable.

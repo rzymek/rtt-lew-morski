@@ -4,6 +4,7 @@ import {drawBombed} from "./drawBombed";
 import {drawTargets} from "./drawTargets";
 import {drawAaGuns} from "./drawAaGuns";
 import {drawSun} from "./drawSun";
+import {drawReturnHexes} from "./drawReturnHexes";
 
 export function onUpdate() {
   // action_button prepends, so the last one ends up first
@@ -52,6 +53,7 @@ export function onUpdate() {
   drawSun()
   drawTargets()
   drawBombed()
+  drawReturnHexes()
   drawPlanes()
   drawAaGuns()
 }
