@@ -8,7 +8,19 @@ import {getHexCenterInSVGCoords} from "./svg/getHexCenterInSVGCoords";
 import {svgNS} from "./svg/svgNS";
 import {ViewPlaneInstance} from "./viewPlaneInstance";
 
+const STACK_STEP = 2.5
+// Keeps big stacks within their hex: the step shrinks rather than the stack growing past this.
+const STACK_MAX_SPREAD = 10
+
 let expandedHex: string | undefined
+
+// Shifts each counter diagonally, so that the ones below stay visible. The stack stays centered on its hex.
+function stackedCenter(plane: ViewPlaneInstance, stack: ViewPlaneInstance[]): DOMPoint {
+  const center = getHexCenterInSVGCoords(plane.at)
+  const step = Math.min(STACK_STEP, STACK_MAX_SPREAD / (stack.length - 1))
+  const offset = (stack.indexOf(plane) - (stack.length - 1) / 2) * step
+  return new DOMPoint(center.x + offset, center.y - offset)
+}
 
 export function collapseStack() {
   if (expandedHex === undefined) return
@@ -64,7 +76,7 @@ export function drawPlanes() {
   const addBorder = (plane: ViewPlaneInstance, color: string) => {
     const center = expandedCenters.get(plane.id)
     const layer = center ? expandedStackLayer : hexOverlay
-    layer.appendChild(planeBorder(plane, color, center))
+    layer.appendChild(planeBorder(plane, color, center ?? stackedCenter(plane, planesAt(plane.at))))
   }
 
   for (const {plane} of planes) {
@@ -76,7 +88,7 @@ export function drawPlanes() {
 
   for (const {plane, isActiveSide} of planes) {
     const center = expandedCenters.get(plane.id)
-    const counter = createPlaneCounter(plane, center);
+    const counter = createPlaneCounter(plane, center ?? stackedCenter(plane, planesAt(plane.at)));
 
     // Dim planes that have already shot this phase
     const hasShot = view.shot?.includes(plane.id)
