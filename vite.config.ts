@@ -1,11 +1,11 @@
 import {defineConfig, createLogger} from 'vite'
 import injectHTML from 'vite-plugin-html-inject';
-import {covers} from './tools/covers-plugin';
-import {flattenHtmlOutputs} from './tools/flatten-html-outputs';
-import {cleanupSvg} from './tools/cleanup-svg';
-import {cjsRules} from './tools/cjs-rules';
-import {appendRttFramework} from './tools/append-rtt-framework'
-import {mapClouds} from './tools/map-clouds'
+import {covers} from './tools/covers-plugin.ts';
+import {flattenHtmlOutputs} from './tools/flatten-html-outputs.ts';
+import {cleanupSvg} from './tools/cleanup-svg.ts';
+import {cjsRules} from './tools/cjs-rules.ts';
+import {appendRttFramework} from './tools/append-rtt-framework.ts'
+import {mapClouds} from './tools/map-clouds.ts'
 
 const SUPPRESSED = [
   "can't be bundled without type=\"module\"",

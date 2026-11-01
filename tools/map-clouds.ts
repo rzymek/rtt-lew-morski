@@ -7,7 +7,7 @@ import {useNamespaces} from 'xpath';
 const VIRTUAL_ID = 'virtual:map-clouds';
 const RESOLVED_ID = '\0' + VIRTUAL_ID;
 // The Inkscape source: src/play/map.svg is exported from it without the layer labels.
-const MAP_SVG = resolve(__dirname, '../public/app.svg');
+const MAP_SVG = resolve(import.meta.dirname, '../public/app.svg');
 
 const select = useNamespaces({
   svg: 'http://www.w3.org/2000/svg',
