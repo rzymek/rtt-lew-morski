@@ -4,13 +4,12 @@ import {hexesAround} from "../game/scenarios";
 import {changeSide} from "../lifecycle/changeSide";
 import {isEmpty} from "../generic/isEmpty";
 import {canUnjam, shootersOf} from "./shooters";
-import {canBomb} from "./bombers";
 import {gunsReady} from "./aa_guns";
 import {nextToReturn} from "./return_planes";
 
 export function startCombat() {
   const planes = G.board.planes[G.active]
-  if (planes.some(canUnjam) || planes.some(canBomb) || !isEmpty(shootersOf(G.active)) || !isEmpty(gunsReady())) {
+  if (planes.some(canUnjam) || !isEmpty(shootersOf(G.active)) || !isEmpty(gunsReady())) {
     goto("combat")
   } else {
     endCombat()
@@ -29,7 +28,6 @@ export function endCombat() {
   }
   G.shot = []
   G.aa_fired = []
-  G.flown_over = {}
   enterReinforcements()
   goto(nextToReturn() ? "return_planes" : "move_planes")
 }

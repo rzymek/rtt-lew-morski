@@ -24,11 +24,11 @@ function spit(overrides: Partial<PlaneInstance> = {}): PlaneInstance {
   return {id: "1.0", plane: planes.Spit, at: "A01.B01", direction: 0, ...overrides}
 }
 
-function setup(niem: PlaneInstance[], flownOver: Record<string, string[]> = {}) {
+function setup(niem: PlaneInstance[], flownOver: Record<string, string[]> = {}, moved: string[] = []) {
   Object.assign(G, {
     active: R_Niem,
     shot: [],
-    moved: [],
+    moved,
     targets: ["A20.B21", "A20.B22", "A20.B23", "A30.B30"],
     bombed: [],
     flown_over: flownOver,
@@ -79,101 +79,138 @@ describe('moving', () => {
   });
 });
 
-describe('entering the attack phase', () => {
-  it('stops there for a plane that can still bomb (7.0.3)', () => {
-    setup([he111()], {"0.0": ["A20.B21"]});
-    movePlanes.done();
-    expect(goto).toHaveBeenCalledWith("combat");
+describe('after the move', () => {
+  it('keeps a plane that can bomb selected (3.0)', () => {
+    const plane = he111();
+    setup([plane]);
+    G.selected_plane = plane.id;
+    movePlanes.move_hex("A20.B23");
+    expect(G.selected_plane).toBe("0.0");
   });
 
-  it('skips it for a plane that flew over no strategic object', () => {
-    setup([he111()], {"0.0": ["A25.B25"]});
+  it('releases a plane that flew over no strategic object', () => {
+    const plane = he111({at: "A30.B20"});
+    setup([plane]);
+    G.selected_plane = plane.id;
+    movePlanes.move_hex("A30.B23");
+    expect(G.selected_plane).toBeUndefined();
+  });
+
+  it('releases a plane that has no bombs left', () => {
+    const plane = he111({bombs_dropped: 2});
+    setup([plane]);
+    G.selected_plane = plane.id;
+    movePlanes.move_hex("A20.B23");
+    expect(G.selected_plane).toBeUndefined();
+  });
+
+  it('releases a plane without a bomb load', () => {
+    const plane = he111({plane: planes.ME109});
+    setup([plane]);
+    G.selected_plane = plane.id;
+    movePlanes.move_hex("A20.B23");
+    expect(G.selected_plane).toBeUndefined();
+  });
+
+  it('offers no more moves to a plane that already moved', () => {
+    setup([he111()], {"0.0": ["A20.B21"]}, ["0.0"]);
+    G.selected_plane = "0.0";
+    expect(actionsOf(movePlanes.prompt).filter(it => it[0] === "move_hex")).toEqual([]);
+  });
+});
+
+describe('leaving the movement phase', () => {
+  it('does not stop in the attack phase for the bombs left unused (3.0)', () => {
+    setup([he111()], {"0.0": ["A20.B21"]}, ["0.0"]);
     movePlanes.done();
     expect(goto).toHaveBeenCalledWith("move_planes");
   });
 
-  it('skips it for a plane that has no bombs left', () => {
-    setup([he111({bombs_dropped: 2})], {"0.0": ["A20.B21"]});
+  it('forgets the flown over hexes', () => {
+    setup([he111()], {"0.0": ["A20.B21"]}, ["0.0"]);
     movePlanes.done();
-    expect(goto).toHaveBeenCalledWith("move_planes");
-  });
-
-  it('skips it for a plane without a bomb load', () => {
-    setup([he111({plane: planes.ME109})], {"0.0": ["A20.B21"]});
-    movePlanes.done();
-    expect(goto).toHaveBeenCalledWith("move_planes");
-  });
-
-  it('forgets the flown over hexes with the end of the phase', () => {
-    setup([he111()], {"0.0": ["A20.B21"]});
-    combat.done();
     expect(G.flown_over).toEqual({});
+  });
+
+  it('offers no bombing in the attack phase', () => {
+    setup([he111()], {"0.0": ["A20.B21"]});
+    G.selected_plane = "0.0";
+    expect(actionsOf(combat.prompt).filter(it => it[0] === "bomb")).toEqual([]);
   });
 });
 
 describe('bombing', () => {
-  it('offers only the hexes flown over by the selected plane (7.0.3)', () => {
-    setup([he111(), he111({id: "0.1"})], {"0.0": ["A20.B21", "A20.B22"], "0.1": ["A30.B30"]});
-    expect(actionsOf(combat.prompt)).toEqual([["select_plane", "0.0"], ["select_plane", "0.1"]]);
+  const bombActions = () => actionsOf(movePlanes.prompt).filter(it => it[0] === "bomb");
+
+  it('offers only the hexes flown over by the selected plane (7.0.2)', () => {
+    setup([he111(), he111({id: "0.1"})], {"0.0": ["A20.B21", "A20.B22"], "0.1": ["A30.B30"]}, ["0.0", "0.1"]);
+    expect(actionsOf(movePlanes.prompt)).toEqual([["select_plane", "0.0"], ["select_plane", "0.1"]]);
     G.selected_plane = "0.0";
-    expect(actionsOf(combat.prompt).filter(it => it[0] === "bomb")).toEqual([["bomb", "A20.B21"], ["bomb", "A20.B22"]]);
+    expect(bombActions()).toEqual([["bomb", "A20.B21"], ["bomb", "A20.B22"]]);
+  });
+
+  it('lets the next plane be selected without bombing', () => {
+    setup([he111(), he111({id: "0.1"})], {"0.0": ["A20.B21"]}, ["0.0"]);
+    G.selected_plane = "0.0";
+    expect(actionsOf(movePlanes.prompt).filter(it => it[0] === "select_plane"))
+      .toEqual([["select_plane", "0.0"], ["select_plane", "0.1"]]);
   });
 
   it('uses up one series and the hex (7.0, 7.0.4)', () => {
     const plane = he111();
-    setup([plane], {"0.0": ["A20.B21", "A20.B22"]});
+    setup([plane], {"0.0": ["A20.B21", "A20.B22"]}, ["0.0"]);
     G.selected_plane = "0.0";
-    combat.bomb("A20.B21");
+    movePlanes.bomb("A20.B21");
     expect(plane.bombs_dropped).toBe(1);
     expect(G.flown_over!["0.0"]).toEqual(["A20.B22"]);
-    combat.bomb("A20.B21");
+    movePlanes.bomb("A20.B21");
     expect(plane.bombs_dropped).toBe(1);
   });
 
   it('is limited by the bomb load (7.0.5)', () => {
     const plane = he111();
-    setup([plane], {"0.0": ["A20.B21", "A20.B22", "A20.B23"]});
+    setup([plane], {"0.0": ["A20.B21", "A20.B22", "A20.B23"]}, ["0.0"]);
     G.selected_plane = "0.0";
-    combat.bomb("A20.B21");
-    combat.bomb("A20.B22");
+    movePlanes.bomb("A20.B21");
+    movePlanes.bomb("A20.B22");
     expect(G.selected_plane).toBeUndefined();
     G.selected_plane = "0.0";
-    combat.bomb("A20.B23");
+    movePlanes.bomb("A20.B23");
     expect(plane.bombs_dropped).toBe(2);
   });
 
   it('does not use up the shot', () => {
-    setup([he111()], {"0.0": ["A20.B21"]});
+    setup([he111()], {"0.0": ["A20.B21"]}, ["0.0"]);
     G.selected_plane = "0.0";
-    combat.bomb("A20.B21");
+    movePlanes.bomb("A20.B21");
     expect(G.shot).toEqual([]);
   });
 
   it('is allowed only on strategic objects, which get marked (7.0.7)', () => {
     const plane = he111();
-    setup([plane], {"0.0": ["A20.B21", "A25.B25"]});
+    setup([plane], {"0.0": ["A20.B21", "A25.B25"]}, ["0.0"]);
     G.selected_plane = "0.0";
-    expect(actionsOf(combat.prompt).filter(it => it[0] === "bomb")).toEqual([["bomb", "A20.B21"]]);
-    combat.bomb("A25.B25");
+    expect(bombActions()).toEqual([["bomb", "A20.B21"]]);
+    movePlanes.bomb("A25.B25");
     expect(plane.bombs_dropped).toBeUndefined();
     expect(G.bombed).toEqual([]);
-    combat.bomb("A20.B21");
+    movePlanes.bomb("A20.B21");
     expect(plane.bombs_dropped).toBe(1);
     expect(G.bombed).toEqual(["A20.B21"]);
   });
 
   it('a shot down plane loses its bombs (7.0.9)', () => {
-    setup([he111({destroyed: true})], {"0.0": ["A20.B21"]});
-    expect(actionsOf(combat.prompt)).toEqual([]);
+    setup([he111({destroyed: true})], {"0.0": ["A20.B21"]}, ["0.0"]);
+    expect(actionsOf(movePlanes.prompt)).toEqual([]);
     G.selected_plane = "0.0";
-    combat.bomb("A20.B21");
+    movePlanes.bomb("A20.B21");
     expect(G.board.planes[R_Niem][0].bombs_dropped).toBeUndefined();
   });
 
   it('the selected plane can be deselected', () => {
-    setup([he111()], {"0.0": ["A20.B21"]});
+    setup([he111()], {"0.0": ["A20.B21"]}, ["0.0"]);
     G.selected_plane = "0.0";
-    combat.deselect();
+    movePlanes.deselect();
     expect(G.selected_plane).toBeUndefined();
   });
 });

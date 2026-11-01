@@ -9,6 +9,9 @@ import {changeSide, otherSide} from "../lifecycle/changeSide";
 import {select_plane} from "./select_plane.js";
 import {isEmpty} from "../generic/isEmpty";
 import {selectedPlaneOfTheActiveSide} from "./selectedPlaneOfTheActiveSide";
+import {bombableHexes, canBomb, dropBomb} from "./bombers";
+import {bombsLeft} from "../game/bombs";
+import {bombGun, hasGun} from "./aa_guns";
 import type {PlaneInstance} from "../types";
 
 const ALTITUDE_ACTIONS: [string, number][] = [
@@ -95,11 +98,28 @@ function collide(plane: PlaneInstance) {
   }
 }
 
+function hasMoved(plane: PlaneInstance): boolean {
+  return set_has(G.moved ?? [], plane.id)
+}
+
+function selectablePlanes(): PlaneInstance[] {
+  return G.board.planes[G.active].filter(plane => !plane.destroyed && (!hasMoved(plane) || canBomb(plane)))
+}
+
 export const movePlanes = {
   inactive: "faza ruchu samolotów",
 
   prompt() {
     const selected = selectedPlaneOfTheActiveSide();
+    if (selected !== undefined && hasMoved(selected)) {
+      prompt(`${selected.plane.nazwa} – możesz zrzucić bomby na cel, nad którym przeleciał (pozostało serii: ${bombsLeft(selected)})`)
+      bombableHexes(selected).forEach(hex => action("bomb", hex))
+      selectablePlanes().forEach(plane => action("select_plane", plane.id))
+      // Counters on the hexes to bomb pass their clicks through, this plane's own included.
+      button("deselect", true)
+      button("done", (V!.unmoved ?? []).length === 0)
+      return
+    }
     if (selected !== undefined && G.leaving_south_from !== undefined) {
       prompt(`${selected.plane.nazwa} opuszcza planszę przez południową krawędź – czy wróci do gry?`)
       button("leave_return")
@@ -130,17 +150,13 @@ export const movePlanes = {
       }
       action("select_plane", G.selected_plane)
     } else {
-      const moved = G.moved ?? []
-      G.board.planes[G.active].forEach((plane) => {
-        if (!plane.destroyed && !set_has(moved, plane.id)) {
-          action("select_plane", plane.id)
-        }
-      })
+      selectablePlanes().forEach(plane => action("select_plane", plane.id))
     }
   },
 
   done() {
     G.moved = []
+    G.flown_over = {}
     delete G.selected_plane
     if (!isEmpty(shootersOf(otherSide(G.active)))) {
       changeSide();
@@ -150,6 +166,24 @@ export const movePlanes = {
   },
 
   select_plane,
+
+  deselect() {
+    delete G.selected_plane
+  },
+
+  bomb(hex: string) {
+    const plane = selectedPlaneOfTheActiveSide()
+    if (!plane || !bombableHexes(plane).includes(hex)) return
+
+    // A die roll for a gun cannot be taken back.
+    const gun = hasGun(hex)
+    if (gun) clear_undo()
+    else push_undo()
+    log(`${ROLES[G.active]} zrzuca bomby na ${hex} (pozostało serii: ${bombsLeft(plane) - 1})`)
+    dropBomb(plane, hex)
+    if (gun) bombGun(hex)
+    if (!canBomb(plane)) delete G.selected_plane
+  },
 
   wysoko() {
     selectAltitude(ALT_HIGH)
@@ -218,5 +252,7 @@ export const movePlanes = {
     set_add(G.moved, G.selected_plane)
     clearSelection()
     collide(plane!)
+    // 3.0: straight on to the bombs dropped along the way.
+    if (canBomb(plane!)) G.selected_plane = plane!.id
   },
 };

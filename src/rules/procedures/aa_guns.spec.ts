@@ -215,19 +215,21 @@ describe('firing', () => {
 describe('bombing a gun (6.2.6, 7.0.6)', () => {
   function bomb(value: number) {
     setup([he111()], [ADJACENT], R_Niem);
+    G.moved = ["0.0"];
     G.flown_over = {"0.0": [ADJACENT]};
     G.selected_plane = "0.0";
     roll(value);
-    combat.bomb(ADJACENT);
+    movePlanes.bomb(ADJACENT);
   }
 
   it('offers a hex with a gun, without marking it as a bombed target', () => {
     setup([he111()], [ADJACENT], R_Niem);
+    G.moved = ["0.0"];
     G.flown_over = {"0.0": [ADJACENT]};
     G.selected_plane = "0.0";
-    expect(actions(combat).filter(it => it[0] === "bomb")).toEqual([["bomb", ADJACENT]]);
+    expect(actions(movePlanes).filter(it => it[0] === "bomb")).toEqual([["bomb", ADJACENT]]);
     roll(1);
-    combat.bomb(ADJACENT);
+    movePlanes.bomb(ADJACENT);
     expect(G.bombed).toEqual([]);
   });
 

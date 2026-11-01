@@ -4,7 +4,8 @@ import {bombsLeft} from "../game/bombs";
 import {hasGun} from "./aa_guns";
 import {scoreAllTargetsBombed, scoreBombOnTarget} from "../game/victory";
 
-// 7.0.2, 7.0.4, 7.0.6: the strategic objects and AA guns flown over this stage that the plane has not bombed yet.
+// 3.0, 7.0.2, 7.0.4, 7.0.6: the strategic objects and AA guns flown over in this movement phase that the plane has not bombed yet.
+// Bombs drop in the movement phase, as 3.0 says, although 7.0.3 places them in the attack phase.
 export function bombableHexes(plane: PlaneInstance): string[] {
   if (plane.destroyed || bombsLeft(plane) <= 0) return []
   return (G.flown_over?.[plane.id] ?? []).filter(hex => G.targets?.includes(hex) || hasGun(hex))

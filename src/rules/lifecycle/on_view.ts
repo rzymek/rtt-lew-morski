@@ -37,7 +37,9 @@ export function on_view() {
       if (plane) {
         V.selected_plane = plane.id
         if (L.P === 'move_planes') {
-          V.moves = movesMapFor(plane, G.board.planes, G.selected_altitude)
+          // A plane selected after its move is only there to drop bombs.
+          if (!set_has(G.moved ?? [], plane.id))
+            V.moves = movesMapFor(plane, G.board.planes, G.selected_altitude)
         } else {
           V.fire_line = fireLineHexes(plane)
           // Nothing to shoot at while setting up.

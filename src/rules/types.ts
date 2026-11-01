@@ -66,7 +66,7 @@ export interface GameState {
   leaving?: boolean
   leaving_south_from?: string
   targets?: string[]
-  moved?: number[]
+  moved?: string[]
   selected_plane?: string
   selected_altitude?: number
   shot?: string[]
