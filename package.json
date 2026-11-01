@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite build --watch",
     "build": "npm-run-all -p build:*",
     "build:bundle": "CI=1 vite build",
     "build:tsc": "tsc --noEmit",
