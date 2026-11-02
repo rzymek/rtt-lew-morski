@@ -10,3 +10,9 @@
 #markers, #targets, #bombed, #sun, #return-hexes {
 	pointer-events: none;
 }
+
+body.hide-pieces #units,
+body.hide-pieces #hex-overlay,
+body.hide-pieces #expanded-stack {
+	display: none;
+}
