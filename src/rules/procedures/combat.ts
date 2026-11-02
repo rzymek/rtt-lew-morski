@@ -1,8 +1,9 @@
 import {G, ROLES} from "../globals.js"
+import {isEmpty} from "@rzymek/rally-the-troops-module/rules"
 import {describeShot, resolveShot} from "../game/combat.js"
 import {select_plane} from "./select_plane.js"
 import {selectedPlaneOfTheActiveSide} from "./selectedPlaneOfTheActiveSide"
-import {canUnjam, fireTarget, markShot} from "./shooters"
+import {canUnjam, fireTarget, markShot, shootersOf} from "./shooters"
 import {endCombat} from "./phases"
 import {aaTargets, fireGun, gunsReady, selectGun} from "./aa_guns"
 
@@ -13,6 +14,13 @@ export const combat = {
     const myPlanes = G.board.planes[G.active as number] ?? []
 
     const initiative = "Faza walki – inicjatywa: " + ROLES[G.active as number]
+    if (G.confirm_done) {
+      const names = shootersOf(G.active as number).map(plane => plane.plane.nazwa).join(", ")
+      prompt(`${initiative} – nie strzelały jeszcze samoloty, które mogą strzelać: ${names}. Zakończyć fazę walki?`)
+      button("confirm_done", true)
+      button("cancel", true)
+      return
+    }
     prompt(initiative)
     button("done", true)
 
@@ -77,6 +85,20 @@ export const combat = {
   },
 
   done() {
+    if (!isEmpty(shootersOf(G.active as number))) {
+      push_undo()
+      G.confirm_done = true
+      return
+    }
     endCombat()
+  },
+
+  confirm_done() {
+    delete G.confirm_done
+    endCombat()
+  },
+
+  cancel() {
+    delete G.confirm_done
   },
 };

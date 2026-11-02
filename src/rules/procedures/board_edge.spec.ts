@@ -317,6 +317,32 @@ describe('5.3.4: unjamming', () => {
   });
 });
 
+describe('ending the combat phase', () => {
+  beforeEach(() => vi.stubGlobal("push_undo", vi.fn()));
+
+  it('asks for confirmation while a plane may still fire', () => {
+    setup([plane("0.0", "ME109")], [plane("1.0", "Spit", {at: "A20.B21"})]);
+    combat.done();
+    expect(G.confirm_done).toBe(true);
+    expect(G.stage).toBe(3);
+    expect(buttons(combat)).toEqual(["confirm_done", "cancel"]);
+    combat.cancel();
+    expect(buttons(combat)).toContain("done");
+    combat.done();
+    combat.confirm_done();
+    expect(G.confirm_done).toBeUndefined();
+    expect(G.active).toBe(R_Bryt);
+  });
+
+  it('ends at once once every plane has fired', () => {
+    setup([plane("0.0", "ME109")], [plane("1.0", "Spit", {at: "A20.B21"})]);
+    G.shot = ["0.0"];
+    combat.done();
+    expect(G.confirm_done).toBeUndefined();
+    expect(G.active).toBe(R_Bryt);
+  });
+});
+
 it('Me 109 has the attack strength of its counters (5.0.6)', () => {
   expect(planes.ME109.sila_ataku).toBe(3);
   expect(planes.ME109.reduced.sila_ataku).toBe(2);

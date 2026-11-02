@@ -20,6 +20,8 @@ export function onUpdate() {
   action_button("deselect", "Odznacz samolot")
   action_button("unjam", "Odblokuj karabiny")
   action_button("attack", "Atakuj")
+  action_button("cancel", "Anuluj")
+  action_button("confirm_done", "Zakończ fazę walki")
   action_button("done", "Done")
   action_button("undo", "Undo")
 

@@ -57,6 +57,8 @@ export interface GameState extends BaseGameState {
   selected_plane?: string
   selected_altitude?: number
   shot?: string[]
+  // Ending the combat phase while some planes could still fire awaits confirmation.
+  confirm_done?: boolean
   flown_over?: Record<string, string[]>
   bombed?: string[]
   aa_guns?: string[]
