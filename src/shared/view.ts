@@ -9,6 +9,7 @@ export interface ViewPlaneInstance {
   altitude?: number
   damaged?: boolean
   destroyed?: boolean
+  left_board?: boolean
   jammed?: boolean
   bombs_dropped?: number
 }

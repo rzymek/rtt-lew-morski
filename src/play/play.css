@@ -16,3 +16,8 @@ body.hide-pieces #hex-overlay,
 body.hide-pieces #expanded-stack {
 	display: none;
 }
+
+.role_info {
+	padding: 0 5px 3px;
+	font-size: 14px;
+}

@@ -50,6 +50,11 @@ export function onUpdate() {
     if (stat) stat.textContent = `${view.vp![Number(side)]} / ${view.min_vp?.[Number(side)]} PZ`
   }
 
+  for (const [side, planes] of Object.entries(view.board?.planes ?? {})) {
+    const info = roles[side]?.stat.parentElement?.querySelector('.role_info')
+    if (info) info.textContent = `Stracone samoloty: ${planes.filter(plane => plane.destroyed && !plane.left_board).length}`
+  }
+
   drawSun()
   drawTargets()
   drawBombed()
