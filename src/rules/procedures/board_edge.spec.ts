@@ -124,6 +124,17 @@ describe('4.3: leaving the board', () => {
       expect(buttons(movePlanes)).toEqual(["leave_return", "leave_forever"]);
     });
 
+    it('may skip the exit hex when not coming back', () => {
+      const it = plane("0.0", "HE111", {at: "A20.B10", direction: S});
+      setup([it, plane("0.1", "HE111", {at: "A30.B30"})], [plane("1.0", "Spit", {at: "A10.B20"})]);
+      G.selected_plane = it.id;
+      movePlanes.leave_board();
+      expect(buttons(movePlanes)).toEqual(["leave_forever"]);
+      movePlanes.leave_forever();
+      expect(it).toMatchObject({destroyed: true, left_board: true});
+      expect(G.vp).toEqual({[R_Niem]: 0, [R_Bryt]: 0});
+    });
+
     it('may come back', () => {
       const it = south();
       movePlanes.leave_return();
@@ -138,6 +149,14 @@ describe('4.3: leaving the board', () => {
       expect(G.off_board).toEqual([]);
       expect(G.vp).toEqual({[R_Niem]: 0, [R_Bryt]: 0});
     });
+  });
+
+  it('no leave_board button while choosing the exit hex', () => {
+    const it = plane("1.0", "Spit", {at: EAST_EDGE, direction: EAST});
+    setup([], [it], R_Bryt);
+    G.selected_plane = it.id;
+    movePlanes.leave_board();
+    expect(buttons(movePlanes)).toEqual([]);
   });
 
   it('a plane waiting to return is out of reach, yet still counts as a unit', () => {

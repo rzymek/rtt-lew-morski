@@ -44,6 +44,11 @@ function exits(plane: PlaneInstance) {
   return exitsFor(plane, G.board.planes, G.selected_altitude, isForced(plane))
 }
 
+// 8.1: only the Germans fly home through the south edge.
+function southExit(plane: PlaneInstance): string | undefined {
+  return G.active === R_Niem ? exits(plane).find(it => it.south)?.hex : undefined
+}
+
 function takeOffBoard(plane: PlaneInstance, from: string) {
   plane.at = from
   plane.altitude = G.selected_altitude ?? altitudeOf(plane)
@@ -129,7 +134,8 @@ export const movePlanes = {
     if (selected !== undefined && G.leaving) {
       prompt(`${selected.plane.nazwa} – wybierz heks, przez który opuści planszę`)
       exits(selected).forEach(({hex}) => action("leave_hex", hex))
-      button("leave_board")
+      // 8.1: a plane that is not coming back does not care which south hex it leaves through.
+      if (southExit(selected) !== undefined) button("leave_forever")
       return
     }
     if (selected !== undefined) {
@@ -202,9 +208,9 @@ export const movePlanes = {
 
   leave_board() {
     const plane = selectedPlaneOfTheActiveSide();
-    if (!plane) return
-    if (G.leaving) delete G.leaving
-    else if (exits(plane).length > 0) G.leaving = true
+    if (!plane || G.leaving || exits(plane).length === 0) return
+    push_undo()
+    G.leaving = true
   },
 
   leave_hex(hex: string) {
@@ -233,7 +239,11 @@ export const movePlanes = {
   // 8.1: the plane does not come back. It is out of the game, but the enemy gets no points for it.
   leave_forever() {
     const plane = selectedPlaneOfTheActiveSide();
-    if (!plane || G.leaving_south_from === undefined) return
+    const from = plane && (G.leaving_south_from ?? (G.leaving ? southExit(plane) : undefined))
+    if (!plane || from === undefined) return
+    if (G.leaving_south_from === undefined) push_undo()
+    plane.at = from
+    plane.altitude = G.selected_altitude ?? altitudeOf(plane)
     plane.destroyed = true
     plane.left_board = true
     log(`${ROLES[G.active]}: ${plane.plane.nazwa} opuszcza planszę i nie wróci`)
