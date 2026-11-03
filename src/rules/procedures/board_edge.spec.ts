@@ -348,3 +348,24 @@ it('Me 109 has the attack strength of its counters (5.0.6)', () => {
   expect(planes.ME109.reduced.sila_ataku).toBe(2);
   expect(planes.ME109L.sila_ataku).toBe(4);
 });
+
+describe('undo after the movement phase', () => {
+  it('ending the moves can be taken back until a die is rolled in combat', () => {
+    const pushUndo = vi.fn(), clearUndo = vi.fn();
+    vi.stubGlobal("push_undo", pushUndo);
+    vi.stubGlobal("clear_undo", clearUndo);
+    const me = plane("0.0", "ME109");
+    setup([me], [plane("1.0", "Spit", {at: "A20.B21"})]);
+    G.moved = [me.id];
+    movePlanes.done();
+    expect(pushUndo).toHaveBeenCalledTimes(1);
+    expect(G.active).toBe(R_Niem);
+    expect(goto).toHaveBeenCalledWith("combat");
+    expect(clearUndo).not.toHaveBeenCalled();
+
+    G.selected_plane = me.id;
+    dice = [0];
+    combat.attack();
+    expect(clearUndo).toHaveBeenCalled();
+  });
+});

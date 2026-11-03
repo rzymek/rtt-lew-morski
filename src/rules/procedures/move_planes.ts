@@ -155,6 +155,9 @@ export const movePlanes = {
   },
 
   done() {
+    // Undo back into the movement phase stays possible until a die is rolled in combat
+    // (the framework drops it anyway when the turn passes to the other side).
+    push_undo()
     G.moved = []
     G.flown_over = {}
     delete G.selected_plane
