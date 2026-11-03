@@ -137,7 +137,8 @@ describe('combat phase', () => {
     ]);
     G.shot = ["1.1"];
     combat.prompt();
-    expect(action.mock.calls.map(it => it[1])).toEqual(["1.0", "1.3"]);
+    expect(action.mock.calls.filter(it => it[0] === "select_plane").map(it => it[1])).toEqual(["1.0", "1.3"]);
+    expect(action.mock.calls.filter(it => it[0] === "next_plane").map(it => it[1])).toEqual(["1.0", "1.3"]);
   });
 });
 

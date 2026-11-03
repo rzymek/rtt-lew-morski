@@ -140,7 +140,7 @@ describe('bombing', () => {
 
   it('offers only the hexes flown over by the selected plane (7.0.2)', () => {
     setup([he111(), he111({id: "0.1"})], {"0.0": ["A20.B21", "A20.B22"], "0.1": ["A30.B30"]}, ["0.0", "0.1"]);
-    expect(actionsOf(movePlanes.prompt)).toEqual([["select_plane", "0.0"], ["select_plane", "0.1"]]);
+    expect(actionsOf(movePlanes.prompt).filter(([verb]) => verb === "select_plane")).toEqual([["select_plane", "0.0"], ["select_plane", "0.1"]]);
     G.selected_plane = "0.0";
     expect(bombActions()).toEqual([["bomb", "A20.B21"], ["bomb", "A20.B22"]]);
   });

@@ -1,18 +1,22 @@
 import {G, ROLES} from "../globals.js"
+import type {PlaneInstance} from "../types"
 import {isEmpty} from "@rzymek/rally-the-troops-module/rules"
 import {describeShot, resolveShot} from "../game/combat.js"
-import {select_plane} from "./select_plane.js"
+import {next_plane, select_plane} from "./select_plane.js"
 import {selectedPlaneOfTheActiveSide} from "./selectedPlaneOfTheActiveSide"
 import {canUnjam, fireTarget, markShot, shootersOf} from "./shooters"
 import {endCombat} from "./phases"
 import {aaTargets, fireGun, gunsReady, selectGun} from "./aa_guns"
 
+// Planes of `side` that can still shoot or try to unjam their guns in this phase.
+export function combatActors(side: number): PlaneInstance[] {
+  return G.board.planes[side].filter(plane => canUnjam(plane) || fireTarget(plane, side))
+}
+
 export const combat = {
   inactive: "faza walki",
 
   prompt() {
-    const myPlanes = G.board.planes[G.active as number] ?? []
-
     const initiative = "Faza walki – inicjatywa: " + ROLES[G.active as number]
     if (G.confirm_done) {
       const names = shootersOf(G.active as number).map(plane => plane.plane.nazwa).join(", ")
@@ -24,9 +28,9 @@ export const combat = {
     prompt(initiative)
     button("done", true)
 
-    myPlanes.forEach((plane) => {
-      if (canUnjam(plane) || fireTarget(plane, G.active as number))
-        action("select_plane", plane.id)
+    combatActors(G.active as number).forEach(plane => {
+      action("select_plane", plane.id)
+      action("next_plane", plane.id)
     })
 
     const plane = selectedPlaneOfTheActiveSide()
@@ -48,6 +52,11 @@ export const combat = {
   select_plane(planeId: string) {
     delete G.selected_gun
     select_plane(planeId)
+  },
+
+  next_plane(planeId: string) {
+    delete G.selected_gun
+    next_plane(planeId)
   },
 
   select_gun: selectGun,

@@ -5,6 +5,7 @@ import {drawTargets} from "./drawTargets";
 import {drawAaGuns} from "./drawAaGuns";
 import {drawSun} from "./drawSun";
 import {drawReturnHexes} from "./drawReturnHexes";
+import {nextPlaneButton} from "./nextPlane";
 
 export function onUpdate() {
   // action_button prepends, so the last one ends up first
@@ -21,6 +22,7 @@ export function onUpdate() {
   action_button("unjam", "Odblokuj karabiny")
   action_button("attack", "Atakuj")
   action_button("cancel", "Anuluj")
+  nextPlaneButton()
   action_button("confirm_done", "Zakończ fazę walki")
   action_button("done", "Done")
   action_button("undo", "Undo")

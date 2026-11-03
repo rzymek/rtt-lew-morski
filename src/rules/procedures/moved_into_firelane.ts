@@ -3,7 +3,7 @@ import {G, L, ROLES} from "../globals";
 import {applyHit, describeShot, resolveShot, rollShot} from "../game/combat";
 import {changeSide} from "../lifecycle/changeSide";
 import {isEmpty} from "@rzymek/rally-the-troops-module/rules";
-import {select_plane} from "./select_plane";
+import {next_plane, select_plane} from "./select_plane";
 import {selectedPlaneOfTheActiveSide} from "./selectedPlaneOfTheActiveSide";
 import {fireTarget, markShot, shootersOf} from "./shooters";
 import {startCombat} from "./phases";
@@ -29,7 +29,10 @@ export const movedIntoFirelane = {
   inactive: "krzyżowanie się linii ognia",
 
   prompt() {
-    shootersOf(G.active).forEach(plane => action("select_plane", plane.id))
+    shootersOf(G.active).forEach(plane => {
+      action("select_plane", plane.id)
+      action("next_plane", plane.id)
+    })
     const selected = selectedPlaneOfTheActiveSide()
     const hit = selected && fireTarget(selected, G.active)
     const title = `krzyżowanie się linii ognia – ostrzał ${ROLES[G.active]}`
@@ -39,6 +42,8 @@ export const movedIntoFirelane = {
   },
 
   select_plane,
+
+  next_plane,
 
   attack() {
     const plane = selectedPlaneOfTheActiveSide()

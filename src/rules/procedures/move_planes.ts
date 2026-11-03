@@ -6,7 +6,7 @@ import {ALT_HIGH, ALT_LOW, ALT_VERY_LOW, ALTITUDE_NAMES, altitudeOf, canChangeAl
 import {shootersOf} from "./shooters";
 import {startCombat} from "./phases";
 import {changeSide, otherSide} from "../lifecycle/changeSide";
-import {select_plane} from "./select_plane.js";
+import {next_plane, select_plane} from "./select_plane.js";
 import {isEmpty} from "@rzymek/rally-the-troops-module/rules";
 import {selectedPlaneOfTheActiveSide} from "./selectedPlaneOfTheActiveSide";
 import {bombableHexes, canBomb, dropBomb} from "./bombers";
@@ -120,6 +120,7 @@ export const movePlanes = {
       prompt(`${selected.plane.nazwa} – możesz zrzucić bomby na cel, nad którym przeleciał (pozostało serii: ${bombsLeft(selected)})`)
       bombableHexes(selected).forEach(hex => action("bomb", hex))
       selectablePlanes().forEach(plane => action("select_plane", plane.id))
+      selectablePlanes().forEach(plane => action("next_plane", plane.id))
       // Counters on the hexes to bomb pass their clicks through, this plane's own included.
       button("deselect", true)
       button("done", (V!.unmoved ?? []).length === 0)
@@ -158,6 +159,7 @@ export const movePlanes = {
     } else {
       selectablePlanes().forEach(plane => action("select_plane", plane.id))
     }
+    selectablePlanes().forEach(plane => action("next_plane", plane.id))
   },
 
   done() {
@@ -175,6 +177,8 @@ export const movePlanes = {
   },
 
   select_plane,
+
+  next_plane,
 
   deselect() {
     delete G.selected_plane

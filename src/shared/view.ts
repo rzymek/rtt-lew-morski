@@ -17,6 +17,8 @@ export interface ViewPlaneInstance {
 export interface ViewActions {
   move_hex?: string[]
   select_plane?: string[]
+  /** Planes that can still act in this phase: selects without toggling, for the "next plane" button. */
+  next_plane?: string[]
   wysoko?: number
   nisko?: number
   bardzo_nisko?: number
