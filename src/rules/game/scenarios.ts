@@ -44,7 +44,7 @@ function times(count: number, plane: PlaneData): PlaneData[] {
 // The manual lists the 12 hexes of "all strategic points" only on the map: A07.B30 and A16.B19 are in no other scenario.
 const ALL_TARGETS = [
   'A03.B04', 'A04.B04', 'A03.B13', 'A04.B24',
-  'A06.B19', 'A07.B30', 'A10.B31', 'A11.B13',
+  'A06.B19', 'A07.B30', 'A09.B31', 'A11.B13',
   'A12.B09', 'A16.B19', 'A16.B24', 'A18.B32',
 ]
 
@@ -72,7 +72,7 @@ export const SCENARIOS: Record<string, Scenario> = {
       }],
       min_vp: 35,
     },
-    targets: ['A12.B09', 'A11.B13', 'A04.B24', 'A10.B31'],
+    targets: ['A12.B09', 'A11.B13', 'A04.B24', 'A09.B31'],
     all_targets_vp: 3,
   },
   "Wariant 3": {
