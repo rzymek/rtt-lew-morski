@@ -41,7 +41,8 @@ function focusNextPlane() {
   const hex = plane && document.getElementById(plane.at)
   if (!hex) return
   zoomIn()
-  scroll_into_view(hex)
+  // Not RTT's scroll_into_view: its smooth scroll gets cancelled on phones by the window.scroll(0,0) right after it.
+  hex.scrollIntoView({block: 'center', inline: 'center'})
 }
 
 export function nextPlaneButton() {
