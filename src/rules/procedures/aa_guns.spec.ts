@@ -200,10 +200,23 @@ describe('firing', () => {
     expect(target.destroyed).toBe(true);
   });
 
-  it('can be declined (6.2.4)', () => {
+  it('can be declined (6.2.4), after a confirmation', () => {
+    vi.stubGlobal("push_undo", vi.fn());
     setup([he111()]);
     combat.done();
+    expect(G.confirm_done).toBe(true);
+    expect(G.active).toBe(R_Bryt);
+    combat.confirm_done();
     expect(G.active).toBe(R_Niem);
+  });
+
+  it('tells how many guns are ready', () => {
+    const prompt = vi.fn();
+    setup([he111()], [GUN, ADJACENT]);
+    actions(combat);
+    vi.stubGlobal("prompt", prompt);
+    combat.prompt();
+    expect(prompt).toHaveBeenCalledWith(expect.stringContaining("działka p-lot gotowe do ostrzału: 2"));
   });
 });
 

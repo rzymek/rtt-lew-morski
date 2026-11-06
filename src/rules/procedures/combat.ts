@@ -13,19 +13,29 @@ export function combatActors(side: number): PlaneInstance[] {
   return G.board.planes[side].filter(plane => canUnjam(plane) || fireTarget(plane, side))
 }
 
+// What may still fire in this phase, so that ending it is confirmed.
+function unusedShooters(): string[] {
+  const names = shootersOf(G.active as number).map(plane => plane.plane.nazwa)
+  const guns = gunsReady().length
+  return [
+    ...(names.length > 0 ? [`nie strzelały jeszcze samoloty, które mogą strzelać: ${names.join(", ")}`] : []),
+    ...(guns > 0 ? [`działka p-lot gotowe do ostrzału: ${guns}`] : []),
+  ]
+}
+
 export const combat = {
   inactive: "faza walki",
 
   prompt() {
     const initiative = "Faza walki – inicjatywa: " + ROLES[G.active as number]
     if (G.confirm_done) {
-      const names = shootersOf(G.active as number).map(plane => plane.plane.nazwa).join(", ")
-      prompt(`${initiative} – nie strzelały jeszcze samoloty, które mogą strzelać: ${names}. Zakończyć fazę walki?`)
+      prompt(`${initiative} – ${unusedShooters().join(", ")}. Zakończyć fazę walki?`)
       button("confirm_done", true)
       button("cancel", true)
       return
     }
-    prompt(initiative)
+    const guns = gunsReady()
+    prompt(initiative + (guns.length > 0 ? ` – działka p-lot gotowe do ostrzału: ${guns.length}` : ""))
     button("done", true)
 
     combatActors(G.active as number).forEach(plane => {
@@ -44,7 +54,7 @@ export const combat = {
       }
     }
 
-    gunsReady().forEach(gun => action("select_gun", gun))
+    guns.forEach(gun => action("select_gun", gun))
     if (G.selected_gun !== undefined)
       aaTargets(G.selected_gun).forEach(target => action("aa_fire", target.id))
   },
@@ -94,7 +104,7 @@ export const combat = {
   },
 
   done() {
-    if (!isEmpty(shootersOf(G.active as number))) {
+    if (!isEmpty(unusedShooters())) {
       push_undo()
       G.confirm_done = true
       return
