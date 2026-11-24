@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@rzymek/rally-the-troops-module':
-        specifier: ^0.4.3
-        version: 0.4.3(@types/node@26.6.6)(vite@8.3.8(@types/node@26.6.6))(vitest@5.1.1(@types/node@26.6.6)(vite@8.3.8(@types/node@26.6.6)))
+        specifier: ^0.5.0
+        version: 0.5.0(@types/node@26.6.6)(vite@8.3.8(@types/node@26.6.6))(vitest@5.1.1(@types/node@26.6.6)(vite@8.3.8(@types/node@26.6.6)))
     devDependencies:
       '@types/node':
         specifier: ^26.6.6
@@ -459,8 +459,8 @@ packages:
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
 
-  '@rzymek/rally-the-troops-module@0.4.3':
-    resolution: {integrity: sha512-APFjxVM/jceheP535F6kemkfSXpgn/3IRIPNQZl0cj5sAw1n6AN95yOekb/b/uvQ8Jgc4DEChba/+7n2ZDgpdg==}
+  '@rzymek/rally-the-troops-module@0.5.0':
+    resolution: {integrity: sha512-JN0SVe3H5bg4ngIupfU0V9TE/MEEy7zG/rFMeyeWAcD0iidKGuIug/M6YnHQ7+Zc0CADHme8gwEK3eQWXUmjvg==}
     hasBin: true
     peerDependencies:
       vite: ^8.3.5
@@ -1234,7 +1234,7 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.1': {}
 
-  '@rzymek/rally-the-troops-module@0.4.3(@types/node@26.6.6)(vite@8.3.8(@types/node@26.6.6))(vitest@5.1.1(@types/node@26.6.6)(vite@8.3.8(@types/node@26.6.6)))':
+  '@rzymek/rally-the-troops-module@0.5.0(@types/node@26.6.6)(vite@8.3.8(@types/node@26.6.6))(vitest@5.1.1(@types/node@26.6.6)(vite@8.3.8(@types/node@26.6.6)))':
     dependencies:
       sharp: 0.35.5(@types/node@26.6.6)
       vite: 8.3.8(@types/node@26.6.6)

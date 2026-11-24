@@ -1,2 +1,4 @@
 allowBuilds:
   sharp: true
+minimumReleaseAgeExclude:
+  - '@rzymek/rally-the-troops-module@0.5.0'

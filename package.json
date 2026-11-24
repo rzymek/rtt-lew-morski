@@ -23,6 +23,6 @@
     "xpath": "^0.1.0"
   },
   "dependencies": {
-    "@rzymek/rally-the-troops-module": "^0.4.3"
+    "@rzymek/rally-the-troops-module": "^0.5.0"
   }
 }
