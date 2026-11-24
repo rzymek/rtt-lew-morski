@@ -6,6 +6,7 @@ import {maxSpeedAt} from "../game/altitude";
 import {flightsFor} from "../game/hex";
 import {combat} from "./combat";
 import {movePlanes} from "./move_planes";
+import {offeredActions} from "../prompts.testing";
 
 vi.mock("../globals", async importOriginal => ({
   ...await importOriginal<typeof import("../globals")>(),
@@ -36,15 +37,6 @@ function setup(niem: PlaneInstance[], flownOver: Record<string, string[]> = {}, 
     board: {planes: {[R_Niem]: niem, [R_Bryt]: [spit()]}},
   });
   delete G.selected_plane;
-}
-
-function actionsOf(prompt: () => void) {
-  const action = vi.fn();
-  vi.stubGlobal("prompt", vi.fn());
-  vi.stubGlobal("button", vi.fn());
-  vi.stubGlobal("action", action);
-  prompt();
-  return action.mock.calls;
 }
 
 beforeEach(() => {
@@ -111,7 +103,7 @@ describe('after the move', () => {
   it('offers no more moves to a plane that already moved', () => {
     setup([he111()], {"0.0": ["A20.B21"]}, ["0.0"]);
     G.selected_plane = "0.0";
-    expect(actionsOf(movePlanes.prompt).filter(it => it[0] === "move_hex")).toEqual([]);
+    expect(offeredActions(movePlanes).filter(it => it[0] === "move_hex")).toEqual([]);
   });
 });
 
@@ -131,16 +123,16 @@ describe('leaving the movement phase', () => {
   it('offers no bombing in the attack phase', () => {
     setup([he111()], {"0.0": ["A20.B21"]});
     G.selected_plane = "0.0";
-    expect(actionsOf(combat.prompt).filter(it => it[0] === "bomb")).toEqual([]);
+    expect(offeredActions(combat).filter(it => it[0] === "bomb")).toEqual([]);
   });
 });
 
 describe('bombing', () => {
-  const bombActions = () => actionsOf(movePlanes.prompt).filter(it => it[0] === "bomb");
+  const bombActions = () => offeredActions(movePlanes).filter(it => it[0] === "bomb");
 
   it('offers only the hexes flown over by the selected plane (7.0.2)', () => {
     setup([he111(), he111({id: "0.1"})], {"0.0": ["A20.B21", "A20.B22"], "0.1": ["A30.B30"]}, ["0.0", "0.1"]);
-    expect(actionsOf(movePlanes.prompt).filter(([verb]) => verb === "select_plane")).toEqual([["select_plane", "0.0"], ["select_plane", "0.1"]]);
+    expect(offeredActions(movePlanes).filter(([verb]) => verb === "select_plane")).toEqual([["select_plane", "0.0"], ["select_plane", "0.1"]]);
     G.selected_plane = "0.0";
     expect(bombActions()).toEqual([["bomb", "A20.B21"], ["bomb", "A20.B22"]]);
   });
@@ -148,7 +140,7 @@ describe('bombing', () => {
   it('lets the next plane be selected without bombing', () => {
     setup([he111(), he111({id: "0.1"})], {"0.0": ["A20.B21"]}, ["0.0"]);
     G.selected_plane = "0.0";
-    expect(actionsOf(movePlanes.prompt).filter(it => it[0] === "select_plane"))
+    expect(offeredActions(movePlanes).filter(it => it[0] === "select_plane"))
       .toEqual([["select_plane", "0.0"], ["select_plane", "0.1"]]);
   });
 
@@ -197,7 +189,7 @@ describe('bombing', () => {
 
   it('a shot down plane loses its bombs (7.0.9)', () => {
     setup([he111({destroyed: true})], {"0.0": ["A20.B21"]}, ["0.0"]);
-    expect(actionsOf(movePlanes.prompt)).toEqual([]);
+    expect(offeredActions(movePlanes)).toEqual([]);
     G.selected_plane = "0.0";
     movePlanes.bomb("A20.B21");
     expect(G.board.planes[R_Niem][0].bombs_dropped).toBeUndefined();

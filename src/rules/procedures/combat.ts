@@ -1,6 +1,6 @@
 import {G, ROLES} from "../globals.js"
 import type {PlaneInstance} from "../types"
-import {isEmpty} from "@rzymek/rally-the-troops-module/rules"
+import {isEmpty, rollDie} from "@rzymek/rally-the-troops-module/rules"
 import {describeShot, resolveShot} from "../game/combat.js"
 import {next_plane, select_plane} from "./select_plane.js"
 import {selectedPlaneOfTheActiveSide} from "./selectedPlaneOfTheActiveSide"
@@ -89,9 +89,8 @@ export const combat = {
   unjam() {
     const plane = selectedPlaneOfTheActiveSide()
     if (!plane || !canUnjam(plane)) return
-    clear_undo()
     markShot(plane)
-    const roll = random(6) + 1
+    const roll = rollDie()
     if (roll === 6) {
       delete plane.jammed
       // 5.3.4

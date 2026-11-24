@@ -5,6 +5,7 @@ import {ALT_LOW} from "./altitude";
 import {aaHitFrom} from "./aa";
 import {rollShot} from "./combat";
 import {sunEdgeFor, sunHexes, sunPenalty} from "./sun";
+import {stubFramework} from "@rzymek/rally-the-troops-module/testing";
 
 vi.mock("../globals", async importOriginal => ({
   ...await importOriginal<typeof import("../globals")>(),
@@ -21,7 +22,7 @@ const clearTarget = spit("A20.B20", N)
 
 beforeEach(() => {
   delete G.sun;
-  vi.stubGlobal("random", () => 2);
+  stubFramework({random: () => 2});
 });
 
 describe('placing the sun (5.0.1)', () => {

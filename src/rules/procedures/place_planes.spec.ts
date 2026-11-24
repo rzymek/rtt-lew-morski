@@ -3,6 +3,7 @@ import {G, planes, R_Bryt, R_Niem} from "../globals";
 import {on_setup} from "../lifecycle/on_setup";
 import {hexesAround} from "../game/scenarios";
 import {placePlanes} from "./place_planes";
+import {offered, stubFramework} from "@rzymek/rally-the-troops-module/testing";
 
 vi.mock("../globals", async importOriginal => ({
   ...await importOriginal<typeof import("../globals")>(),
@@ -13,24 +14,12 @@ vi.mock("../globals", async importOriginal => ({
 const goto = vi.fn();
 const call = vi.fn();
 
-function actions() {
-  const action = vi.fn();
-  vi.stubGlobal("prompt", vi.fn());
-  vi.stubGlobal("button", vi.fn());
-  vi.stubGlobal("action", action);
-  placePlanes.prompt();
-  return action.mock.calls.filter(([name]) => name === "place_plane").map(([, hex]) => hex);
-}
+const actions = () => offered(placePlanes).actions.place_plane ?? []
 
 beforeEach(() => {
   for (const key of Object.keys(G)) delete (G as any)[key];
   goto.mockClear();
-  vi.stubGlobal("goto", goto);
-  vi.stubGlobal("call", call);
-  vi.stubGlobal("log", vi.fn());
-  vi.stubGlobal("push_undo", vi.fn());
-  vi.stubGlobal("clear_undo", vi.fn());
-  vi.stubGlobal("random", () => 0);
+  stubFramework({goto, call, random: () => 0});
   on_setup("Wariant 1", undefined);
 });
 

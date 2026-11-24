@@ -1,8 +1,9 @@
-import {beforeEach, describe, expect, it, vi} from "vitest";
+import {beforeEach, describe, expect, it} from "vitest";
 import {planes, R_Bryt, R_Niem} from "../globals";
 import type {PlaneInstance} from "../types";
 import {ALT_LOW} from "./altitude";
 import {fireLineHexes, firstOnFireLine, rollShot} from "./combat";
+import {stubFramework} from "@rzymek/rally-the-troops-module/testing";
 
 const CLOUD = "A30.B36"
 const EDGE = "A30.B34"
@@ -22,7 +23,7 @@ function he111(at: string, overrides: Partial<PlaneInstance> = {}): PlaneInstanc
 const roll = (...values: number[]) => dice = values.map(it => it - 1);
 
 beforeEach(() => {
-  vi.stubGlobal("random", () => dice.shift());
+  stubFramework({random: () => dice.shift()});
   roll(3, 3);
 });
 

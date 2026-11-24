@@ -1,3 +1,4 @@
+import {rollDie} from "@rzymek/rally-the-troops-module/rules"
 import {G, R_Niem, R_Bryt} from "../globals.js"
 import type {PlaneToPlace} from "../types";
 import {Deployment, SCENARIOS} from "../game/scenarios";
@@ -35,7 +36,7 @@ export function on_setup(scenario: string, _options: unknown) {
   G.min_vp = {[R_Niem]: niemcy.min_vp, [R_Bryt]: brytyjczycy.min_vp}
   G.all_targets_vp = all_targets_vp
   // 5.0.1
-  G.sun = sunEdgeFor(random(6) + 1)
+  G.sun = sunEdgeFor(rollDie())
   log(`Słońce: ${SUN_EDGE_NAMES[G.sun]}`)
   G.aa_guns = []
   G.aa_fired = []

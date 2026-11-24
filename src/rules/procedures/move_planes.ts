@@ -7,7 +7,7 @@ import {shootersOf} from "./shooters";
 import {startCombat} from "./phases";
 import {changeSide, otherSide} from "../lifecycle/changeSide";
 import {next_plane, select_plane} from "./select_plane.js";
-import {isEmpty} from "@rzymek/rally-the-troops-module/rules";
+import {isEmpty, rollDie} from "@rzymek/rally-the-troops-module/rules";
 import {selectedPlaneOfTheActiveSide} from "./selectedPlaneOfTheActiveSide";
 import {bombableHexes, canBomb, dropBomb} from "./bombers";
 import {bombsLeft} from "../game/bombs";
@@ -70,8 +70,7 @@ function clearSelection() {
 
 // 4.3.2: the British may have caught a German plane leaving the board anywhere but in the south.
 function leaveUnderFire(plane: PlaneInstance, from: string) {
-  clear_undo()
-  const roll = random(6) + 1
+  const roll = rollDie()
   plane.at = from
   plane.altitude = G.selected_altitude ?? altitudeOf(plane)
   if (roll === 1 || (roll === 2 && plane.damaged)) {
@@ -90,8 +89,7 @@ function collide(plane: PlaneInstance) {
   const others = Object.values(G.board.planes).flat()
     .filter(it => it !== plane && !it.destroyed && it.at === plane.at && altitudeOf(it) === altitudeOf(plane))
   if (others.length === 0) return
-  clear_undo()
-  const roll = random(6) + 1
+  const roll = rollDie()
   if (roll !== COLLISION_ROLL) {
     log(`${plane.plane.nazwa} wlatuje na zajęty heks ${plane.at} [rzut:${roll}] → bez kolizji`)
     return

@@ -1,16 +1,15 @@
 import {beforeEach, expect, it, vi} from "vitest";
 import {G, planes, R_Bryt, R_Niem} from "../globals";
 import {endCombat} from "./phases";
+import {stubFramework} from "@rzymek/rally-the-troops-module/testing";
 
 vi.mock("../globals", async importOriginal => ({
   ...await importOriginal<typeof import("../globals")>(),
   G: {},
 }));
 
-vi.stubGlobal("goto", vi.fn());
-vi.stubGlobal("log", vi.fn());
-
 beforeEach(() => {
+  stubFramework();
   Object.assign(G, {
     active: R_Niem,
     stage: 3,

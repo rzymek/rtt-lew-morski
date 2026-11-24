@@ -1,9 +1,10 @@
-import {describe, expect, it, vi} from "vitest";
+import {describe, expect, it} from "vitest";
 import {CLOUD_HEXES} from "virtual:map-clouds";
 import {planes} from "../globals";
 import type {PlaneInstance} from "../types";
 import type {PlaneData} from "./data";
 import {describeShot, hitChance, rollShot} from "./combat";
+import {stubFramework} from "@rzymek/rally-the-troops-module/testing";
 
 // Table 2, the lowest roll that hits, up to 11: [attack strength, [by distance 1-5]]
 const TABLE_2: [number, (number | null)[]][] = [
@@ -17,7 +18,7 @@ const TABLE_2: [number, (number | null)[]][] = [
 
 function shoot(sila_ataku: number, distance: number, sum: number) {
   const dice = [Math.ceil(sum / 2) - 1, Math.floor(sum / 2) - 1];
-  vi.stubGlobal("random", () => dice.shift());
+  stubFramework({random: () => dice.shift()});
   const attacker = {id: "1.0", plane: {...planes.Spit, sila_ataku} as PlaneData, at: "A20.B20", direction: 0};
   const target = {id: "0.0", plane: planes.HE111, at: "A20.B21", direction: 0};
   return rollShot(attacker, target, distance).hit;

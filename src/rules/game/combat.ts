@@ -1,5 +1,5 @@
 import type {PlaneInstance, Board} from "../types.js"
-import {hexStep} from "@rzymek/rally-the-troops-module/rules"
+import {hexStep, rollDie} from "@rzymek/rally-the-troops-module/rules"
 import {altitudeOf, planeStats} from "./altitude.js"
 import {cloudPenalty, isInCloud} from "./clouds.js"
 import {sunPenalty} from "./sun.js"
@@ -78,7 +78,7 @@ const isJam = (roll: number) => roll === 2 || roll === 12
 // Rolls a shot without touching the target, so that hits can be applied simultaneously (5.4).
 export function rollShot(attackerPlane: PlaneInstance, targetPlane: PlaneInstance, distance: number): ShotRoll {
   const atk = attackStrength(attackerPlane, targetPlane)
-  const roll = (random(6) + 1) + (random(6) + 1)
+  const roll = rollDie() + rollDie()
 
   if (isJam(roll)) {
     attackerPlane.jammed = true

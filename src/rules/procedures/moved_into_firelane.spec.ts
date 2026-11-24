@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, it, vi} from "vitest";
-import {stubFramework} from "@rzymek/rally-the-troops-module/testing";
+import {offered, stubFramework} from "@rzymek/rally-the-troops-module/testing";
 import {G, L, planes, R_Bryt, R_Niem} from "../globals";
 import type {PlaneInstance} from "../types";
 import {movedIntoFirelane, returnFire} from "./moved_into_firelane";
@@ -125,10 +125,6 @@ describe('reaction fire', () => {
 
 describe('combat phase', () => {
   it('offers only planes that can still act (5.3.1, 5.3.4)', () => {
-    const action = vi.fn();
-    vi.stubGlobal("prompt", vi.fn());
-    vi.stubGlobal("button", vi.fn());
-    vi.stubGlobal("action", action);
     setup([he111()], [
       spit(),
       spit({id: "1.1", at: "A20.B19"}),
@@ -136,9 +132,9 @@ describe('combat phase', () => {
       spit({id: "1.3", at: "A40.B40", jammed: true}),
     ]);
     G.shot = ["1.1"];
-    combat.prompt();
-    expect(action.mock.calls.filter(it => it[0] === "select_plane").map(it => it[1])).toEqual(["1.0", "1.3"]);
-    expect(action.mock.calls.filter(it => it[0] === "next_plane").map(it => it[1])).toEqual(["1.0", "1.3"]);
+    const {actions} = offered(combat);
+    expect(actions.select_plane).toEqual(["1.0", "1.3"]);
+    expect(actions.next_plane).toEqual(["1.0", "1.3"]);
   });
 });
 

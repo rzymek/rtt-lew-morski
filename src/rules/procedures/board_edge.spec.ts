@@ -12,6 +12,7 @@ import {nextToReturn, returnHexes, returnPlanes} from "./return_planes";
 import {endCombat} from "./phases";
 import {combat} from "./combat";
 import {isGameOver} from "../game/victory";
+import {enabledButtons} from "../prompts.testing";
 
 vi.mock("../globals", async importOriginal => ({
   ...await importOriginal<typeof import("../globals")>(),
@@ -37,15 +38,6 @@ function setup(niem: PlaneInstance[], bryt: PlaneInstance[], active = R_Niem) {
     reinforcements: {[R_Niem]: [], [R_Bryt]: []},
     board: {planes: {[R_Niem]: niem, [R_Bryt]: bryt}},
   });
-}
-
-function buttons(state: { prompt(): void }) {
-  const button = vi.fn();
-  vi.stubGlobal("prompt", vi.fn());
-  vi.stubGlobal("button", button);
-  vi.stubGlobal("action", vi.fn());
-  state.prompt();
-  return button.mock.calls.filter(([, enabled]) => enabled !== false).map(([name]) => name);
 }
 
 beforeEach(() => {
@@ -121,7 +113,7 @@ describe('4.3: leaving the board', () => {
 
     it('rolls no die and asks about the return', () => {
       south();
-      expect(buttons(movePlanes)).toEqual(["leave_return", "leave_forever"]);
+      expect(enabledButtons(movePlanes)).toEqual(["leave_return", "leave_forever"]);
     });
 
     it('may skip the exit hex when not coming back', () => {
@@ -129,7 +121,7 @@ describe('4.3: leaving the board', () => {
       setup([it, plane("0.1", "HE111", {at: "A30.B30"})], [plane("1.0", "Spit", {at: "A10.B20"})]);
       G.selected_plane = it.id;
       movePlanes.leave_board();
-      expect(buttons(movePlanes)).toEqual(["leave_forever"]);
+      expect(enabledButtons(movePlanes)).toEqual(["leave_forever"]);
       movePlanes.leave_forever();
       expect(it).toMatchObject({destroyed: true, left_board: true});
       expect(G.vp).toEqual({[R_Niem]: 0, [R_Bryt]: 0});
@@ -156,7 +148,7 @@ describe('4.3: leaving the board', () => {
     setup([], [it], R_Bryt);
     G.selected_plane = it.id;
     movePlanes.leave_board();
-    expect(buttons(movePlanes)).toEqual([]);
+    expect(enabledButtons(movePlanes)).toEqual([]);
   });
 
   it('a plane waiting to return is out of reach, yet still counts as a unit', () => {
@@ -337,16 +329,14 @@ describe('5.3.4: unjamming', () => {
 });
 
 describe('ending the combat phase', () => {
-  beforeEach(() => vi.stubGlobal("push_undo", vi.fn()));
-
   it('asks for confirmation while a plane may still fire', () => {
     setup([plane("0.0", "ME109")], [plane("1.0", "Spit", {at: "A20.B21"})]);
     combat.done();
     expect(G.confirm_done).toBe(true);
     expect(G.stage).toBe(3);
-    expect(buttons(combat)).toEqual(["confirm_done", "cancel"]);
+    expect(enabledButtons(combat)).toEqual(["confirm_done", "cancel"]);
     combat.cancel();
-    expect(buttons(combat)).toContain("done");
+    expect(enabledButtons(combat)).toContain("done");
     combat.done();
     combat.confirm_done();
     expect(G.confirm_done).toBeUndefined();
@@ -370,9 +360,7 @@ it('Me 109 has the attack strength of its counters (5.0.6)', () => {
 
 describe('undo after the movement phase', () => {
   it('ending the moves can be taken back until a die is rolled in combat', () => {
-    const pushUndo = vi.fn(), clearUndo = vi.fn();
-    vi.stubGlobal("push_undo", pushUndo);
-    vi.stubGlobal("clear_undo", clearUndo);
+    const pushUndo = vi.mocked(push_undo), clearUndo = vi.mocked(clear_undo);
     const me = plane("0.0", "ME109");
     setup([me], [plane("1.0", "Spit", {at: "A20.B21"})]);
     G.moved = [me.id];

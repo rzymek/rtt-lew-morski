@@ -4,7 +4,7 @@ import {aaHitFrom, canPlaceGun, GUN_DESTROYED_FROM} from "../game/aa";
 import {ALTITUDE_NAMES, altitudeOf} from "../game/altitude";
 import {applyHit} from "../game/combat";
 import {boardHexes} from "../game/scenarios";
-import {hexDistance} from "@rzymek/rally-the-troops-module/rules";
+import {hexDistance, rollDie} from "@rzymek/rally-the-troops-module/rules";
 
 function gunsLeftToPlace(): number {
   return (L.count as number) - (G.aa_guns ?? []).length
@@ -61,12 +61,11 @@ export function fireGun(planeId: string) {
   if (gun === undefined || !gunsReady().includes(gun)) return
   const plane = aaTargets(gun).find(it => it.id === planeId)
   if (!plane) return
-  clear_undo()
   G.aa_fired ??= []
   set_add(G.aa_fired, gun)
   delete G.selected_gun
   const hitFrom = aaHitFrom(gun, plane)!
-  const roll = random(6) + 1
+  const roll = rollDie()
   const result = roll >= hitFrom ? applyHit(plane) : 'pudło'
   log(`Działko ${gun} ostrzeliwuje ${plane.plane.nazwa} [${ALTITUDE_NAMES[altitudeOf(plane)]}, odl:${hexDistance(gun, plane.at)}, rzut:${roll}] → ${result}`)
 }
@@ -77,7 +76,7 @@ export function hasGun(hex: string): boolean {
 
 // 7.0.6, 6.2.6
 export function bombGun(hex: string) {
-  const roll = random(6) + 1
+  const roll = rollDie()
   if (roll >= GUN_DESTROYED_FROM) {
     set_delete(G.aa_guns!, hex)
     log(`Działko ${hex} zbombardowane [rzut:${roll}] → zniszczone`)
