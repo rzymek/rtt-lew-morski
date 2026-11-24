@@ -9,6 +9,8 @@ import {returnPlanes} from "./procedures/return_planes";
 import {endingGame} from "./game/victory";
 
 export * from "./lifecycle";
+// framework.js links to these by name, which the bundler can't see: unused, they'd get tree-shaken away.
+export {L, ROLES} from "./globals";
 
 P.place_aa_guns = endingGame(placeAaGuns);
 P.place_planes = endingGame(placePlanes);

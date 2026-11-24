@@ -5,6 +5,7 @@ import {isEdgeHex} from "../game/hex";
 import {hexesAround} from "../game/scenarios";
 import {isOccupiedAt, turnSelected} from "./place_planes";
 import {selectedPlaneOfTheActiveSide} from "./selectedPlaneOfTheActiveSide";
+import {planeRef, hexRef} from "../game/refs"
 
 const RETURN_RADIUS = 5
 
@@ -44,7 +45,7 @@ export const returnPlanes = {
     G.board.planes[G.active].push(next.plane)
     G.off_board = G.off_board!.filter(it => it !== next)
     G.selected_plane = next.plane.id
-    log(`${ROLES[G.active]}: ${next.plane.plane.nazwa} wraca na planszę na ${hex}`)
+    log(`${ROLES[G.active]}: ${planeRef(next.plane)} wraca na planszę na ${hexRef(hex)}`)
   },
 
   turn_left() {

@@ -7,6 +7,7 @@ import {canUnjam, shootersOf} from "./shooters";
 import {gunsReady} from "./aa_guns";
 import {nextToReturn} from "./return_planes";
 import {isGameOver} from "../game/victory";
+import {hexRef} from "../game/refs"
 
 export function startCombat() {
   const planes = G.board.planes[G.active]
@@ -25,7 +26,7 @@ export function endCombat() {
   if (G.active === R_Niem) {
     G.stage++
     // 2.0
-    log(`Etap ${G.stage}`)
+    log(`.h1 Etap ${G.stage}`)
   }
   G.shot = []
   G.aa_fired = []
@@ -53,7 +54,7 @@ function enterReinforcements() {
     const hex = hexesAround(at, 5).find(it => !occupied.includes(it))!
     const offBoard = (G.off_board ?? []).filter(it => parseInt(it.plane.id) === G.active).length
     planes.push({plane, at: hex, direction, id: `${G.active}.${planes.length + offBoard}`})
-    log(`${ROLES[G.active]}: posiłki ${plane.nazwa} na ${hex}`)
+    log(`${ROLES[G.active]}: posiłki ${plane.nazwa} na ${hexRef(hex)}`)
   }
   if (entering.length > 0)
     G.reinforcements![G.active] = G.reinforcements![G.active].filter(it => it.stage !== G.stage)

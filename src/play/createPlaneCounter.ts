@@ -49,6 +49,7 @@ export function createPlaneCounter(plane: ViewPlaneInstance, center = getHexCent
   counter.setAttribute('transform', rotation)
 
   const group = document.createElementNS(svgNS, 'g')
+  group.dataset.plane = plane.id
   group.appendChild(counter)
 
   const overlays = document.createElementNS(svgNS, 'g')

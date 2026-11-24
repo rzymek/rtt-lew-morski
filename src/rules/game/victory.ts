@@ -1,3 +1,4 @@
+import {afterEachAction, type StateDefinition} from "@rzymek/rally-the-troops-module/rules";
 import type {PlaneInstance} from "../types";
 import {G, R_Bryt, R_Niem, ROLES} from "../globals";
 import {otherSide} from "../lifecycle/changeSide";
@@ -77,14 +78,4 @@ export function checkGameEnd() {
 }
 
 // Checked once an action is complete: simultaneous hits (5.4) must all be applied by then.
-export function endingGame<T extends object>(state: T): T {
-  return Object.fromEntries(Object.entries(state).map(([name, handler]) => [
-    name,
-    typeof handler === "function" && name !== "prompt"
-      ? (argument: unknown) => {
-        handler(argument)
-        checkGameEnd()
-      }
-      : handler,
-  ])) as T
-}
+export const endingGame = <T extends StateDefinition>(state: T): T => afterEachAction(state, checkGameEnd)

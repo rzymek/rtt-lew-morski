@@ -13,6 +13,7 @@ import {bombableHexes, canBomb, dropBomb} from "./bombers";
 import {bombsLeft} from "../game/bombs";
 import {bombGun, hasGun} from "./aa_guns";
 import type {PlaneInstance} from "../types";
+import {planeRef, hexRef} from "../game/refs"
 
 const ALTITUDE_ACTIONS: [string, number][] = [
   ["wysoko", ALT_HIGH],
@@ -57,7 +58,7 @@ function takeOffBoard(plane: PlaneInstance, from: string) {
   G.off_board ??= []
   const return_stage = G.stage + RETURN_AFTER_STAGES
   G.off_board.push({plane, return_stage, from})
-  log(`${ROLES[side]}: ${plane.plane.nazwa} opuszcza planszę na ${from} – powrót w etapie ${return_stage}`)
+  log(`${ROLES[side]}: ${planeRef(plane)} opuszcza planszę na ${hexRef(from)} – powrót w etapie ${return_stage}`)
   clearSelection()
 }
 
@@ -75,12 +76,12 @@ function leaveUnderFire(plane: PlaneInstance, from: string) {
   plane.altitude = G.selected_altitude ?? altitudeOf(plane)
   if (roll === 1 || (roll === 2 && plane.damaged)) {
     plane.destroyed = true
-    log(`${ROLES[G.active]}: ${plane.plane.nazwa} opuszcza planszę na ${from} [rzut:${roll}] → zestrzelony`)
+    log(`${ROLES[G.active]}: ${planeRef(plane)} opuszcza planszę na ${hexRef(from)} [rzut:${roll}] → zestrzelony`)
     scorePlaneLost(plane)
     clearSelection()
     return
   }
-  log(`${ROLES[G.active]}: ${plane.plane.nazwa} opuszcza planszę na ${from} [rzut:${roll}] → ${roll === 2 ? applyHit(plane) : "bez strat"}`)
+  log(`${ROLES[G.active]}: ${planeRef(plane)} opuszcza planszę na ${hexRef(from)} [rzut:${roll}] → ${roll === 2 ? applyHit(plane) : "bez strat"}`)
   takeOffBoard(plane, from)
 }
 
@@ -91,10 +92,10 @@ function collide(plane: PlaneInstance) {
   if (others.length === 0) return
   const roll = rollDie()
   if (roll !== COLLISION_ROLL) {
-    log(`${plane.plane.nazwa} wlatuje na zajęty heks ${plane.at} [rzut:${roll}] → bez kolizji`)
+    log(`${planeRef(plane)} wlatuje na zajęty heks ${hexRef(plane.at)} [rzut:${roll}] → bez kolizji`)
     return
   }
-  log(`${plane.plane.nazwa} wlatuje na zajęty heks ${plane.at} [rzut:${roll}] → zderzenie`)
+  log(`${planeRef(plane)} wlatuje na zajęty heks ${hexRef(plane.at)} [rzut:${roll}] → zderzenie`)
   for (const it of [plane, ...others]) {
     it.destroyed = true
     scorePlaneLost(it, {shotDown: false})
@@ -190,7 +191,7 @@ export const movePlanes = {
     const gun = hasGun(hex)
     if (gun) clear_undo()
     else push_undo()
-    log(`${ROLES[G.active]} zrzuca bomby na ${hex} (pozostało serii: ${bombsLeft(plane) - 1})`)
+    log(`${ROLES[G.active]} zrzuca bomby na ${hexRef(hex)} (pozostało serii: ${bombsLeft(plane) - 1})`)
     dropBomb(plane, hex)
     if (gun) bombGun(hex)
     if (!canBomb(plane)) delete G.selected_plane
@@ -248,7 +249,7 @@ export const movePlanes = {
     plane.altitude = G.selected_altitude ?? altitudeOf(plane)
     plane.destroyed = true
     plane.left_board = true
-    log(`${ROLES[G.active]}: ${plane.plane.nazwa} opuszcza planszę i nie wróci`)
+    log(`${ROLES[G.active]}: ${planeRef(plane)} opuszcza planszę i nie wróci`)
     clearSelection()
   },
 

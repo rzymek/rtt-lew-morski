@@ -1,3 +1,4 @@
+import {actionFor} from "@rzymek/rally-the-troops-module/client";
 import {hexOverlay} from "./refs/hexOverlay";
 import {bombedLayer} from "./refs/bombedLayer";
 import {targetsLayer} from "./refs/targetsLayer";
@@ -17,7 +18,7 @@ export function onInit() {
   // Click on a hex → send move_hex or bomb if it's a valid target
   document.querySelectorAll('#hexes use').forEach(el => {
     el.addEventListener('click', () => {
-      const hexAction = HEX_ACTIONS.find(it => view.actions?.[it]?.includes(el.id))
+      const hexAction = actionFor(HEX_ACTIONS, el.id)
       if (hexAction) send_action(hexAction, el.id)
     })
   })
