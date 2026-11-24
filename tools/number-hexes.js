@@ -1,14 +1,13 @@
 /*
-open ../app.svg
+open ../public/app.svg
 modify the ids of all the <svg:use> in layer with inkscape:label=hexes so that they match the hex coordinates of the undelaying image (../images/mapa.jpg)
 using format A01.B01 (left-bottom, current id=use41481) to A42.B48 (right-top, current id=use42319).
 remember to take into account transform matrix
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
 
-const svgPath = path.join(__dirname, '..', 'app.svg');
+const svgPath = new URL('../public/app.svg', import.meta.url);
 let content = fs.readFileSync(svgPath, 'utf8');
 
 // Derived from anchor hexes in the layer (element transform translation values, not absolute SVG coords):

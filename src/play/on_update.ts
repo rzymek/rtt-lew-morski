@@ -27,12 +27,6 @@ export function onUpdate() {
   action_button("done", "Done")
   action_button("undo", "Undo")
 
-  document.querySelectorAll('#hexes .action').forEach(el => el.classList.remove('action'))
-
-  view.actions?.move_hex
-    ?.map(id => document.getElementById(id))
-    ?.forEach(el => el?.classList.remove('action'))
-
   clearHexHighlights();
   highlightHexes(view.actions?.move_hex, '#8080ff');
   highlightHexes(view.fire_line, '#ff4444');

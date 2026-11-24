@@ -47,5 +47,4 @@ export function onInit() {
   const hexTemplate = document.getElementById('hexTemplate')!;
   hexTemplate.classList.add('hex');
   hexTemplate.removeAttribute('fill-opacity');
-  console.log(hexTemplate)
 }
